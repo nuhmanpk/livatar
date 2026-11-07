@@ -494,3 +494,8 @@ If livatar saves you time, you can support it:
 ## License
 
 [MIT](LICENSE) © Nuhman PK
+
+
+<p align="center">
+  <img src="assets/livatar-scene.svg" alt="Feed the piggy 🐷" width="100%">
+</p>
