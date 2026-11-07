@@ -4,7 +4,7 @@
 // as src/alive.ts. Run: npm run build && node scripts/readme-art.mjs
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { createAvatar, defineStyle, MOODS, styles, blob, buddy, bot, pixel, animal, emoji } from '../dist/index.js'
+import { createAvatar, defineStyle, MOODS, styles, blob, buddy, bot, pixel, animal, emoji, human } from '../dist/index.js'
 import { icon, badge } from '../dist/icons.js'
 
 const out = fileURLToPath(new URL('../assets/', import.meta.url))
@@ -355,5 +355,117 @@ for (const [name, animation] of Object.entries(SOCIAL)) await writeFile(`${out}i
 await writeFile(`${out}icons/sponsor.svg`, badge('githubsponsors', 'Sponsor', { animation: 'heartbeat', theme: 'light' }))
 await writeFile(`${out}icons/coffee.svg`, badge('buymeacoffee', 'Buy me a coffee', { animation: 'tada' }))
 await writeFile(`${out}icons/star.svg`, badge('github', 'Star on GitHub', { animation: 'wiggle', theme: 'dark' }))
+
+
+/* ---------------- livatar/life: a room (join, speak, listen, react) and an AI assistant face ---------------- */
+// moods can't change inside one baked avatar, so a mood is a second copy of the avatar cross-faded on top
+const fadeCss = (cls, dur, windows) => {
+  const pts = [[0, 0], [100, 0]]
+  for (const [a, b] of windows) pts.push([a - 1.5, 0], [a, 1], [b, 1], [b + 1.5, 0])
+  pts.sort((x, y) => x[0] - y[0])
+  return `@keyframes ${cls}{${pts.map(([p, v]) => `${pc(Math.max(0, Math.min(100, p)))}{opacity:${v}}`).join('')}}.${cls}{opacity:0;animation:${cls} ${dur}s linear infinite}`
+}
+// visible during windows, hidden otherwise
+const showCss = (cls, dur, windows, from = 0) => {
+  const pts = [[0, from], [100, from]]
+  for (const [a, b] of windows) pts.push([a - 1, from], [a, 1], [b, 1], [b + 1, from])
+  pts.sort((x, y) => x[0] - y[0])
+  return `@keyframes ${cls}{${pts.map(([p, v]) => `${pc(Math.max(0, Math.min(100, p)))}{opacity:${v}}`).join('')}}.${cls}{animation:${cls} ${dur}s linear infinite}`
+}
+
+async function lifeRoom(mode) {
+  const W = 880, H = 300, size = 120, dur = 16, gap = 56, top = 56
+  const people = ['ada', 'bob', 'cy', 'dee']
+  const ox = (W - (people.length * size + (people.length - 1) * gap)) / 2
+  const slot = (i) => ({ x: ox + i * (size + gap), cx: ox + i * (size + gap) + size / 2, cy: top + size / 2 })
+  // timeline (% of the loop)
+  const joinAt = [0, 8, 18, 28]             // ada is there from the start
+  const leaveAt = 92                          // everyone but ada leaves, the loop restarts
+  const speak = [[0, 40, 58], [3, 64, 80]]  // [person, from, to]
+  const cheer = [80, 88]                      // dee's message is happy, everyone smiles
+  const parts = [], css = [], body = []
+  people.forEach((name, i) => {
+    const { x, cx, cy } = slot(i)
+    // where to look: at whoever just joined, then at whoever speaks
+    const look = (tx) => gazeTo(cx, cy, tx, cy, 120)
+    const g = [[0, 0, 0.1]]
+    joinAt.forEach((t, j) => { if (j !== i && t > joinAt[i] && t > 0) g.push([t - 0.5, 0, 0.1], [t + 1, ...look(slot(j).cx)], [t + 6, ...look(slot(j).cx)], [t + 7.5, 0, 0.1]) })
+    for (const [who, a, b] of speak) {
+      if (who === i) g.push([a - 0.5, 0, 0.1], [a + 1, 0, 0.15], [b, 0, 0.15])
+      else g.push([a - 0.5, 0, 0.1], [a + 1.5, ...look(slot(who).cx)], [b, ...look(slot(who).cx)], [b + 2, 0, 0.1])
+    }
+    g.push([100, 0, 0.1])
+    g.sort((p, q) => p[0] - q[0])
+    const talk = speak.filter(([who]) => who === i).map(([, a, b]) => [a, b])
+    const eyes = eyePoints(blinksFor(dur), dur)
+    const base = actor(human, { seed: name, x, y: top, size, dur, gaze: g, eyes, mouth: mouthPoints(talk, dur) })
+    // greet joiners and cheer at the message
+    const greet = joinAt.filter((t, j) => j !== i && t > joinAt[i] && t > 0).map((t) => [t + 1, t + 6])
+    const happy = actor(human, { seed: name, x, y: top, size, dur, gaze: g, eyes, mouth: mouthPoints([], dur), mood: 'happy' })
+    const hc = `h${name}`
+    css.push(base.css, happy.css, fadeCss(hc, dur, [...greet, cheer]))
+    // join: pop in; leave: fade out (ada stays)
+    const pc_ = `p${name}`
+    if (i > 0) {
+      const a = joinAt[i]
+      css.push(`@keyframes ${pc_}{0%,${pc(a - 0.1)}{opacity:0;transform:translateY(14px) scale(.85)}${pc(a + 2)}{opacity:1;transform:translateY(-4px) scale(1.04)}${pc(a + 3.5)},${pc(leaveAt)}{opacity:1;transform:none}${pc(leaveAt + 3)},100%{opacity:0;transform:translateY(10px) scale(.9)}}.${pc_}{transform-origin:${f(cx)}px ${f(cy)}px;animation:${pc_} ${dur}s ease-out infinite}`)
+    }
+    // name, plus a "speaking" / "listening" tag
+    const talkW = speak.filter(([who]) => who === i).map(([, a, b]) => [a, b])
+    const listenW = speak.filter(([who]) => who !== i).map(([, a, b]) => [a + 1.5, b])
+    css.push(showCss(`s${name}`, dur, talkW), showCss(`l${name}`, dur, listenW))
+    body.push(`<g class="${pc_}">${base.svg}<g class="${hc}">${happy.svg}</g>
+<text x="${f(cx)}" y="${top + size + 26}" text-anchor="middle" class="fg" font-size="16" font-weight="700">${name}</text>
+<text x="${f(cx)}" y="${top + size + 46}" text-anchor="middle" font-size="12" font-weight="700" fill="#7f5af0" class="s${name}" opacity="0">● speaking</text>
+<text x="${f(cx)}" y="${top + size + 46}" text-anchor="middle" font-size="12" class="muted l${name}" opacity="0">listening</text></g>`)
+  })
+  // captions + chat bubble
+  const caps = [
+    [[1, 36], 'room.join(id, handle): everyone turns and says hi'],
+    [[38, 60], "room.speaking('ada'): mouth moves, everyone looks at her"],
+    [[62, 90], "room.message('dee', 'this is awesome 🎉'): they all react"],
+  ]
+  caps.forEach(([w], k) => css.push(showCss(`c${k}`, dur, [w])))
+  css.push(showCss('bub', dur, [[66, 88]]))
+  const d = slot(3)
+  body.push(`<g class="bub" opacity="0"><rect x="${f(d.cx - 96)}" y="10" width="192" height="34" rx="17" class="card line" stroke-width="1.5"/><text x="${f(d.cx)}" y="32" text-anchor="middle" class="fg" font-size="14">this is awesome 🎉</text></g>`)
+  body.push(...caps.map(([, t], k) => `<text x="${W / 2}" y="${H - 14}" text-anchor="middle" class="muted mono c${k}" font-size="13" opacity="0">${t.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</text>`))
+  const bg = `<rect width="${W}" height="${H}" rx="20" class="bg"/><rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="20" fill="none" class="line" stroke-width="1.5"/>`
+  await writeFile(`${out}life-room-${mode}.svg`, doc(W, H, bg + body.join('\n'), css.join('\n'), theme(mode)))
+}
+
+async function lifeAssistant(mode) {
+  const W = 520, H = 300, size = 132, dur = 12
+  const x = 40, top = 64, cx = x + size / 2, cy = top + size / 2
+  // idle 0-10 · listening 10-30 · thinking 30-50 · speaking 50-80 · done 80-100
+  const g = [[0, 0, 0.1], [10, 0, 0.1], [12, 0.9, -0.1], [28, 0.9, -0.1], [31, 0.5, -0.7], [37, -0.5, -0.7], [43, 0.5, -0.7], [49, -0.3, -0.6], [51, 0.5, 0.1], [80, 0.5, 0.1], [83, 0, 0.1], [100, 0, 0.1]]
+  const eyes = eyePoints(blinksFor(dur), dur)
+  const seed = 'helper'
+  const base = actor(bot, { seed, x, y: top, size, dur, gaze: g, eyes, mouth: mouthPoints([[52, 78]], dur) })
+  const conf = actor(bot, { seed, x, y: top, size, dur, gaze: g, eyes, mouth: mouthPoints([], dur), mood: 'confused' })
+  const hap = actor(bot, { seed, x, y: top, size, dur, gaze: g, eyes, mouth: mouthPoints([], dur), mood: 'happy' })
+  const states = [['idle', 0, 10], ['listening', 10, 30], ['thinking', 30, 50], ['speaking', 50, 80], ['done', 80, 99]]
+  const css = [base.css, conf.css, hap.css, fadeCss('mc', dur, [[31, 49]]), fadeCss('mh', dur, [[81, 98]])]
+  states.forEach(([, a, b], k) => css.push(showCss(`st${k}`, dur, [[a + 0.5, b]], k === 0 ? 0 : 0)))
+  css.push(showCss('ub', dur, [[11, 99]]), showCss('dots', dur, [[31, 49]]))
+  // reply text types out line by line
+  const lines = ["Looks like a missing", "dependency. Run npm i,", "then build again. 🎉"]
+  lines.forEach((_, k) => {
+    const a = 52 + k * 9
+    css.push(`@keyframes rl${k}{0%,${pc(a)}{clip-path:inset(0 100% 0 0)}${pc(a + 8)},${pc(99)}{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}.rl${k}{animation:rl${k} ${dur}s linear infinite}`)
+  })
+  css.push(showCss('rb', dur, [[51, 99]]))
+  css.push(`@keyframes dt{0%,100%{opacity:.25}50%{opacity:1}}.dots circle{animation:dt 1s ease-in-out infinite}.dots circle:nth-child(2){animation-delay:.2s}.dots circle:nth-child(3){animation-delay:.4s}`)
+  const bx = 210
+  const body = `<rect width="${W}" height="${H}" rx="20" class="bg"/><rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="20" fill="none" class="line" stroke-width="1.5"/>
+${base.svg}<g class="mc">${conf.svg}</g><g class="mh">${hap.svg}</g>
+${states.map(([n], k) => `<g class="st${k}" opacity="0"><rect x="${f(cx - 52)}" y="${top + size + 18}" width="104" height="26" rx="13" class="card line" stroke-width="1.5"/><text x="${f(cx)}" y="${top + size + 36}" text-anchor="middle" font-size="13" font-weight="700" fill="#7f5af0">${n}</text></g>`).join('')}
+<g class="ub" opacity="0"><rect x="${bx + 70}" y="40" width="200" height="36" rx="18" fill="#7f5af0"/><text x="${bx + 170}" y="63" text-anchor="middle" font-size="14" fill="#fff">Can you fix my build?</text></g>
+<g class="dots" opacity="0"><rect x="${bx}" y="96" width="70" height="34" rx="17" class="card line" stroke-width="1.5"/><circle cx="${bx + 22}" cy="113" r="4" class="fg"/><circle cx="${bx + 35}" cy="113" r="4" class="fg"/><circle cx="${bx + 48}" cy="113" r="4" class="fg"/></g>
+<g class="rb" opacity="0"><rect x="${bx}" y="96" width="270" height="92" rx="18" class="card line" stroke-width="1.5"/>${lines.map((l, k) => `<text x="${bx + 18}" y="${124 + k * 24}" font-size="15" class="fg rl${k}">${l}</text>`).join('')}</g>
+<text x="${W / 2}" y="${H - 18}" text-anchor="middle" class="muted mono" font-size="13">assistant(handle) · think() · stream(tokens) · done()</text>`
+  await writeFile(`${out}life-assistant-${mode}.svg`, doc(W, H, body, css.join('\n'), theme(mode)))
+}
+for (const m of ['light', 'dark']) { await lifeRoom(m); await lifeAssistant(m) }
 
 console.log('README art → assets/')

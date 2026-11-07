@@ -28,6 +28,7 @@ import { home } from './styles/home'
 import { office } from './styles/office'
 import { dev } from './styles/dev'
 import { human } from './styles/human'
+import { ai } from './styles/ai'
 
 export * from './core'
 export * from './alive'
@@ -38,7 +39,7 @@ export { doodle, type DoodleOptions } from './doodle'
 export { faceEyes, faceBrows, faceMouth, faceExtras, heart, type FaceSpec } from './face'
 export { palettes, type PaletteName } from './palettes'
 export { styles } from './registry'
-export { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human }
+export { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai }
 export { describe } from './describe'
 export type { BlobOptions } from './styles/blob'
 export type { BuddyOptions } from './styles/buddy'
@@ -67,6 +68,7 @@ export type { HomeOptions } from './styles/home'
 export type { OfficeOptions } from './styles/office'
 export type { DevOptions } from './styles/dev'
 export type { HumanOptions } from './styles/human'
+export type { AiOptions } from './styles/ai'
 
 let mounts = 0
 const uniqueIds = (svg: string, tag: string) => svg.replace(/\b(lv[0-9a-z]+)(?=-)/g, `$1${tag}`)

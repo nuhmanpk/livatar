@@ -10,6 +10,8 @@ export default defineConfig([
       action: 'src/action.ts',
       icons: 'src/icons.ts',
       server: 'src/server.ts',
+      life: 'src/life.ts',
+      'components': 'src/components.ts',
     },
     format: ['esm', 'cjs'],
     dts: true,

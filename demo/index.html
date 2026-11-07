@@ -14,6 +14,7 @@
 <script>
   // apply saved theme before paint (no flash)
   try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light' // light by default; dark only when chosen
 </script>
 <style>
   :root { --bg:#fbf8f3; --fg:#1f1a2e; --muted:#6b6478; --card:#fff; --line:#ece6dc; --soft:#f3eee6; --accent:#7f5af0; color-scheme: light }
@@ -198,6 +199,7 @@
 </style>
 </head>
 <body>
+<script src="loader.js"></script>
 <header class="top"><div class="in">
   <a class="brand" href="./"><img src="favicon.svg" alt="" />livatar</a>
   <nav aria-label="Site">
@@ -207,7 +209,10 @@
     <span class="sep" aria-hidden="true"></span>
     <a href="docs/">Docs</a>
     <a href="docs/#builder">Builder</a>
+    <a href="components/">Components</a>
     <a href="icons/">Icons</a>
+    <a href="life/">Life</a>
+      <a href="readme/">README</a>
   </nav>
   <div class="nav-icons" id="navIcons" aria-label="Project links"></div>
   <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode">
@@ -545,6 +550,37 @@
       </div>
       <pre>&lt;live-avatar seed="ada" variant="buddy" mood="happy"&gt;&lt;/live-avatar&gt;</pre>
     </section>
+    <!-- ============ Life (livatar/life) ============ -->
+    <section class="case" data-cat="life">
+      <h3>Meeting room</h3><p>Everyone looks at whoever is speaking. Tap a face to make them talk; new people get a hello.</p>
+      <div class="row" id="uMeet" style="justify-content:center;gap:10px"></div>
+      <div class="btns"><button class="sm ghost" id="uMeetJoin">Someone joins</button><button class="sm ghost" id="uMeetMsg">Send "great job 🎉"</button></div>
+    </section>
+    <section class="case" data-cat="life">
+      <h3>AI assistant face</h3><p>Listening, thinking, then talking while the reply streams. Ends with a mood that fits the answer.</p>
+      <div class="row nowrap"><div class="av" id="uAi"></div><div class="stack"><small id="uAiState" style="font-weight:700;text-transform:uppercase">idle</small><span id="uAiOut" aria-live="polite">Ask me anything.</span><div class="btns"><button class="sm" id="uAiGo">Ask</button></div></div></div>
+    </section>
+    <section class="case" data-cat="life">
+      <h3>Loading with a face</h3><p>Puzzled and glancing around while it loads, a nod when done, a shake on failure.</p>
+      <div class="row nowrap"><div class="av" id="uLoad"></div><div class="btns"><button class="sm" id="uLoadOk">Load</button><button class="sm ghost" id="uLoadBad">Load (fails)</button><small id="uLoadTxt" aria-live="polite"></small></div></div>
+    </section>
+    <section class="case" data-cat="life">
+      <h3>Virtual pet</h3><p>Hunger and energy drift over real time, even with the tab closed. Feed it, play, tap to pet.</p>
+      <div class="row nowrap"><button class="av" id="uPet" aria-label="Pet the pet" style="border:0;padding:0;background:none"></button><div class="stack" style="flex:1"><small id="uPetStats"></small><div class="btns"><button class="sm" id="uPetFeed">Feed</button><button class="sm ghost" id="uPetPlay">Play</button></div></div></div>
+    </section>
+    <section class="case" data-cat="life">
+      <h3>Personality</h3><p>Same seed, same character. Poke them: the calm one stays amused, the grumpy one loses it.</p>
+      <div class="row" style="justify-content:center;gap:18px"><button class="av" id="uCalm" aria-label="Poke the calm one" style="border:0;padding:0;background:none"></button><button class="av" id="uGrump" aria-label="Poke the grumpy one" style="border:0;padding:0;background:none"></button></div>
+    </section>
+    <section class="case" data-cat="life">
+      <h3>Comment that reacts</h3><p>The face reads the mood of what you type. Tiny local word list, no AI call.</p>
+      <div class="row nowrap"><div class="av" id="uFeel"></div><input id="uFeelIn" placeholder="type something… (try: this is broken!!)" aria-label="Comment" style="flex:1" /></div>
+    </section>
+    <section class="case" data-cat="life">
+      <h3>Team presence</h3><p>Stacked avatars with presence dots. Away people doze off.</p>
+      <div class="row" id="uStack" style="justify-content:center"></div>
+    </section>
+
     <!-- ============ Mobile ============ -->
     <section class="case" data-cat="mobile">
       <h3>Tap to pet</h3><p>A tap is a click. Love, a nod, and a tiny buzz on Android.</p>
@@ -589,7 +625,7 @@
   </div>
 
   <footer class="site-foot">
-    <span>MIT · made by <a href="https://github.com/nuhmanpk">@nuhmanpk</a> · <a href="docs/">Docs</a> · <a href="icons/">Icons</a></span>
+    <span>MIT · made by <a href="https://github.com/nuhmanpk">@nuhmanpk</a> · <a href="docs/">Docs</a> · <a href="components/">Components</a> · <a href="icons/">Icons</a> · <a href="life/">Life</a></span>
     <div class="icons" id="footIcons"></div>
   </footer>
 </main>
@@ -715,7 +751,7 @@
   // filter chips: one per category, with counts
   const cards = [...document.querySelectorAll('#uCases .case')]
   cards.forEach((c) => c.prepend(el('span', { className: 'tag', textContent: c.dataset.cat })))
-  const CATS = ['all', 'forms', 'states', 'feedback', 'social', 'commerce', 'onboarding', 'productivity', 'fun', 'mobile']
+  const CATS = ['all', 'life', 'forms', 'states', 'feedback', 'social', 'commerce', 'onboarding', 'productivity', 'fun', 'mobile']
   const shown = el('small', { ariaLive: 'polite' })
   const filter = (cat) => {
     let n = 0
@@ -1436,6 +1472,71 @@
   })
 
   document.addEventListener('livatar:poke', (e) => console.log('poked', e.target))
+</script>
+<script type="module">
+  // use cases: livatar/life
+  import { mount, mountCode, createAvatar, human, bot, buddy, animal, emoji } from '../dist/index.js'
+  import { group, assistant, pet, personality, feel, react } from '../dist/life.js'
+  const $ = (id) => document.getElementById(id)
+
+  // meeting room
+  const room = group({ idleAfter: 0 })
+  const PEOPLE = ['ada', 'bob', 'cy', 'dee', 'eli']
+  let n = 0
+  const join = () => {
+    const id = PEOPLE[n++ % PEOPLE.length] + (n > PEOPLE.length ? n : '')
+    if ($('uMeet').children.length >= 5) { const first = $('uMeet').firstElementChild; room.leave(first.dataset.id); first.remove() }
+    const b = Object.assign(document.createElement('button'), { className: 'av', ariaLabel: `Make ${id} talk` })
+    b.style.cssText = 'width:56px;height:56px;border:0;padding:0;background:none'
+    b.dataset.id = id
+    b.onclick = () => { room.speaking(id); clearTimeout(b.t); b.t = setTimeout(() => room.speaking(id, false), 2500) }
+    $('uMeet').append(b)
+    room.join(id, mount(b, human, { seed: 'meet-' + id }))
+  }
+  join(); join(); join()
+  $('uMeetJoin').onclick = join
+  $('uMeetMsg').onclick = () => { const first = $('uMeet').firstElementChild; first && room.message(first.dataset.id, 'great job 🎉') }
+
+  // assistant
+  const ai = assistant(mount($('uAi'), bot, { seed: 'uc-ai' }), { onState: (s) => ($('uAiState').textContent = s) })
+  $('uAiGo').onclick = async () => {
+    ai.listen(); $('uAiOut').textContent = '…'
+    await new Promise((r) => setTimeout(r, 700)); ai.think()
+    await new Promise((r) => setTimeout(r, 1300)); $('uAiOut').textContent = ''
+    async function* words() { for (const w of 'Sure! Here is a quick fix that works great.'.split(/(?<= )/)) { await new Promise((r) => setTimeout(r, 90)); $('uAiOut').textContent += w; yield w } }
+    await ai.stream(words())
+  }
+
+  // loading
+  const ld = mount($('uLoad'), buddy, { seed: 'uc-load' })
+  let glance
+  const load = async (ok) => {
+    clearInterval(glance); ld.emote('confused'); $('uLoadTxt').textContent = 'loading…'
+    let i = 0; glance = setInterval(() => ld.look(i++ % 2 ? -0.6 : 0.6, -0.6, 900), 800)
+    await new Promise((r) => setTimeout(r, 1800)); clearInterval(glance)
+    react(ld, ok ? 'success' : 'error'); $('uLoadTxt').textContent = ok ? 'done' : 'failed'
+  }
+  $('uLoadOk').onclick = () => load(true)
+  $('uLoadBad').onclick = () => load(false)
+
+  // pet
+  const draw = (s) => ($('uPetStats').textContent = `hunger ${Math.round(s.hunger)} · energy ${Math.round(s.energy)} · joy ${Math.round(s.happiness)} · lvl ${s.level}`)
+  const p = pet(mount($('uPet'), animal, { seed: 'uc-pet', options: { species: 'bunny' } }), { key: 'livatar:uc-pet', onChange: draw })
+  $('uPetFeed').onclick = () => p.feed()
+  $('uPetPlay').onclick = () => p.play()
+
+  // personality
+  personality(mount($('uCalm'), buddy, { seed: 'uc-calm' }), 'calm')
+  personality(mount($('uGrump'), buddy, { seed: 'uc-grump' }), 'grumpy')
+
+  // comment reaction
+  const fe = mount($('uFeel'), emoji, { seed: 'uc-feel' })
+  let last = 'neutral'
+  $('uFeelIn').oninput = () => { const m = feel($('uFeelIn').value); if (m !== last) fe.emote((last = m)) }
+
+  // presence stack
+  const ST = [['ada', 'online', '#22c55e'], ['bob', 'away', '#f59e0b'], ['cy', 'busy', '#ef4444'], ['dee', 'online', '#22c55e']]
+  $('uStack').innerHTML = ST.map(([id, s, c], i) => `<span title="${id}: ${s}" style="position:relative;display:inline-block;width:44px;height:44px;margin-left:${i ? -12 : 0}px;border-radius:50%;box-shadow:0 0 0 2px var(--bg)">${createAvatar(human, { seed: 'st-' + id, mood: s === 'away' ? 'sleepy' : 'neutral' })}<i style="position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:${c};box-shadow:0 0 0 2px var(--bg)"></i></span>`).join('') + `<span style="display:grid;place-items:center;width:44px;height:44px;margin-left:-12px;border-radius:50%;background:var(--soft);font-weight:700;font-size:14px;box-shadow:0 0 0 2px var(--bg)">+3</span>`
 </script>
 <script type="module" src="ui.js"></script>
 </body>

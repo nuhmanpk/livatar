@@ -2,7 +2,7 @@
 
 > Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, chew while you type, watch the caret, cover their eyes on password fields, and show 10 moods. Deterministic from a seed. Works in vanilla JS, React/Next.js, Vue/Nuxt, Svelte, Solid, Angular (web component), SSR, <img>, email, and a CLI. Also ships 540+ animated brand icons (livatar/icons). MIT.
 
-Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.md (or `npx livatar skill`). Docs: https://nuhmanpk.github.io/livatar/docs/
+Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.md (or `npx livatar skill`). Agent notes: https://nuhmanpk.github.io/livatar/AGENTS.md. Docs: https://nuhmanpk.github.io/livatar/docs/
 
 ## Core API (import from 'livatar')
 - `createAvatar(style, { seed, mood, size, shape, radius, background, gradient, colors, border, borderWidth, flip, scale, rotate, title, options }) → svg string` (SSR-safe, static)
@@ -28,6 +28,17 @@ Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.
 ## Extras
 - `describe(config) → "A happy owl"` alt text. Style `initials` (options.name, chars).
 - Server: `import { avatarHandler } from 'livatar/server'` → `(Request) => Response`; URLs `/<style>/<seed>.svg?mood=&size=&<option>=`, `/<code>.svg`
+
+## Life: personality, feelings, context, AI assistant, pet, multiplayer (import from 'livatar/life')
+All take any handle (from `mount`, `mountCode`, a React ref, `<live-avatar>.handle`). Separate entry: core bundle size unchanged.
+- `personality(handle, 'cheerful'|'shy'|'grumpy'|'curious'|'lazy'|'playful'|'calm' | { seed } | Partial<Traits>, { idle? }) → { traits, name, react(event), destroy() }`. Traits (0…1): energy curiosity temper warmth shyness playfulness. `{ seed }` is deterministic. Tunes motion, poke reactions (pokes escalate with temper), idle faces. `traits(input)`, `personalityName(traits)`, `PERSONALITIES`.
+- `feel(text) → Mood`, `feeling(text) → { mood, score }`: tiny local sentiment (words, emoji, negation, shouting). No model, no network.
+- `react(handle, event, traits?)`, `reaction(event, traits?) → { mood, ms, gesture, talk, look }`. Events: success error warning loading done join leave welcome message mention like celebrate annoyed agree disagree night offline online scroll.
+- `context(handle, { time, network, visibility, scroll, awayFor, onEvent }) → cleanup`: yawns at night, sad offline, "welcome back" after tab away, surprised by fast scroll. SSR-safe. Pass `onEvent: me.react` to route through a personality.
+- `assistant(handle, { sentiment, perToken, onState }) → { state, listen(), think(), stream(tokens), speak(audioElOrMediaStream) → stop, done(mood?), error(), set(state), destroy() }`. States: idle listening thinking speaking done error. `await ai.stream(asyncIterable)` talks per token and ends with a mood guessed from the reply; `ai.stream('chunk')` for push-style streams.
+- `pet(handle, { key, store, decay, onChange, onLevelUp, tick }) → { stats, feed(), play(), pat(), sleep(), wake(), reward(xp), mood(), reset(), destroy() }`. Stats: hunger energy happiness (0…100) xp level stage(baby kid teen adult) asleep. Drifts in real time, also while the page is closed; saved to localStorage by default, or any `{ get, set }` store. Poking = petting.
+- `group({ idleAfter, empathy }) → { members, join(id, handle), leave(id), speaking(id, on?), message(id, text), active(id), all(fn), destroy() }`: avatars look at whoever speaks, greet joiners, react to message mood, notice @mentions, doze when idle. Transport-agnostic: call from your socket events.
+- React/Next.js components (`livatar/components`, 'use client'; gallery with live previews: https://nuhmanpk.github.io/livatar/components/): `<LivatarLoader status label />` (idle loading success error), `<LivatarMeet participants={[{ id, name, speaking, muted, avatar }]} message={{ id, from, text }} avatar size />`, `<LivatarForm onSubmit={(data) => ok} avatar moods placement>` (false/throw → error face), `<LivatarAssistant status text showState />` (status also accepts Vercel AI SDK submitted/streaming/ready), `<LivatarPet pet controls>{(pet, stats) => …}</LivatarPet>`, `<LivatarStack users={[{ id, status: online|away|busy|offline }]} max size />`, `<LivatarEmptyState title description action />`, `<LivatarReaction text hold />`, `<LivatarBackground variants children />` (avatar wall following the cursor), `<LivatarChat messages={[{ id, from, text, me }]} typing people />`, `<LivatarToast open type title description onClose duration />`, `<LivatarNotFound title description action code />`, `<LivatarTyping name />`, `<LivatarProfileCard name role status action />`, `<LivatarTestimonial quote name title />`, `<LivatarCheckout amount onPay={(card) => ok} />` (money card character; covers eyes on CVC), `<LivatarCartButton count onClick />` (ui cart), `<LivatarUpload onFiles accept multiple />` (office folder), `<LivatarThemeToggle dark onChange />` (planet sun/moon), `<LivatarPasswordStrength value score />` (ui lock), `<LivatarRating value onChange max />` (emoji), `<LivatarConnection online />` (tech cloud), `<LivatarInput avatar validate end face …inputAttrs />` (face inside the field, transparent; happy when valid, covers eyes on password), `<LivatarSearch onSearch={(q) => results} debounce />` (owl), `<LivatarOTP length onComplete={(code) => ok} />` (key), `<LivatarNewsletter onSubscribe button />` (sprout → sunflower), `<LivatarCookieConsent onAccept onDecline />` (donut), `<LivatarProgress value label />` (car), `<LivatarStepper steps current />` (rocket), `<LivatarPricing tiers={[{ name, price, period, features, popular, onSelect }]} />` (coin/piggy/gem), `<LivatarBell count onClick />`, `<LivatarLike liked onChange count />` (heart planet), `<LivatarCountdown to onDone label />` (clock), `<LivatarHelpLauncher title position>{panel}</LivatarHelpLauncher>` (bot). All take <Livatar> props (variant, seed, size, …). Hooks: `usePersonality(ref, input)`, `useAssistant(ref) → [ai, state]`, `usePet(ref, opts) → [pet, stats]`, `useContextAware(ref, opts)`.
 
 ## Framework entry points
 - React/Next.js: `import { Livatar, LivatarCode } from 'livatar/react'` (`'use client'` included) — `<Livatar variant={buddy} seed="ada" mood="happy" size={48} ref={ref} />`, `<LivatarCode code="lv…" />`
@@ -209,6 +220,10 @@ Palettes: pastel, vivid, candy, ocean, forest, sunset, mono, neon, retro, earth
 - freckles: true, false
 - pacifier: true, false
 
+### ai
+- kind: gemini, claude, grok, chatgpt
+- glow: true, false
+
 ## README
 
 
@@ -220,9 +235,19 @@ Palettes: pastel, vivid, candy, ocean, forest, sunset, mono, neon, retro, earth
 **Avatars that are alive.**
 
 [![npm](https://img.shields.io/npm/v/livatar?color=7f5af0)](https://www.npmjs.com/package/livatar)
+[![downloads](https://img.shields.io/npm/dm/livatar?color=7f5af0)](https://www.npmjs.com/package/livatar)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/livatar?label=gzip)](https://bundlephobia.com/package/livatar)
+[![zero deps](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/livatar?activeTab=dependencies)
+[![types](https://img.shields.io/npm/types/livatar)](https://www.npmjs.com/package/livatar)
+[![tree shakable](https://img.shields.io/badge/tree--shakable-yes-blue)](https://bundlephobia.com/package/livatar)
 [![license](https://img.shields.io/npm/l/livatar)](LICENSE)
+[![deploy](https://github.com/nuhmanpk/livatar/actions/workflows/pages.yml/badge.svg)](https://github.com/nuhmanpk/livatar/actions/workflows/pages.yml)
+[![demo](https://img.shields.io/badge/demo-live-ff6b6b)](https://nuhmanpk.github.io/livatar/)
+[![last commit](https://img.shields.io/github/last-commit/nuhmanpk/livatar)](https://github.com/nuhmanpk/livatar/commits/main)
+[![issues](https://img.shields.io/github/issues/nuhmanpk/livatar)](https://github.com/nuhmanpk/livatar/issues)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/nuhmanpk/livatar/pulls)
 [![GitHub stars](https://img.shields.io/github/stars/nuhmanpk/livatar?style=social)](https://github.com/nuhmanpk/livatar)
+
 
 **[Live demo and avatar builder →](https://nuhmanpk.github.io/livatar/)**
 
@@ -238,7 +263,7 @@ Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, ch
 - **10 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
 - **One code per avatar.** Every look packs into a short, URL-safe string such as `lvAQQBAG51aG1hbnBr`. Store it with the user and render it anywhere.
 - **Light.** One style plus the engine is about 9 KB gzipped. Styles are tree-shakable, so you only ship the ones you import.
-- **Runs anywhere.** ESM, CJS, `` CDN, a web component, React, Vue, Svelte, Angular, SSR, ``, and email (static).
+- **Runs anywhere.** ESM, CJS, `<script>` CDN, a web component, React, Vue, Svelte, Angular, SSR, `<img>`, and email (static).
 - **Deterministic.** The same seed always gives the same avatar, on the server and in the browser.
 - **Animated icons.** 540+ brand icons and badges (GitHub, LinkedIn, Kaggle, Hugging Face, npm, Buy Me a Coffee, and more) with 12 animations that play even in READMEs.
 - **Polite.** One shared `requestAnimationFrame` loop drives every avatar. It pauses avatars that are off screen and stops when the tab is hidden. It respects `prefers-reduced-motion`.
@@ -280,7 +305,7 @@ The `animal` species are cat, dog, bear, bunny, fox, panda, frog, mouse, shark, 
 neutral · happy · sad · angry · surprised · sleepy · love · wink · silly · confused
 
 ```js
-createAvatar(animal, { seed: 'ada', mood: 'love' })  // static, works in  and email
+createAvatar(animal, { seed: 'ada', mood: 'love' })  // static, works in <img> and email
 
 const h = mount(el, animal, { seed: 'ada' })
 h.emote('happy')         // switch mood
@@ -294,11 +319,15 @@ Moods move differently too. Happy avatars bounce, angry ones tremble, sad ones l
 
  
 
-Empty states that feel alive, login forms that look away from your password, chat bots that talk while text streams, and form validation that reacts. `bindForm(handle, form)` wires native form validation to moods for you. See [all use cases](https://nuhmanpk.github.io/livatar/#use-cases).
+
+
+
+
+Meeting rooms where everyone looks at the speaker, an AI assistant face, loading states, virtual pets and comment boxes that react (see [`livatar/life`](#give-it-a-life-livatarlife)). Empty states that feel alive, login forms that look away from your password, chat bots that talk while text streams, and form validation that reacts. `bindForm(handle, form)` wires native form validation to moods for you. See [all use cases](https://nuhmanpk.github.io/livatar/#use-cases).
 
 ### Animated icons
 
-`livatar/icons` gives you 540+ brand icons and badges: socials, dev platforms, and sponsors. Each one is a standalone SVG with the animation inside, so it moves in an `` tag and in READMEs. Pick and copy them on the [icons page](https://nuhmanpk.github.io/livatar/icons/).
+`livatar/icons` gives you 540+ brand icons and badges: socials, dev platforms, and sponsors. Each one is a standalone SVG with the animation inside, so it moves in an `<img>` tag and in READMEs. Pick and copy them on the [icons page](https://nuhmanpk.github.io/livatar/icons/).
 
 ```js
 import { icon, badge } from 'livatar/icons'
@@ -313,7 +342,7 @@ livatar is made to be vibe-coded. Paste this into Claude Code, Cursor, Copilot, 
 
 ```text
 Use livatar (npm i livatar) in this project. Read https://nuhmanpk.github.io/livatar/llms-full.txt
-and https://nuhmanpk.github.io/livatar/SKILL.md first, then: 
+and https://nuhmanpk.github.io/livatar/SKILL.md first, then: <what you want, e.g. "animated avatars for every user in the sidebar">
 ```
 
 - **One-click prompt:** hit **✨ Copy for AI agents** on the [site](https://nuhmanpk.github.io/livatar/), [docs](https://nuhmanpk.github.io/livatar/docs/) or [icons](https://nuhmanpk.github.io/livatar/icons/) page (every icon has its own).
@@ -353,7 +382,7 @@ const code = encode({
 })
 // → 'lv…' (short, URL-safe, deterministic)
 
-render(code)                  // '' on the server, in , in email
+render(code)                  // '<svg …>' on the server, in <img>, in email
 mountCode(el, code)           // alive in the browser
 decode(code)                  // back to the config object
 ```
@@ -365,11 +394,11 @@ A code holds the style, seed, mood, shape, flip, border, gradient, background, p
 ### Web component (any framework, no build step)
 
 ```html
+<script type="module" src="https://unpkg.com/livatar/dist/element.js"></script>
 
-
-
-
-
+<live-avatar seed="ada" variant="buddy" size="64" mood="happy"></live-avatar>
+<live-avatar seed="r2" variant="animal" options='{"species":"owl"}' shape="rounded"></live-avatar>
+<live-avatar code="lvAQQBAG51aG1hbnBr" size="48"></live-avatar>
 ```
 
 Attributes:
@@ -397,29 +426,29 @@ import { Livatar } from 'livatar/react'
 import { animal } from 'livatar'
 
 const ref = useRef(null)
-
+<Livatar ref={ref} seed={user.id} variant={animal} mood="happy" size={48} />
 // ref.current.talk(800) on each streamed LLM chunk, ref.current.emote('sad') on errors
 ```
 
-From a code: `const { style, options } = resolve(code)`, then ``.
+From a code: `const { style, options } = resolve(code)`, then `<Livatar variant={style} {...options} />`.
 
 ### Vue / Svelte / Angular
 
-Use the web component: `import 'livatar/element'` and write ``. In Vue, tell the compiler about it with `compilerOptions.isCustomElement = t => t === 'live-avatar'`.
+Use the web component: `import 'livatar/element'` and write `<live-avatar seed="…" />`. In Vue, tell the compiler about it with `compilerOptions.isCustomElement = t => t === 'live-avatar'`.
 
 ### CDN global
 
 ```html
-
-Livatar.mount(el, Livatar.emoji, { seed: 'hi', mood: 'wink' })
+<script src="https://unpkg.com/livatar"></script>
+<script>Livatar.mount(el, Livatar.emoji, { seed: 'hi', mood: 'wink' })</script>
 ```
 
-### Server, ``, and email (static)
+### Server, `<img>`, and email (static)
 
 ```js
 import { createAvatar, toDataUri, pixel } from 'livatar'
 
-createAvatar(pixel, { seed: 'ada', size: 64 }) // ''
+createAvatar(pixel, { seed: 'ada', size: 64 }) // '<svg …>'
 toDataUri(pixel, { seed: 'ada' })              // 'data:image/svg+xml;utf8,…'
 ```
 
@@ -472,7 +501,7 @@ Every option accepts `'random'` (the default), which means the seed picks it. `s
 
 ### `alive(element, options) → handle`
 
-`element` can be the `` or any element that contains it. When there is no DOM (for example during SSR), `alive()` does nothing.
+`element` can be the `<svg>` or any element that contains it. When there is no DOM (for example during SSR), `alive()` does nothing.
 
 | Option | Default | Description |
 | --- | --- | --- |
@@ -504,6 +533,68 @@ Renders the avatar into `el` and then calls `alive()`. Pass `alive: false` for a
 
 `encode(config) → string`, `decode(code) → config`, `render(codeOrConfig, extra?) → svg`, `resolve(codeOrConfig) → { style, options }`, and `isCode(value)`. Each one takes an optional custom style registry as its last argument.
 
+## Give it a life (`livatar/life`)
+
+A separate entry point, so the core bundle stays the same size. Everything works on any handle.
+
+
+
+
+
+**[Try it live: personality, AI face, pet, multiplayer →](https://nuhmanpk.github.io/livatar/life/)**
+
+```js
+import { mount, bot, animal, buddy } from 'livatar'
+import { personality, assistant, pet, group, context, feel } from 'livatar/life'
+
+// Personality: a preset, your own traits, or { seed } (same seed → same personality)
+const me = personality(mount(el, buddy, { seed: user.id }), { seed: user.id })
+me.name               // 'curious'
+me.react('success')   // success error join leave mention celebrate agree disagree …
+
+// Context: yawns at night, sad when offline, "welcome back" after you leave the tab
+context(handle, { onEvent: me.react })
+
+// The face of your AI: listening → thinking → speaking → done
+const ai = assistant(mount(el, bot, { seed: 'helper' }))
+ai.think()
+const reply = await ai.stream(tokens)   // talks per token, ends with a mood from the reply
+ai.speak(audioElement)                  // lip-sync to TTS audio
+
+// Virtual pet: hunger, energy and happiness drift in real time, it levels up and grows
+const mochi = pet(mount(el, animal, { seed: 'mochi' }), { onChange: drawBars })
+mochi.feed(); mochi.play(); mochi.reward(10)
+
+// Multiplayer: avatars look at whoever speaks, greet joiners, react to messages
+const room = group()
+socket.on('join', (u) => room.join(u.id, mount(slot(u), buddy, { seed: u.id })))
+socket.on('msg', (m) => room.message(m.from, m.text))
+
+feel('this is broken!!')   // 'angry' (tiny local sentiment, no model)
+```
+
+### React & Next.js components (`livatar/components`)
+
+**[Browse all 34 with live previews and code →](https://nuhmanpk.github.io/livatar/components/)** Checkout (the card covers its eyes for the CVC), inline inputs with a face inside, search (an owl), one-time code, newsletter pill (a sprout that blooms), pricing, cookie consent, progress (a car), onboarding (a rocket), countdown, loader, login form, password strength, upload, cart, AI assistant, chat, meeting grid, toast, 404, avatar wall background and more. Each comes with a character that fits its job.
+
+Ready-made and `'use client'`. They render the static avatar on the server and start behaving after hydration.
+
+```tsx
+import { bot, human } from 'livatar'
+import { LivatarLoader, LivatarMeet, LivatarForm, LivatarAssistant, LivatarPet, LivatarStack, LivatarEmptyState, LivatarReaction } from 'livatar/components'
+
+<LivatarLoader status={isPending ? 'loading' : 'success'} label="Fetching…" />
+<LivatarMeet avatar={{ variant: human }} participants={[{ id: 'ada', speaking: true }, { id: 'bob' }]} />
+<LivatarForm onSubmit={(data) => signIn(data)}>…your inputs…</LivatarForm>
+<LivatarAssistant variant={bot} status={useChat().status} text={reply} />   // Vercel AI SDK status works as-is
+<LivatarPet seed="mochi" />
+<LivatarStack users={[{ id: 'ada', status: 'online' }, { id: 'bob', status: 'away' }]} />
+<LivatarEmptyState title="No messages yet" action={<button>Refresh</button>} />
+<LivatarReaction text={draft} />
+```
+
+Hooks for your own components: `usePersonality`, `useAssistant`, `usePet`, `useContextAware`.
+
 ## Make anything alive
 
 The engine animates any element that has these attributes. It works with your own hand-drawn SVG too:
@@ -518,7 +609,7 @@ The engine animates any element that has these attributes. It works with your ow
 | `data-lv-shy=""` | Hidden; slides up into view while a password field is focused (for example, hands over the eyes). Give it `opacity="0"` so static renders hide it. |
 | `data-lv-float=""` | Bobs gently, for hearts and zzz. `data-lv-float="drip"` falls and fades, for tears. |
 
-Put `data-lv-mood="happy"` on the root `` to get a mood's motion.
+Put `data-lv-mood="happy"` on the root `<svg>` to get a mood's motion.
 
 ## Write your own style
 
@@ -529,14 +620,14 @@ export const jelly = defineStyle({
   name: 'jelly',
   colors: ['#e0e7ff', '#fce7f3', '#dcfce7', '#fef9c3'],
   render: ({ rand, color, background }) => `
-    
-      
-      
-        
-        
-        
-      
-    `,
+    <g data-lv-body="">
+      <path data-lv-depth=".3" d="M22 92V58a28 28 0 0 1 56 0v34l-7-5-7 5-7-5-7 5-7-5-7 5-7-5z" fill="${color(background)}" stroke="#1f1a2e" stroke-width="2.5"/>
+      <g data-lv-depth="1">
+        <ellipse data-lv-eye="" cx="40" cy="58" rx="3.2" ry="${rand.float(3.5, 5)}" fill="#1f1a2e"/>
+        <ellipse data-lv-eye="" cx="60" cy="58" rx="3.2" ry="4.2" fill="#1f1a2e"/>
+        <ellipse data-lv-mouth="1.5" cx="50" cy="70" rx="4" ry="2" fill="#1f1a2e"/>
+      </g>
+    </g>`,
 })
 ```
 
@@ -548,7 +639,7 @@ The `ctx` object passed to `render` contains:
 - `pick(key, choices)`: the option's value, or a seeded pick from `choices` when the option is `'random'`
 - `color(against?)`: the next palette color, chosen to contrast with `against` when you pass it
 - `mood`: the mood to draw
-- `background`, `colors`, `id` (a prefix for `` ids), `options`, and `seed`
+- `background`, `colors`, `id` (a prefix for `<defs>` ids), `options`, and `seed`
 
 To support moods, reuse the built-in expressions: `faceEyes`, `faceBrows`, `faceMouth`, and `faceExtras` take a small `FaceSpec` that says where your face is and how to draw an open eye. Every built-in style uses them.
 
@@ -598,7 +689,7 @@ npm run art     # regenerate the animated README images in assets/
 
 `.github/workflows/pages.yml` builds, tests, and deploys the demo on every push to `main`.
 Enable it once: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-The demo is then live at `https://.github.io/livatar/`.
+The demo is then live at `https://<user>.github.io/livatar/`.
 
 ## Credits
 

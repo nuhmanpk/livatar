@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>livatar README studio</title>
+<meta name="description" content="Make an animated SVG for your GitHub README: characters that follow a cursor, talk in speech bubbles and change moods. Pure CSS, no JavaScript, works on GitHub." />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<script>
+  if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)
+</script>
+<script>
+  try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light'
+</script>
+<link rel="stylesheet" href="../docs/docs.css" />
+<style>
+  main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 80px }
+  h1 { font-size: clamp(32px, 6vw, 52px); letter-spacing: -0.03em; margin: 12px 0 4px }
+  .lead { color: var(--muted); margin: 0 0 24px; max-width: 700px }
+  .studio { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 18px; align-items: start }
+  @media (max-width: 900px) { .studio { grid-template-columns: 1fr } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; min-width: 0 }
+  .panel h2 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px }
+  .panel h2 .sp { flex: 1 }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+  .fields label, .beat label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); min-width: 0 }
+  .fields .wide { grid-column: 1 / -1 }
+  .check { display: flex !important; align-items: center; gap: 8px; font-size: 13px !important; color: var(--fg) !important }
+  input, select { min-width: 0; width: 100%; box-sizing: border-box }
+  .check input { width: auto }
+  .list { display: grid; gap: 8px }
+  .who { display: grid; grid-template-columns: 34px 1fr 1fr 1fr auto; gap: 6px; align-items: center }
+  .lnk { display: grid; grid-template-columns: 28px 1fr 1fr 96px auto; gap: 6px; align-items: center }
+  .lnk img { width: 24px; height: 24px }
+  .presets .grp { flex-basis: 100%; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: 4px }
+  .who .kind { grid-column: 2 / 5 }
+  .who img { width: 34px; height: 34px; border-radius: 50% }
+  .beat { display: grid; grid-template-columns: 58px 58px 1fr 1fr; gap: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; position: relative }
+  .beat .wide { grid-column: 1 / -1 }
+  .x { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 4px 6px }
+  .beat .x { position: absolute; top: 2px; right: 2px }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px }
+  .stage { position: sticky; top: 76px; display: grid; gap: 12px }
+  .preview { border-radius: 18px; border: 1px solid var(--line); padding: 18px; display: grid; place-items: center; min-height: 260px; background: radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0) 0 0 / 16px 16px }
+  .preview.dark { background-color: #0d1117 }
+  .preview.light { background-color: #ffffff }
+  .preview img { max-width: 100%; height: auto }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+  .tools .meta { margin-left: auto; color: var(--muted); font-size: 13px }
+  pre.snip { margin: 0; white-space: pre-wrap; word-break: break-all; font-size: 12.5px; background: var(--soft); border-radius: 12px; padding: 12px }
+  .hint { font-size: 13px; color: var(--muted); margin: 0 }
+  .studio button { background: var(--card); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: none }
+  .studio button:hover { border-color: var(--accent) }
+  .studio button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--soft) }
+  .studio .x { border: 0; background: none; padding: 4px 6px }
+  .studio .primary { background: var(--accent); color: #fff; border-color: transparent; font-weight: 700 }
+</style>
+</head>
+<body>
+<script src="../loader.js"></script>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../" aria-label="livatar home"><span class="logo" id="logo"></span>livatar <span class="badge">readme</span></a>
+    <nav class="toplinks" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../docs/">Docs</a>
+      <a href="../components/">Components</a>
+      <a href="../icons/">Icons</a>
+      <a href="../life/">Life</a>
+      <a href="./" aria-current="page">README</a>
+      <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+    </nav>
+    <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode"></button>
+  </div>
+</header>
+
+<main>
+  <h1>README studio</h1>
+  <p class="lead">Put living characters in your GitHub README. Pick a cast, script what happens (a cursor tour, speech bubbles, mood changes, pokes, naps), then download one SVG file. Everything moves with CSS only, so it works on GitHub, npm and anywhere images are allowed. Nothing to install.</p>
+
+  <div class="studio">
+    <div class="panel" id="controls">
+      <h2>Start from</h2>
+      <div class="presets" id="presets"></div>
+
+      <h2>Scene</h2>
+      <div class="fields">
+        <label class="wide">Title <input id="title" placeholder="Meet the team" /></label>
+        <label class="wide">Subtitle <input id="subtitle" placeholder="They follow your cursor" /></label>
+        <label>Theme
+          <select id="themeSel"><option value="auto">Auto (follows GitHub)</option><option value="light">Light</option><option value="dark">Dark</option><option value="transparent">Transparent</option></select>
+        </label>
+        <label>Loop length (s) <input id="duration" type="number" min="2" max="60" step="1" /></label>
+        <label>Character size <input id="size" type="range" min="32" max="160" /></label>
+        <label>Spacing <input id="gap" type="range" min="4" max="160" /></label>
+        <label>Per row <input id="perRow" type="number" min="1" max="16" /></label>
+        <label>Shape
+          <select id="shape"><option>circle</option><option>rounded</option><option>square</option></select>
+        </label>
+        <label class="check wide"><input id="cursor" type="checkbox" /> Cursor tour: a pointer visits everyone and they watch it</label>
+      </div>
+
+      <h2>Cast <span class="sp"></span><button type="button" id="dice" class="ghost" title="New seeds">🎲 Shuffle</button><button type="button" id="addWho">+ Add</button></h2>
+      <div class="list" id="cast"></div>
+
+      <h2>What happens <span class="sp"></span><button type="button" id="addBeat">+ Add beat</button></h2>
+      <p class="hint">Times are in seconds. While someone talks, everyone else looks at them.</p>
+      <div class="list" id="beats"></div>
+
+      <h2>Buttons &amp; socials <span class="sp"></span><button type="button" id="addLink">+ Add</button></h2>
+      <p class="hint">A row of animated brand buttons: follow, sponsor, buy me a coffee, your stack… Any of the 540+ livatar icons. (Images in a README can't be clicked: link the whole image, or add real links under it.)</p>
+      <div class="list" id="links"></div>
+      <datalist id="iconNames"></datalist>
+    </div>
+
+    <div class="stage">
+      <div class="preview" id="preview"><img id="out" alt="" /></div>
+      <div class="tools">
+        <button type="button" class="primary" id="download">⬇ Download SVG</button>
+        <button type="button" id="copyMd">Copy README code</button>
+        <button type="button" id="copySvg">Copy SVG</button>
+        <button type="button" id="share">Copy link to this scene</button>
+        <button type="button" id="replay" class="ghost">↻ Replay</button>
+        <span class="meta" id="meta"></span>
+      </div>
+      <div class="tools">
+        <span class="hint">Preview on:</span>
+        <button type="button" data-bg="" aria-pressed="true">Page</button>
+        <button type="button" data-bg="light">GitHub light</button>
+        <button type="button" data-bg="dark">GitHub dark</button>
+      </div>
+      <pre class="snip" id="snip"></pre>
+      <p class="hint">Save the file as <code>assets/livatar-scene.svg</code> in your repo and paste the code above into README.md. "Auto" switches between light and dark with the reader's GitHub theme. GitHub plays CSS animation in images but not JavaScript, so the scene loops on its own. Hover and clicks don't work there.</p>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+  import { renderScene, PRESETS, PRESET_GROUPS, styles, ICONS } from './engine.js'
+  import { icon, ANIMATIONS } from '../../dist/icons.js'
+  import { createAvatar, MOODS } from '../../dist/index.js'
+
+  const $ = (id) => document.getElementById(id)
+  const STYLE_NAMES = Object.keys(styles)
+  const ACTIONS = { say: 'Says…', mood: 'Mood', poke: 'Gets poked', look: 'Looks at', sleep: 'Naps' }
+  const clone = (o) => JSON.parse(JSON.stringify(o))
+  let scene
+
+  // a scene can live in the URL so people can share it
+  const fromHash = () => { try { return JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))) } catch { return null } }
+  const toHash = () => btoa(unescape(encodeURIComponent(JSON.stringify(scene))))
+
+  const opt = (v, label = v, sel) => `<option value="${v}"${sel ? ' selected' : ''}>${label}</option>`
+  const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+
+  function drawPresets(active) {
+    const btn = (k) => `<button type="button" data-p="${k}" aria-pressed="${k === active}">${k}</button>`
+    $('presets').innerHTML = Object.entries(PRESET_GROUPS).map(([g, ks]) => `<span class="grp">${g}</span>${ks.filter((k) => PRESETS[k]).map(btn).join('')}`).join('')
+  }
+  function drawScene() {
+    for (const k of ['title', 'subtitle', 'duration', 'perRow']) $(k).value = scene[k] ?? ''
+    $('themeSel').value = scene.theme ?? 'auto'
+    $('size').value = scene.size ?? 96
+    $('gap').value = scene.gap ?? 36
+    $('shape').value = scene.shape ?? 'circle'
+    $('cursor').checked = !!scene.cursor
+    if (!scene.perRow) $('perRow').value = 8
+    drawCast(); drawBeats(); drawLinks(); render()
+  }
+  function drawLinks() {
+    $('links').innerHTML = (scene.links ?? []).map((l, i) => `<div class="lnk" data-i="${i}">
+      <img alt="" src="${ICONS[l.icon] ? 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(icon(l.icon, { size: 24, animation: 'none' })) : ''}" />
+      <input data-k="icon" list="iconNames" value="${esc(l.icon)}" aria-label="Icon" placeholder="github" />
+      <input data-k="text" value="${esc(l.text)}" aria-label="Label" placeholder="label" />
+      <select data-k="animation" aria-label="Animation">${ANIMATIONS.filter((a) => a !== 'none' && a !== 'doodle').map((a) => opt(a, a, a === (l.animation || 'bounce'))).join('')}</select>
+      <button type="button" class="x" data-del aria-label="Remove">✕</button></div>`).join('')
+  }
+  function face(c) {
+    try { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(createAvatar(styles[c.style] ?? styles.buddy, { seed: c.seed, size: 34, mood: c.mood, options: c.options })) } catch { return '' }
+  }
+  function drawCast() {
+    $('cast').innerHTML = scene.cast.map((c, i) => `<div class="who" data-i="${i}">
+      <img alt="" src="${face(c)}" />
+      <select data-k="style" aria-label="Style">${STYLE_NAMES.map((s) => opt(s, s, s === c.style)).join('')}</select>
+      <input data-k="seed" value="${esc(c.seed)}" aria-label="Seed" placeholder="seed" />
+      <input data-k="name" value="${esc(c.name)}" aria-label="Name" placeholder="name (optional)" />
+      <button type="button" class="x" data-del aria-label="Remove">✕</button>
+      ${styles[c.style]?.variants?.kind ? `<select class="kind" data-k="kind" aria-label="Kind">${opt('', 'kind: random', !c.options?.kind)}${styles[c.style].variants.kind.map((k) => opt(k, 'kind: ' + k, c.options?.kind === k)).join('')}</select>` : ''}</div>`).join('')
+  }
+  function whoOptions(sel) { return scene.cast.map((c, i) => opt(i, esc(c.name || c.seed || c.style), +sel === i)).join('') }
+  function drawBeats() {
+    $('beats').innerHTML = (scene.beats ?? []).map((b, i) => {
+      let extra = ''
+      if (b.do === 'say') extra = `<label class="wide">Text <input data-k="text" value="${esc(b.text)}" placeholder="Hello!" /></label>`
+      if (b.do === 'mood') extra = `<label class="wide">Mood <select data-k="mood">${MOODS.map((m) => opt(m, m, m === b.mood)).join('')}</select></label>`
+      if (b.do === 'look') extra = `<label class="wide">At <select data-k="target">${opt('left', '← left', b.target === 'left')}${opt('right', 'right →', b.target === 'right')}${opt('up', '↑ up', b.target === 'up')}${scene.cast.map((c, j) => opt(j, esc(c.name || c.seed), String(b.target) === String(j))).join('')}</select></label>`
+      return `<div class="beat" data-i="${i}">
+        <label>At <input data-k="at" type="number" min="0" step="0.5" value="${b.at ?? 0}" /></label>
+        <label>For <input data-k="for" type="number" min="0.5" step="0.5" value="${b.for ?? 2}" /></label>
+        <label>Who <select data-k="who">${whoOptions(b.who)}</select></label>
+        <label>Does <select data-k="do">${Object.entries(ACTIONS).map(([k, v]) => opt(k, v, k === b.do)).join('')}</select></label>
+        ${extra}<button type="button" class="x" data-del aria-label="Remove beat">✕</button></div>`
+    }).join('')
+  }
+
+  let url = '', svg = '', timer = 0
+  function render() {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      svg = renderScene(scene)
+      if (url) URL.revokeObjectURL(url)
+      url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+      $('out').src = url
+      $('out').alt = scene.title || 'livatar scene'
+      const kb = new Blob([svg]).size / 1024
+      $('meta').textContent = `${svg.match(/viewBox="0 0 (\d+) (\d+)"/).slice(1).join(' × ')} · ${kb.toFixed(0)} KB${kb > 400 ? ' (big: try fewer characters)' : ''}`
+      const alt = esc(scene.title || scene.cast.map((c) => c.name || c.seed).join(', '))
+      $('snip').textContent = `<p align="center">\n  <img src="assets/livatar-scene.svg" alt="${alt}" width="100%">\n</p>`
+      // keep work across reloads without filling the address bar
+      try { localStorage.setItem('livatar-readme-scene', JSON.stringify(scene)) } catch {}
+    }, 120)
+  }
+
+  // events
+  $('presets').addEventListener('click', (e) => {
+    const k = e.target.dataset?.p
+    if (!k) return
+    scene = clone(PRESETS[k]); drawPresets(k); drawScene()
+  })
+  const num = (k) => (v) => (v === '' ? undefined : +v)
+  const SCENE = { title: String, subtitle: String, themeSel: String, duration: num(), size: num(), gap: num(), perRow: num(), shape: String }
+  for (const [id, cast] of Object.entries(SCENE)) $(id).addEventListener('input', (e) => { scene[id === 'themeSel' ? 'theme' : id] = cast(e.target.value) || undefined; drawPresets(); render() })
+  $('cursor').addEventListener('change', (e) => { scene.cursor = e.target.checked; render() })
+
+  $('cast').addEventListener('input', (e) => {
+    const row = e.target.closest('.who'); if (!row) return
+    const c = scene.cast[+row.dataset.i], k = e.target.dataset.k
+    if (k === 'kind') c.options = e.target.value ? { ...c.options, kind: e.target.value } : undefined
+    else c[k] = e.target.value
+    if (k === 'style') { c.options = undefined; drawCast() } else row.querySelector('img').src = face(c)
+    drawBeats(); render()
+  })
+  $('cast').addEventListener('click', (e) => {
+    if (!e.target.hasAttribute('data-del')) return
+    const i = +e.target.closest('.who').dataset.i
+    scene.cast.splice(i, 1)
+    scene.beats = (scene.beats ?? []).filter((b) => b.who !== i).map((b) => ({ ...b, who: b.who > i ? b.who - 1 : b.who }))
+    drawCast(); drawBeats(); render()
+  })
+  $('addWho').addEventListener('click', () => {
+    const last = scene.cast[scene.cast.length - 1]
+    scene.cast.push({ style: last?.style ?? 'buddy', seed: Math.random().toString(36).slice(2, 7) })
+    drawCast(); drawBeats(); render()
+  })
+  $('dice').addEventListener('click', () => { for (const c of scene.cast) c.seed = Math.random().toString(36).slice(2, 7); drawCast(); drawBeats(); render() })
+
+  $('beats').addEventListener('input', (e) => {
+    const row = e.target.closest('.beat'); if (!row) return
+    const b = scene.beats[+row.dataset.i], k = e.target.dataset.k
+    b[k] = ['at', 'for', 'who'].includes(k) ? +e.target.value : k === 'target' && /^\d+$/.test(e.target.value) ? +e.target.value : e.target.value
+    if (k === 'do') { if (b.do === 'mood' && !b.mood) b.mood = 'happy'; if (b.do === 'say' && !b.text) b.text = 'Hello!'; if (b.do === 'look' && b.target == null) b.target = 'left'; drawBeats() }
+    render()
+  })
+  $('beats').addEventListener('click', (e) => {
+    if (!e.target.hasAttribute('data-del')) return
+    scene.beats.splice(+e.target.closest('.beat').dataset.i, 1); drawBeats(); render()
+  })
+  $('addBeat').addEventListener('click', () => {
+    scene.beats ??= []
+    const end = Math.max(0, ...scene.beats.map((b) => (b.at ?? 0) + (b.for ?? 2)))
+    scene.beats.push({ at: Math.min(end + 0.5, (scene.duration ?? 12) - 2), for: 2, who: 0, do: 'say', text: 'Hello!' })
+    drawBeats(); render()
+  })
+
+  $('iconNames').innerHTML = Object.keys(ICONS).map((k) => `<option value="${k}">`).join('')
+  $('links').addEventListener('input', (e) => {
+    const row = e.target.closest('.lnk'); if (!row) return
+    const l = scene.links[+row.dataset.i]; l[e.target.dataset.k] = e.target.value
+    if (e.target.dataset.k === 'icon' && ICONS[l.icon]) row.querySelector('img').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(icon(l.icon, { size: 24, animation: 'none' }))
+    drawPresets(); render()
+  })
+  $('links').addEventListener('click', (e) => {
+    if (!e.target.hasAttribute('data-del')) return
+    scene.links.splice(+e.target.closest('.lnk').dataset.i, 1); drawLinks(); render()
+  })
+  $('addLink').addEventListener('click', () => { (scene.links ??= []).push({ icon: 'github', text: 'Follow', animation: 'bounce' }); drawLinks(); render() })
+
+  const flash = (btn, text) => { const t = btn.textContent; btn.textContent = text; setTimeout(() => (btn.textContent = t), 1300) }
+  const copy = async (btn, text) => { try { await navigator.clipboard.writeText(text); flash(btn, 'Copied!') } catch { flash(btn, 'Copy failed') } }
+  $('download').addEventListener('click', () => { const a = document.createElement('a'); a.href = url; a.download = 'livatar-scene.svg'; a.click() })
+  $('copyMd').addEventListener('click', (e) => copy(e.currentTarget, $('snip').textContent))
+  $('copySvg').addEventListener('click', (e) => copy(e.currentTarget, svg))
+  // the scene only goes into a URL when you ask for a link to share
+  $('share').addEventListener('click', (e) => copy(e.currentTarget, location.origin + location.pathname + '#' + toHash()))
+  $('replay').addEventListener('click', () => { const s = $('out').src; $('out').src = ''; requestAnimationFrame(() => ($('out').src = s)) })
+  document.querySelectorAll('[data-bg]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-bg]').forEach((x) => x.setAttribute('aria-pressed', x === b))
+    $('preview').className = 'preview ' + b.dataset.bg
+  }))
+
+  let saved = fromHash()
+  if (saved) history.replaceState(null, '', location.pathname) // opened from a shared link: load it, then tidy the address
+  else try { saved = JSON.parse(localStorage.getItem('livatar-readme-scene')) } catch {}
+  scene = saved && Array.isArray(saved.cast) ? saved : clone(PRESETS['Meet the team'])
+  // highlight the preset the scene came from, if it hasn't been edited
+  const same = Object.keys(PRESETS).find((k) => JSON.stringify(PRESETS[k]) === JSON.stringify(scene))
+  drawPresets(same ?? (saved ? null : 'Meet the team'))
+  drawScene()
+</script>
+<script type="module" src="../ui.js"></script>
+</body>
+</html>

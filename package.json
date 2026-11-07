@@ -1,6 +1,6 @@
 {
   "name": "livatar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tiny, zero-dependency SVG avatars that are alive: they follow your cursor, blink, breathe, react to typing, and show 10 moods. 8 characters (humans, animals, robots, monsters, ghosts, emoji, pixel, blobs), shareable avatar codes, and it runs everywhere: vanilla, React, Vue, Svelte, Web Components, SSR, CDN.",
   "keywords": [
     "avatar",
@@ -97,6 +97,16 @@
         "default": "./dist/react.cjs"
       }
     },
+    "./components": {
+      "import": {
+        "types": "./dist/components.d.ts",
+        "default": "./dist/components.js"
+      },
+      "require": {
+        "types": "./dist/components.d.cts",
+        "default": "./dist/components.cjs"
+      }
+    },
     "./vue": {
       "import": {
         "types": "./dist/vue.d.ts",
@@ -147,8 +157,49 @@
         "default": "./dist/server.cjs"
       }
     },
+    "./life": {
+      "import": {
+        "types": "./dist/life.d.ts",
+        "default": "./dist/life.js"
+      },
+      "require": {
+        "types": "./dist/life.d.cts",
+        "default": "./dist/life.cjs"
+      }
+    },
     "./global": "./dist/livatar.global.js",
     "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "element": [
+        "./dist/element.d.ts"
+      ],
+      "react": [
+        "./dist/react.d.ts"
+      ],
+      "components": [
+        "./dist/components.d.ts"
+      ],
+      "vue": [
+        "./dist/vue.d.ts"
+      ],
+      "svelte": [
+        "./dist/action.d.ts"
+      ],
+      "action": [
+        "./dist/action.d.ts"
+      ],
+      "icons": [
+        "./dist/icons.d.ts"
+      ],
+      "server": [
+        "./dist/server.d.ts"
+      ],
+      "life": [
+        "./dist/life.d.ts"
+      ]
+    }
   },
   "files": [
     "dist",
@@ -158,7 +209,8 @@
     "llms.txt",
     "llms-full.txt",
     "skills",
-    "AGENTS.md"
+    "AGENTS.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "rm -rf dist && tsup && node scripts/use-client.mjs && node scripts/build-llms.mjs",
@@ -196,5 +248,8 @@
   },
   "bin": {
     "livatar": "./bin/livatar.mjs"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

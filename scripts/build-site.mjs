@@ -17,8 +17,15 @@ await mkdir(out, { recursive: true })
 await cp(r('dist'), `${out}/dist`, { recursive: true })
 await cp(r('demo/favicon.svg'), `${out}/favicon.svg`)
 await cp(r('llms.txt'), `${out}/llms.txt`)
-await cp(r('skills/livatar/SKILL.md'), `${out}/SKILL.md`)
+// Agent files. GitHub Pages paths are case-sensitive, so publish every spelling people (and agents) try,
+// plus the repo path that AGENTS.md links to (./skills/livatar/SKILL.md).
+for (const p of ['skill.md', 'skills.md', 'SKILL.md', 'SKILLS.md', 'skills/livatar/SKILL.md', 'skills/SKILL.md']) {
+  await mkdir(`${out}/${p}`.replace(/\/[^/]+$/, ''), { recursive: true })
+  await cp(r('skills/livatar/SKILL.md'), `${out}/${p}`)
+}
+for (const p of ['agents.md', 'AGENTS.md']) await cp(r('AGENTS.md'), `${out}/${p}`)
 await cp(r('demo/ui.js'), `${out}/ui.js`)
+await cp(r('demo/loader.js'), `${out}/loader.js`)
 
 // pages live one level higher on the site than in demo/: drop one '../' from links to dist/ and llms.txt
 const shift = (src) => src.replace(/(["'(])((?:\.\.\/)+)(dist\/|llms\.txt)/g, (_m, q, ups, t) => `${q}${ups.slice(3) || './'}${t}`)
@@ -32,6 +39,10 @@ const page = async (from, to) => {
 await page('demo/index.html', '')
 await page('demo/docs/index.html', 'docs')
 await page('demo/icons/index.html', 'icons')
+await page('demo/life/index.html', 'life')
+await page('demo/components/index.html', 'components')
+await page('demo/readme/index.html', 'readme')
+await writeFile(`${out}/readme/engine.js`, shift(await readFile(r('demo/readme/engine.js'), 'utf8')))
 for (const extra of ['docs/docs.css', 'docs/docs.js']) if (existsSync(r(`demo/${extra}`))) await writeFile(`${out}/${extra}`, shift(await readFile(r(`demo/${extra}`), 'utf8')))
 
 // hosted icon files: every icon × animation × tile (brand color, looping)
@@ -66,7 +77,7 @@ const SITE = 'https://nuhmanpk.github.io/livatar/'
 const { styles, MOODS, palettes } = await import('../dist/index.js')
 await import('./build-llms.mjs')
 await cp(r('llms-full.txt'), `${out}/llms-full.txt`)
-await writeFile(`${out}/robots.txt`, `User-agent: *\nAllow: /\n\n# AI crawlers and coding agents are welcome\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: Google-Extended\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n# LLM docs: ${SITE}llms.txt and ${SITE}llms-full.txt\n`)
-await writeFile(`${out}/sitemap.xml`, `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${['', 'docs/', 'icons/', 'llms.txt', 'llms-full.txt'].map((p) => `<url><loc>${SITE}${p}</loc></url>`).join('')}</urlset>\n`)
+await writeFile(`${out}/robots.txt`, `User-agent: *\nAllow: /\n\n# AI crawlers and coding agents are welcome\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: Google-Extended\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n# LLM docs: ${SITE}llms.txt and ${SITE}llms-full.txt\n# Agent files: ${SITE}AGENTS.md and ${SITE}SKILL.md\n`)
+await writeFile(`${out}/sitemap.xml`, `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${['', 'docs/', 'components/', 'icons/', 'life/', 'readme/', 'llms.txt', 'llms-full.txt', 'SKILL.md', 'AGENTS.md'].map((p) => `<url><loc>${SITE}${p}</loc></url>`).join('')}</urlset>\n`)
 await writeFile(`${out}/.nojekyll`, '')
 console.log(`site → _site/ (${n} hosted icons)`)

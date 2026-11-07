@@ -65,6 +65,9 @@ function useLivatar(
     get state() {
       return handle.current?.state ?? IDLE
     },
+    get el() {
+      return handle.current?.el ?? null
+    },
     destroy: () => handle.current?.destroy(),
   }), [])
 

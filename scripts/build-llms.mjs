@@ -7,5 +7,10 @@ const ref = Object.entries(styles).map(([n, st]) => `### ${n}\n` + Object.entrie
 await writeFile(r('llms-full.txt'),
   (await readFile(r('llms.txt'), 'utf8')) +
   `\n\n## Generated reference (from the built package)\n\nMoods: ${MOODS.join(', ')}\nPalettes: ${Object.keys(palettes).join(', ')}\n\n${ref}\n\n## README\n\n` +
-  (await readFile(r('README.md'), 'utf8')).replace(/<[^>]+>/g, ''))
+  stripHtml(await readFile(r('README.md'), 'utf8')))
 console.log('llms-full.txt written')
+
+// Drop README HTML (hero images, wrappers) but keep <tags> inside code blocks and `inline code`.
+function stripHtml(md) {
+  return md.split(/(```[\s\S]*?```|`[^`\n]*`)/).map((part, i) => (i % 2 ? part : part.replace(/<[^>]+>/g, ''))).join('')
+}

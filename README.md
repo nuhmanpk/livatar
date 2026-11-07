@@ -91,7 +91,11 @@ Moods move differently too. Happy avatars bounce, angry ones tremble, sad ones l
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/empty-dark.svg"><img src="assets/empty-light.svg" alt="An empty-state card: a sleepy koala says No new messages; clicking Check again makes it surprised, then sad, then sleepy again" width="360"></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="assets/login-dark.svg"><img src="assets/login-light.svg" alt="A login form: the avatar watches the email caret, then covers its eyes on the password field" width="520"></picture>
 
-Empty states that feel alive, login forms that look away from your password, chat bots that talk while text streams, and form validation that reacts. `bindForm(handle, form)` wires native form validation to moods for you. See [all use cases](https://nuhmanpk.github.io/livatar/#use-cases).
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/life-room-dark.svg"><img src="assets/life-room-light.svg" alt="A meeting room: people join and get greeted, everyone looks at whoever speaks, and they all smile at a happy message" width="100%"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/life-assistant-dark.svg"><img src="assets/life-assistant-light.svg" alt="An AI assistant avatar: idle, listening, thinking, speaking while its reply types out, then done" width="520"></picture>
+
+Meeting rooms where everyone looks at the speaker, an AI assistant face, loading states, virtual pets and comment boxes that react (see [`livatar/life`](#give-it-a-life-livatarlife)). Empty states that feel alive, login forms that look away from your password, chat bots that talk while text streams, and form validation that reacts. `bindForm(handle, form)` wires native form validation to moods for you. See [all use cases](https://nuhmanpk.github.io/livatar/#use-cases).
 
 ### Animated icons
 
@@ -300,6 +304,68 @@ Renders the avatar into `el` and then calls `alive()`. Pass `alive: false` for a
 ### Codes
 
 `encode(config) → string`, `decode(code) → config`, `render(codeOrConfig, extra?) → svg`, `resolve(codeOrConfig) → { style, options }`, and `isCode(value)`. Each one takes an optional custom style registry as its last argument.
+
+## Give it a life (`livatar/life`)
+
+A separate entry point, so the core bundle stays the same size. Everything works on any handle.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/life-room-dark.svg"><img src="assets/life-room-light.svg" alt="A room of four avatars: people join one by one and the others turn to greet them, ada speaks while everyone looks at her and listens, then dee sends 'this is awesome' and they all smile" width="100%"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/life-assistant-dark.svg"><img src="assets/life-assistant-light.svg" alt="An AI assistant avatar going from idle to listening, thinking (glancing around, puzzled), speaking while its reply types out, and done (happy)" width="520"></picture>
+
+**[Try it live: personality, AI face, pet, multiplayer →](https://nuhmanpk.github.io/livatar/life/)**
+
+```js
+import { mount, bot, animal, buddy } from 'livatar'
+import { personality, assistant, pet, group, context, feel } from 'livatar/life'
+
+// Personality: a preset, your own traits, or { seed } (same seed → same personality)
+const me = personality(mount(el, buddy, { seed: user.id }), { seed: user.id })
+me.name               // 'curious'
+me.react('success')   // success error join leave mention celebrate agree disagree …
+
+// Context: yawns at night, sad when offline, "welcome back" after you leave the tab
+context(handle, { onEvent: me.react })
+
+// The face of your AI: listening → thinking → speaking → done
+const ai = assistant(mount(el, bot, { seed: 'helper' }))
+ai.think()
+const reply = await ai.stream(tokens)   // talks per token, ends with a mood from the reply
+ai.speak(audioElement)                  // lip-sync to TTS audio
+
+// Virtual pet: hunger, energy and happiness drift in real time, it levels up and grows
+const mochi = pet(mount(el, animal, { seed: 'mochi' }), { onChange: drawBars })
+mochi.feed(); mochi.play(); mochi.reward(10)
+
+// Multiplayer: avatars look at whoever speaks, greet joiners, react to messages
+const room = group()
+socket.on('join', (u) => room.join(u.id, mount(slot(u), buddy, { seed: u.id })))
+socket.on('msg', (m) => room.message(m.from, m.text))
+
+feel('this is broken!!')   // 'angry' (tiny local sentiment, no model)
+```
+
+### React & Next.js components (`livatar/components`)
+
+**[Browse all 34 with live previews and code →](https://nuhmanpk.github.io/livatar/components/)** Checkout (the card covers its eyes for the CVC), inline inputs with a face inside, search (an owl), one-time code, newsletter pill (a sprout that blooms), pricing, cookie consent, progress (a car), onboarding (a rocket), countdown, loader, login form, password strength, upload, cart, AI assistant, chat, meeting grid, toast, 404, avatar wall background and more. Each comes with a character that fits its job.
+
+Ready-made and `'use client'`. They render the static avatar on the server and start behaving after hydration.
+
+```tsx
+import { bot, human } from 'livatar'
+import { LivatarLoader, LivatarMeet, LivatarForm, LivatarAssistant, LivatarPet, LivatarStack, LivatarEmptyState, LivatarReaction } from 'livatar/components'
+
+<LivatarLoader status={isPending ? 'loading' : 'success'} label="Fetching…" />
+<LivatarMeet avatar={{ variant: human }} participants={[{ id: 'ada', speaking: true }, { id: 'bob' }]} />
+<LivatarForm onSubmit={(data) => signIn(data)}>…your inputs…</LivatarForm>
+<LivatarAssistant variant={bot} status={useChat().status} text={reply} />   // Vercel AI SDK status works as-is
+<LivatarPet seed="mochi" />
+<LivatarStack users={[{ id: 'ada', status: 'online' }, { id: 'bob', status: 'away' }]} />
+<LivatarEmptyState title="No messages yet" action={<button>Refresh</button>} />
+<LivatarReaction text={draft} />
+```
+
+Hooks for your own components: `usePersonality`, `useAssistant`, `usePet`, `useContextAware`.
 
 ## Make anything alive
 

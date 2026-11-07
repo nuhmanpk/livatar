@@ -14,17 +14,22 @@
     const t = q === 'dark' || q === 'light' ? q : localStorage.getItem('livatar-theme')
     if (t) document.documentElement.dataset.theme = t
   } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light' // light by default; dark only when chosen
 </script>
 <link rel="stylesheet" href="docs.css" />
 </head>
 <body>
+<script src="../loader.js"></script>
 <header class="topbar">
   <div class="topbar-in">
     <a class="brand" href="./" aria-label="livatar docs home"><span class="logo" id="logo"></span>livatar <span class="badge">docs</span></a>
     <nav class="toplinks" aria-label="Site">
       <a href="../">Home</a>
       <a href="./" aria-current="page">Docs</a>
+      <a href="../components/">Components</a>
       <a href="../icons/">Icons</a>
+      <a href="../life/">Life</a>
+      <a href="../readme/">README</a>
       <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
     </nav>
     <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode">
@@ -201,7 +206,7 @@ handle.nod()                   // yes</script>
 <!-- ============================================================ -->
 <section id="use-cases-section">
   <h2 id="use-cases">Use cases</h2>
-  <p>Patterns you can lift straight into a product. Four live recipes below, plus ten built for mobile. The <a href="../#use-cases">homepage has all 43 as working demos</a>.</p>
+  <p>Patterns you can lift straight into a product. Four live recipes below, plus ten built for mobile. The <a href="../#use-cases">homepage has them all as working demos</a>, including a <b>life</b> group (meeting room, AI assistant, loading, pet, personality, comment reaction, team presence) built on <a href="#life"><code>livatar/life</code></a> and the <a href="#life-react-components">React components</a>.</p>
   <div class="uc-grid">
     <div class="uc-card"><h4>Empty state</h4><div class="uc-row"><div class="uc-av" id="ucEmpty"></div><div><b id="ucEmptyTxt">No new messages</b><br><button type="button" class="ghost" id="ucEmptyGo">Check again</button></div></div></div>
     <div class="uc-card"><h4>Signup with bindForm</h4><div class="uc-row"><div class="uc-av" id="ucForm"></div><form id="ucFormEl" novalidate><input type="email" required placeholder="you@example.com" aria-label="Email" /><button type="submit">Join</button></form></div></div>
@@ -670,6 +675,114 @@ const unbind = bindInput(handle, document.querySelector('#username'), (value) =>
 </section>
 
 <!-- ============================================================ -->
+<section id="life-section" data-subnav>
+  <h2 id="life">Life: personality, AI face, pet, multiplayer</h2>
+  <p><code>livatar/life</code> gives avatars a character. It is a separate entry point, so the core bundle stays the same size (about 5.5 KB gzipped on top). Every function takes any <a href="#handle-api">handle</a>: from <code>mount()</code>, <code>mountCode()</code>, a React ref or <code>&lt;live-avatar&gt;.handle</code>. <a href="../life/">Try every feature live →</a></p>
+
+  <h3 id="life-personality">Personality</h3>
+  <p>A preset, your own traits, or <code>{ seed }</code>: the same seed always gives the same personality. It tunes motion speed, when it dozes off, how it reacts to pokes (pokes escalate with temper) and adds faces it pulls on its own.</p>
+<script type="text/plain" class="snip" data-lang="js">import { mount, buddy } from 'livatar'
+import { personality } from 'livatar/life'
+
+const me = personality(mount(el, buddy, { seed: user.id }), { seed: user.id })
+me.name      // 'curious' (closest preset)
+me.traits    // { energy, curiosity, temper, warmth, shyness, playfulness } all 0…1
+me.react('success')</script>
+  <table><thead><tr><th>Input</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>'cheerful' 'shy' 'grumpy' 'curious' 'lazy' 'playful' 'calm'</code></td><td>Presets</td></tr>
+    <tr><td><code>{ seed: 'ada' }</code></td><td>Deterministic personality from a seed</td></tr>
+    <tr><td><code>{ temper: 0.9, warmth: 0.2 }</code></td><td>Your own traits; missing ones are 0.5</td></tr>
+  </tbody></table>
+
+  <h3 id="life-react">Reactions &amp; context</h3>
+  <p><code>react(handle, event, traits?)</code> plays a stock reaction; a personality's <code>me.react(event)</code> reacts in character. <code>context(handle)</code> watches the page and returns a cleanup function. It does nothing during SSR.</p>
+<script type="text/plain" class="snip" data-lang="js">import { react, context } from 'livatar/life'
+
+react(handle, 'error')                        // stock reaction
+const stop = context(handle, { onEvent: me.react })  // night, offline, online, welcome, scroll</script>
+  <p>Events: <code>success error warning loading done join leave welcome message mention like celebrate annoyed agree disagree night offline online scroll</code>. Context options: <code>time</code>, <code>network</code>, <code>visibility</code>, <code>scroll</code> (all default <code>true</code>), <code>awayFor</code> (ms hidden before "welcome back", default 60000).</p>
+
+  <h3 id="life-assistant">AI assistant face</h3>
+  <p>States go <code>idle → listening → thinking → speaking → done</code> (or <code>error</code>). <code>stream()</code> moves the mouth per token and ends with a mood guessed from the reply. <code>speak()</code> lip-syncs to an <code>&lt;audio&gt;</code> element or a <code>MediaStream</code>.</p>
+<script type="text/plain" class="snip" data-lang="js">import { mount, bot } from 'livatar'
+import { assistant } from 'livatar/life'
+
+const ai = assistant(mount(el, bot, { seed: 'helper' }), { onState: (s) => (status.textContent = s) })
+input.onfocus = () => ai.listen()
+ai.think()
+const reply = await ai.stream(llmTokens)   // any (async) iterable of strings
+// push-style streams: ai.stream(chunk) per chunk, then ai.done()
+const stop = ai.speak(ttsAudio)            // lip-sync; call stop() when finished</script>
+
+  <h3 id="life-pet">Virtual pet</h3>
+  <p>Hunger, energy and happiness (0 to 100) drift in real time, also while the page is closed. It earns XP, levels up and grows through <code>baby kid teen adult</code>. Its face always follows its stats. Poking it counts as petting.</p>
+<script type="text/plain" class="snip" data-lang="js">import { mount, animal } from 'livatar'
+import { pet } from 'livatar/life'
+
+const mochi = pet(mount(el, animal, { seed: 'mochi' }), {
+  onChange: (s) => drawBars(s),           // { hunger, energy, happiness, xp, level, stage, asleep }
+  onLevelUp: (level) => toast(`Level ${level}!`),
+  store: { get: (k) => db.get(k), set: (k, v) => db.set(k, v) },  // default: localStorage
+})
+mochi.feed(); mochi.play(); mochi.sleep(); mochi.reward(10)</script>
+
+  <h3 id="life-group">Multiplayer</h3>
+  <p>Avatars that notice each other: they greet people who join, look at whoever is speaking, react to the mood of each message, notice <code>@mentions</code> and doze when idle. It doesn't connect to anything itself; call it from your own socket events.</p>
+<script type="text/plain" class="snip" data-lang="js">import { mount, human } from 'livatar'
+import { group } from 'livatar/life'
+
+const room = group({ idleAfter: 120000 })
+socket.on('join',  (u) => room.join(u.id, mount(slotFor(u), human, { seed: u.id })))
+socket.on('leave', (u) => room.leave(u.id))
+socket.on('voice', (v) => room.speaking(v.id, v.on))   // calls: everyone looks at the speaker
+socket.on('msg',   (m) => room.message(m.from, m.text))</script>
+
+  <h3 id="life-feel">Text → mood</h3>
+  <p><code>feel(text)</code> returns a mood from words, emoji, negation ("not good") and shouting. It's a tiny local word list: no model, no network. <code>feeling(text)</code> also returns a <code>score</code> from 0 to 1.</p>
+<script type="text/plain" class="snip" data-lang="js">import { feel } from 'livatar/life'
+feel('this is great, thanks!')   // 'happy'
+feel('WHY IS THIS BROKEN')       // 'angry'
+handle.emote(feel(comment.text), 1500)</script>
+  <h3 id="life-react-components">React &amp; Next.js components</h3>
+  <p><code>livatar/components</code> has 34 ready-made components and hooks built on the above. <a href="../components/">Browse them all with live previews and code →</a> The file is marked <code>'use client'</code>, so it works in the Next.js App Router. On the server each component renders the static avatar; behavior starts after hydration. Every component also takes the normal <code>&lt;Livatar&gt;</code> props (<code>variant</code>, <code>seed</code>, <code>size</code>, <code>shape</code>, <code>options</code>…).</p>
+<script type="text/plain" class="snip" data-lang="tsx">import { bot, animal, human } from 'livatar'
+import { LivatarLoader, LivatarMeet, LivatarForm, LivatarAssistant, LivatarPet, LivatarStack, LivatarEmptyState, LivatarReaction } from 'livatar/components'
+
+<LivatarLoader status={isPending ? 'loading' : error ? 'error' : 'success'} label="Fetching…" />
+
+<LivatarMeet
+  avatar={{ variant: human }}
+  participants={people.map((p) => ({ id: p.id, name: p.name, speaking: p.isSpeaking, muted: p.muted }))}
+  message={lastChat}            // { id, from, text }: everyone reacts to its mood
+/>
+
+<LivatarForm onSubmit={async (data) => (await signIn(data)).ok}>  {/* false or throw → error face */}
+  <input name="email" type="email" required />
+  <input name="password" type="password" minLength={8} required />
+  <button>Sign in</button>
+</LivatarForm>
+
+// Vercel AI SDK: pass useChat().status straight in
+const { messages, status } = useChat()
+<LivatarAssistant variant={bot} seed="helper" status={status} text={lastReply(messages)} showState />
+
+<LivatarPet variant={animal} seed="mochi" />
+<LivatarStack users={[{ id: 'ada', status: 'online' }, { id: 'bob', status: 'away' }]} max={5} />
+<LivatarEmptyState variant={animal} seed="koala" title="No messages yet" action={<button>Refresh</button>} />
+<LivatarReaction text={draft} /></script>
+  <table><thead><tr><th>Component</th><th>Key props</th></tr></thead><tbody>
+    <tr><td><code>LivatarLoader</code></td><td><code>status</code>: idle loading success error · <code>label</code></td></tr>
+    <tr><td><code>LivatarMeet</code></td><td><code>participants</code> [{ id, name, speaking, muted, avatar }] · <code>message</code> · <code>avatar</code> · <code>size</code> · <code>renderLabel</code></td></tr>
+    <tr><td><code>LivatarForm</code></td><td><code>onSubmit(data, e)</code> · <code>avatar</code> · <code>moods</code> · <code>placement</code>: top left none · any form attribute</td></tr>
+    <tr><td><code>LivatarAssistant</code></td><td><code>status</code>: idle listening thinking speaking done error, or AI SDK submitted streaming ready · <code>text</code> · <code>showState</code></td></tr>
+    <tr><td><code>LivatarPet</code></td><td><code>pet</code> (pet options) · <code>controls</code> · <code>children(pet, stats)</code> for your own UI</td></tr>
+    <tr><td><code>LivatarStack</code></td><td><code>users</code> [{ id, name, status: online away busy offline }] · <code>max</code> · <code>size</code></td></tr>
+    <tr><td><code>LivatarEmptyState</code></td><td><code>title</code> · <code>description</code> · <code>action</code></td></tr>
+    <tr><td><code>LivatarReaction</code></td><td><code>text</code> · <code>hold</code></td></tr>
+  </tbody></table>
+  <p>Hooks, for your own components: <code>usePersonality(ref, input)</code>, <code>useAssistant(ref) → [ai, state]</code>, <code>usePet(ref, opts) → [pet, stats]</code>, <code>useContextAware(ref, opts)</code>. Pass the ref of a <code>&lt;Livatar ref={ref} /&gt;</code>.</p>
+</section>
+
 <section id="mobile-section">
   <h2 id="mobile">Mobile &amp; touch</h2>
   <p>Phones have no cursor, so livatar leans on the things touch does have. Out of the box, with no extra code:</p>
@@ -1389,6 +1502,13 @@ mountCode(el, user.avatarCode)</script>
 <!-- ============================================================ -->
 <section id="changelog-section">
   <h2 id="changelog">Changelog</h2>
+  <h4>0.2.0</h4>
+  <ul>
+    <li><code>livatar/life</code>: personality, feelings from text, context reactions, AI assistant face, virtual pet, multiplayer rooms.</li>
+    <li><code>livatar/components</code>: 40 React / Next.js components, including a meeting window and character loaders.</li>
+    <li>12 new styles (including <code>human</code> and <code>ai</code>), 540+ animated brand icons, agent skill and <code>llms.txt</code>.</li>
+    <li>Fixes: failed AI streams show the error face; no duplicate SVG ids.</li>
+  </ul>
   <h4>0.1.0</h4>
   <ul>
     <li>Initial release: 8 characters, 10 moods, the alive engine, livatar codes, palettes, <code>bindForm</code> / <code>bindInput</code>, PNG export, React, Vue, Svelte action, web component, CDN global and CLI.</li>

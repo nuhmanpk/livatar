@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>livatar components</title>
+<meta name="description" content="Ready-made React and Next.js components with living avatars: checkout, loaders, forms, chat, AI assistant, meetings, toasts, uploads, 404 pages and more. Live previews and copy-paste code." />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet" />
+<link rel="alternate" type="text/plain" href="../../llms.txt" title="llms.txt" />
+<script>
+  // relative links need the trailing slash
+  if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)
+  try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light'
+</script>
+<script type="importmap">
+{ "imports": {
+  "react": "https://esm.sh/react@19.3.1",
+  "react-dom/client": "https://esm.sh/react-dom@19.3.1/client?deps=react@19.3.1"
+} }
+</script>
+<link rel="stylesheet" href="../docs/docs.css" />
+<style>
+  :root { --lv-card: var(--card); --lv-fg: var(--fg); --lv-ring: var(--card) }
+  .layout { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 32px; padding: 0 16px 80px }
+  .side { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; padding: 24px 0 }
+  .side h4 { margin: 18px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted) }
+  .side a { display: block; padding: 5px 10px; border-radius: 9px; color: var(--fg); text-decoration: none; font-size: 14px }
+  .side a:hover { background: var(--soft) }
+  .side a[aria-current="page"] { background: var(--soft); font-weight: 700 }
+  main { padding-top: 24px; min-width: 0 }
+  h1 { font-size: clamp(32px, 5.5vw, 52px); letter-spacing: -0.03em; margin: 8px 0 6px; line-height: 1.05 }
+  .lead { color: var(--muted); max-width: 680px; margin: 0 0 18px; font-size: 17px }
+  .install { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 28px }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px }
+  .tile { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; text-decoration: none; color: var(--fg); transition: transform .15s, box-shadow .15s }
+  .tile:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.08) }
+  .tile .pv { height: 200px; display: grid; place-items: center; background: var(--soft); overflow: hidden; padding: 12px; pointer-events: none }
+  .hero { margin: 0 0 8px; border-radius: 28px; min-height: 380px; display: grid; place-items: center; background: radial-gradient(circle at 20% 0%, rgba(127,90,240,.22), transparent 55%), radial-gradient(circle at 90% 100%, rgba(255,143,171,.25), transparent 50%), var(--soft); border: 1px solid var(--line) }
+  .hero-in { text-align: center; padding: 40px 20px; max-width: 760px; background: color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 26px; margin: 16px }
+  body { font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif }
+  .grad { font-family: 'Bricolage Grotesque', ui-sans-serif, sans-serif; font-weight: 800 !important; letter-spacing: -0.04em !important; line-height: 1 !important; color: var(--fg); font-size: clamp(44px, 7.5vw, 80px) !important; margin: 14px 0 14px !important }
+  .grad em { font-style: normal; color: #7f5af0 }
+  .kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted, #888); font-weight: 600 }
+  .pill { display: inline-block; font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 99px; background: var(--card); border: 1px solid var(--line) }
+  .filter { position: sticky; top: 64px; z-index: 5; padding: 14px 0 4px; background: linear-gradient(var(--bg) 75%, transparent); max-width: 460px }
+  h2.cat { font-size: 20px; margin: 28px 0 12px; display: flex; gap: 8px; align-items: center }
+  .grid.ex { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)) }
+  .tile.wide .pv { height: 300px; place-items: start center; padding-top: 18px }
+  .tile.wide .pv > * { transform: scale(.5); transform-origin: top center }
+  .tile:hover .pv { background: color-mix(in srgb, var(--accent) 7%, var(--soft)) }
+  @media (max-width: 700px) { .tile.wide .pv > * { transform: scale(.42) } }
+  .tile .pv > * { transform: scale(.7); transform-origin: center; flex: none }
+  .tile .meta { padding: 12px 16px 14px }
+  .tile b { font-size: 15px } .tile small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px }
+  .crumbs { font-size: 14px; color: var(--muted); margin-bottom: 4px } .crumbs a { color: var(--muted) }
+  .stage { background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden }
+  .stage .bar { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); align-items: center }
+  .stage .bar .sp { flex: 1 }
+  .stage .pv.zoom > * { zoom: 1.45 }
+  @media (max-width: 700px) { .stage .pv.zoom > * { zoom: 1.1 } }
+  .stage .pv { min-height: 380px; display: grid; place-items: center; padding: 32px 16px; background: radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0) 0 0 / 18px 18px }
+  .stage pre { margin: 0; border-radius: 0; max-height: 560px }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top }
+  th { color: var(--muted); font-weight: 600 }
+  .chip { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 99px; background: var(--soft); color: var(--muted); font-weight: 600 }
+  .pv button:not([style]) { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer }
+  .pv input:not([style]) { font: inherit; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg) }
+  .note { font-size: 13px; color: var(--muted) }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr } .side { position: static; max-height: none; padding: 12px 0 0 } .side nav { display: flex; flex-wrap: wrap; gap: 4px } .side h4 { width: 100%; margin: 10px 0 2px } }
+</style>
+</head>
+<body data-wait>
+<script src="../loader.js"></script>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../" aria-label="livatar home"><span class="logo" id="logo"></span>livatar <span class="badge">components</span></a>
+    <nav class="toplinks" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../docs/">Docs</a>
+      <a href="./" aria-current="page">Components</a>
+      <a href="../icons/">Icons</a>
+      <a href="../life/">Life</a>
+      <a href="../readme/">README</a>
+      <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+    </nav>
+    <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode"></button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="side"><nav id="nav" aria-label="Components"></nav></aside>
+  <main id="main"></main>
+</div>
+
+<script type="module">
+  import { createElement as h, useState, useEffect, useRef, Fragment } from 'react'
+  import { createRoot } from 'react-dom/client'
+  import { buddy, bot, human, animal, memoji, dev, ghost, planet, clay, monster, emoji, money, tech, device, office, ui, alien, food, plant, vehicle, home } from '../../dist/index.js'
+  import * as C from '../../dist/components.js'
+
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+  const loop = (fn, ms) => { useEffect(() => { fn(); const id = setInterval(fn, ms); return () => clearInterval(id) }, []) }
+
+  /* ---------- live demos (state wrappers around each component) ---------- */
+  function LoaderDemo() {
+    const [s, setS] = useState('loading')
+    loop(() => { setS('loading'); setTimeout(() => setS(Math.random() < 0.75 ? 'success' : 'error'), 2200) }, 4200)
+    return h(C.LivatarLoader, { variant: tech, seed: 'loader', options: { kind: 'server' }, status: s, label: { loading: 'Deploying…', success: 'Deployed!', error: 'Build failed' }[s] })
+  }
+  function CheckoutDemo() {
+    return h(C.LivatarCheckout, { amount: '$24.00', onPay: async (card) => { await wait(1300); return !card.number.startsWith('4000') } })
+  }
+  function CartDemo() {
+    const [n, setN] = useState(1)
+    return h('div', { style: { display: 'flex', gap: 18, alignItems: 'center' } },
+      h(C.LivatarCartButton, { count: n }),
+      h('div', { style: { display: 'flex', gap: 6 } }, h('button', { onClick: () => setN(n + 1) }, 'Add to cart'), h('button', { onClick: () => setN(Math.max(0, n - 1)) }, 'Remove')))
+  }
+  function FormDemo() {
+    return h(C.LivatarForm, { avatar: { variant: ui, seed: 'guard', options: { kind: 'lock', badge: false } }, onSubmit: async (d) => { await wait(600); return d.get('password') !== 'wrongpass' }, style: { width: 300 } },
+      h('input', { name: 'email', type: 'email', required: true, placeholder: 'you@example.com', 'aria-label': 'Email' }),
+      h('input', { name: 'password', type: 'password', required: true, minLength: 8, placeholder: 'password (try: wrongpass)', 'aria-label': 'Password' }),
+      h('button', { type: 'submit' }, 'Sign in'))
+  }
+  function StrengthDemo() {
+    const [pw, setPw] = useState('hunter')
+    return h('div', { style: { width: 300, display: 'flex', flexDirection: 'column', gap: 10 } },
+      h('input', { type: 'password', value: pw, onChange: (e) => setPw(e.target.value), 'aria-label': 'Password', placeholder: 'Type a password' }),
+      h(C.LivatarPasswordStrength, { value: pw }))
+  }
+  function UploadDemo() { return h(C.LivatarUpload, { onFiles: async () => { await wait(1500); return true } }) }
+  const lastReply = 'Sure! Add a missing dependency and it works great.'
+  function AssistantDemo() {
+    const [st, setSt] = useState({ status: 'ready', text: '' })
+    useEffect(() => {
+      let dead = false
+      const run = async () => {
+        while (!dead) {
+          setSt({ status: 'submitted', text: '' }); await wait(1400)
+          let t = ''
+          for (const w of lastReply.split(/(?<= )/)) { if (dead) return; t += w; setSt({ status: 'streaming', text: t }); await wait(110) }
+          setSt({ status: 'ready', text: t }); await wait(2600)
+        }
+      }
+      run(); return () => (dead = true)
+    }, [])
+    return h('div', { style: { display: 'flex', gap: 14, alignItems: 'center', maxWidth: 420 } },
+      h(C.LivatarAssistant, { variant: bot, seed: 'helper', status: st.status, text: st.text, showState: true }),
+      h('div', { style: { fontSize: 14, minHeight: 44, flex: 1 } }, st.status === 'submitted' ? '…' : st.text))
+  }
+  const CHAT = [
+    { id: 1, from: 'ada', text: 'Did the deploy go out?' },
+    { id: 2, from: 'helper', text: 'Yes! All green, it works great 🎉' },
+    { id: 3, from: 'ada', text: 'Amazing, thank you!', me: true },
+    { id: 4, from: 'helper', text: 'Anytime. Want me to watch the error rate?' },
+  ]
+  function ChatDemo() {
+    const [n, setN] = useState(1)
+    const [typing, setTyping] = useState(false)
+    loop(() => { setTyping(true); setTimeout(() => { setTyping(false); setN((x) => (x % CHAT.length) + 1) }, 1100) }, 2600)
+    const msgs = CHAT.slice(0, n)
+    const next = CHAT[n % CHAT.length]
+    return h(C.LivatarChat, { messages: msgs, typing: typing ? next.from : undefined, people: { helper: { variant: bot }, ada: { variant: memoji } }, style: { width: 340 } })
+  }
+  function TypingDemo() { return h(C.LivatarTyping, { variant: dev, seed: 'ada', options: { activity: 'coding' }, name: 'Ada' }) }
+  const PEOPLE = ['ada', 'bob', 'cy', 'dee', 'eli', 'fay']
+  function MeetDemo({ size = 84 }) {
+    const [n, setN] = useState(3)
+    const [sp, setSp] = useState(0)
+    loop(() => { setSp((x) => (x + 1) % 4); setN((x) => (x >= 5 ? 3 : x + 1)) }, 2600)
+    return h(C.LivatarMeet, { size, avatar: { variant: human }, participants: PEOPLE.slice(0, n).map((id, i) => ({ id, name: id, speaking: i === sp, muted: i === 2 })) })
+  }
+  function CallDemo() {
+    const cast = ['Ada', 'Bob', 'Cy', 'Dee', 'Eli']
+    const [t, setT] = useState(0)
+    const [muted, setMuted] = useState(true)
+    const [left, setLeft] = useState(false)
+    const [mine, setMine] = useState(null)
+    loop(() => setT((x) => x + 1), 2200)
+    if (left) return h('div', { style: { textAlign: 'center', display: 'grid', gap: 10 } }, h('strong', null, 'You left the call'), h('button', { onClick: () => setLeft(false) }, 'Rejoin'))
+    const here = [...cast.slice(0, 4), 'You']
+    const talkers = here.filter((x) => x !== 'Eli' && (x !== 'You' || !muted))
+    const sp = talkers[t % talkers.length]
+    const people = here.map((id, i) => ({ id, name: id, speaking: id === sp, muted: id === 'You' ? muted : id === 'Eli', hand: id === 'Dee' && t % 5 > 2, reaction: id === 'Bob' && t % 4 === 1 ? '🎉' : id === 'Cy' && t % 6 === 3 ? '👏' : undefined, reactionId: t, avatar: { variant: id === 'You' ? memoji : human } }))
+    return h(C.LivatarCall, { title: 'Design review', me: 'You', participants: people, onMute: setMuted, onLeave: () => setLeft(true), style: { width: '100%', maxWidth: 640 } })
+  }
+  function CopyDemo() {
+    return h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' } }, h('code', null, 'npm i livatar'), h(C.LivatarCopyButton, { text: 'npm i livatar' }))
+  }
+  function PollDemo() {
+    const [k, setK] = useState(0)
+    return h('div', { style: { display: 'grid', gap: 10 } },
+      h(C.LivatarPoll, { key: k, question: 'Friday team lunch?', options: [{ id: 'tacos', label: '🌮 Tacos', votes: 7 }, { id: 'sushi', label: '🍣 Sushi', votes: 5 }, { id: 'pizza', label: '🍕 Pizza', votes: 3 }, { id: 'salad', label: '🥗 Salad', votes: 1 }] }),
+      h('button', { onClick: () => setK(k + 1), style: { justifySelf: 'center' } }, 'Vote again'))
+  }
+  function FocusDemo() { return h(C.LivatarFocusTimer, { focus: 25, rest: 5 }) }
+  function TodoDemo() {
+    const [items, setItems] = useState([{ id: '1', text: 'Reply to Ada', done: true }, { id: '2', text: 'Ship the poll component' }, { id: '3', text: 'Water the real plants' }, { id: '4', text: 'Write the changelog' }])
+    return h(C.LivatarTodoList, { items, onChange: setItems, style: { width: 340 } })
+  }
+  function ChainDemo() {
+    const kinds = ['chain', 'orbit', 'conga', 'stack']
+    const [k, setK] = useState(0)
+    return h('div', { style: { display: 'grid', gap: 18, justifyItems: 'center' } },
+      h(C.LivatarChainLoader, { key: k, kind: kinds[k], variants: [buddy, animal, food, ghost, plant, bot], label: ['Holding hands…', 'Orbiting…', 'Conga line!', 'Stacking up…'][k] }),
+      h('div', { style: { display: 'flex', gap: 6 } }, kinds.map((x, i) => h('button', { key: x, onClick: () => setK(i), 'aria-pressed': i === k, style: i === k ? { fontWeight: 800, padding: '6px 12px', borderRadius: 10, border: '1.5px solid #7f5af0', background: 'transparent', color: 'inherit', cursor: 'pointer' } : undefined }, x))))
+  }
+  function StackDemo() {
+    return h(C.LivatarStack, { avatar: { variant: memoji }, size: 48, max: 4, users: [{ id: 'ada', status: 'online' }, { id: 'bob', status: 'away' }, { id: 'cy', status: 'busy' }, { id: 'dee', status: 'online' }, { id: 'eli' }, { id: 'fay' }] })
+  }
+  function ProfileDemo() {
+    return h(C.LivatarProfileCard, { variant: memoji, seed: 'nuhman', name: 'Nuhman', role: 'Maintainer', status: 'online', action: h('button', null, 'Follow') })
+  }
+  function TestimonialDemo() {
+    return h(C.LivatarTestimonial, { variant: clay, seed: 'ada', quote: 'Our signup page finally smiles back. Users love it.', name: 'Ada Park', title: 'Founder, Inkwell', style: { maxWidth: 340 } })
+  }
+  function ToastDemo() {
+    const [t, setT] = useState(null)
+    const show = (type, title, description) => { setT(null); setTimeout(() => setT({ type, title, description, k: Date.now() }), 30) }
+    useEffect(() => show('success', 'Payment received', '$24.00 from Ada'), [])
+    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' } },
+      t && h(C.LivatarToast, { key: t.k, variant: ui, seed: 'bell', options: { kind: 'bell', badge: true }, type: t.type, title: t.title, description: t.description, duration: 0, onClose: () => setT(null) }),
+      h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' } },
+        h('button', { onClick: () => show('success', 'Saved', 'Your changes are live') }, 'Success'),
+        h('button', { onClick: () => show('error', 'Card declined', 'Try another card') }, 'Error'),
+        h('button', { onClick: () => show('info', 'New message', 'Bob: lunch?') }, 'Info')))
+  }
+  function EmptyDemo() { return h(C.LivatarEmptyState, { variant: office, seed: 'inbox', options: { kind: 'folder' }, title: 'No files yet', description: 'Drop something in to get started.', action: h('button', null, 'Upload') }) }
+  function NotFoundDemo() { return h(C.LivatarNotFound, { variant: ghost, seed: 'lost', options: { accessory: 'none' }, action: h('a', { href: '#' }, 'Take me home') }) }
+  function ConnectionDemo() {
+    const [on, setOn] = useState(true)
+    return h('div', { style: { display: 'flex', gap: 14, alignItems: 'center' } }, h(C.LivatarConnection, { online: on }), h('button', { onClick: () => setOn(!on) }, on ? 'Go offline' : 'Reconnect'))
+  }
+  function RatingDemo() { const [v, setV] = useState(3); return h(C.LivatarRating, { value: v, onChange: setV }) }
+  function ReactionDemo() {
+    const [t, setT] = useState('this is amazing!')
+    return h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', width: 320 } }, h(C.LivatarReaction, { variant: emoji, seed: 'react', text: t, hold: true }), h('input', { value: t, onChange: (e) => setT(e.target.value), style: { flex: 1 }, 'aria-label': 'Comment', placeholder: 'try: this is broken!!' }))
+  }
+  function PetDemo() { return h(C.LivatarPet, { variant: animal, seed: 'mochi', options: { species: 'bunny' }, pet: { key: 'livatar:components-pet' } }) }
+  function ThemeDemo() {
+    const [dark, setDark] = useState(false)
+    return h('div', { style: { display: 'flex', gap: 14, alignItems: 'center', padding: '14px 18px', borderRadius: 18, background: dark ? '#14121c' : '#fff', color: dark ? '#f2eefb' : '#1f1a2e', transition: 'all .3s' } },
+      h(C.LivatarThemeToggle, { dark, onChange: setDark, size: 48 }), h('span', null, dark ? 'Dark mode' : 'Light mode'))
+  }
+  function BackgroundDemo({ small }) {
+    return h(C.LivatarBackground, { variants: [buddy, animal, bot, monster, ghost, alien, food, plant], count: small ? 24 : 60, tile: small ? 40 : 54, opacity: 0.45, style: { width: '100%', height: small ? 176 : 360, borderRadius: 18, display: 'grid', placeItems: 'center' } },
+      h('div', { style: { textAlign: 'center', background: 'var(--card)', padding: small ? '8px 14px' : '18px 26px', borderRadius: 16, boxShadow: '0 10px 40px rgba(0,0,0,.12)' } },
+        h('div', { style: { fontWeight: 800, fontSize: small ? 15 : 24 } }, 'Join the waitlist'), !small && h('div', { style: { color: 'var(--muted)', marginTop: 4 } }, 'Move your mouse. Everyone is watching.')))
+  }
+
+  function InputDemo() {
+    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, width: 320 } },
+      h(C.LivatarInput, { type: 'email', name: 'email', placeholder: 'you@example.com', required: true }),
+      h(C.LivatarInput, { type: 'password', name: 'pw', placeholder: 'Password (8+)', minLength: 8, required: true, avatar: { variant: ui, options: { kind: 'lock', badge: false } } }),
+      h(C.LivatarInput, { name: 'user', placeholder: 'Username', avatar: { variant: memoji, seed: 'me' }, validate: (v) => /^[a-z0-9_]{3,}$/.test(v), end: h('span', { style: { fontSize: 12, color: 'var(--muted)', paddingRight: 6 } }, 'a-z, 0-9') }))
+  }
+  const FRUITS = ['apple', 'apricot', 'avocado', 'banana', 'blueberry', 'cherry', 'grape', 'kiwi', 'lemon', 'mango', 'orange', 'peach', 'pear', 'pineapple', 'strawberry']
+  function SearchDemo() {
+    const [hits, setHits] = useState([])
+    return h('div', { style: { width: 320 } },
+      h(C.LivatarSearch, { placeholder: 'Search fruit… (try "an" or "xyz")', onSearch: async (q) => { await wait(500); const r = FRUITS.filter((f) => f.includes(q.toLowerCase())); setHits(r); return r } }),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 } }, hits.slice(0, 8).map((f) => h('span', { key: f, className: 'chip' }, f))))
+  }
+  function OTPDemo() {
+    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } },
+      h(C.LivatarOTP, { onComplete: async (c) => { await wait(700); return c === '424242' } }),
+      h('span', { className: 'note' }, 'The right code is 424242'))
+  }
+  function NewsletterDemo() { return h(C.LivatarNewsletter, { onSubscribe: async () => { await wait(800); return true }, style: { width: 400 } }) }
+  function CookieDemo() { const [k, setK] = useState(0); return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } }, h(C.LivatarCookieConsent, { key: k, onAccept: () => setTimeout(() => setK(k + 1), 1200), onDecline: () => setTimeout(() => setK(k + 1), 1200) })) }
+  function ProgressDemo() {
+    const [v, setV] = useState(0)
+    loop(() => setV((x) => (x >= 100 ? 0 : Math.min(100, x + 7 + Math.random() * 12))), 600)
+    return h(C.LivatarProgress, { value: v, label: 'Uploading video.mp4', style: { width: 360 } })
+  }
+  function StepperDemo() {
+    const steps = ['Account', 'Profile', 'Invite', 'Launch']
+    const [i, setI] = useState(0)
+    loop(() => setI((x) => (x >= steps.length ? 0 : x + 1)), 1600)
+    return h(C.LivatarStepper, { steps, current: i, style: { width: 380 } })
+  }
+  const TIERS = [
+    { name: 'Hobby', price: '$0', period: 'mo', features: ['3 avatars', 'All 27 styles', 'Community help'], cta: 'Start free' },
+    { name: 'Pro', price: '$12', period: 'mo', popular: true, features: ['Unlimited avatars', 'Components', 'Priority support'], cta: 'Go Pro' },
+    { name: 'Team', price: '$49', period: 'mo', features: ['Everything in Pro', 'SSO', 'Custom characters'], cta: 'Talk to us' },
+  ]
+  function PricingDemo({ small }) { return h(C.LivatarPricing, { tiers: small ? TIERS.slice(0, 2) : TIERS, style: { maxWidth: 720 } }) }
+  function BellDemo() {
+    const [n, setN] = useState(0)
+    loop(() => setN((x) => (x >= 5 ? 0 : x + 1)), 2200)
+    return h('div', { style: { display: 'flex', gap: 16, alignItems: 'center' } }, h(C.LivatarBell, { count: n }), h('button', { onClick: () => setN(0) }, 'Mark all read'))
+  }
+  function LikeDemo() { const [l, setL] = useState(false); return h(C.LivatarLike, { liked: l, onChange: setL, count: 128 }) }
+  function CountdownDemo() {
+    const [to] = useState(() => Date.now() + 15000)
+    return h(C.LivatarCountdown, { to, label: 'Launching in' })
+  }
+  function HelpDemo() {
+    return h('div', { style: { position: 'relative', width: 340, height: 300, borderRadius: 18, border: '1px dashed var(--line)', overflow: 'hidden' } },
+      h('div', { style: { padding: 14, color: 'var(--muted)', fontSize: 13 } }, 'Your app. The helper sits in the corner.'),
+      h(C.LivatarHelpLauncher, { position: 'absolute', title: 'Hi! Need a hand?' }, h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14 } }, h('a', { href: '#' }, 'Read the docs'), h('a', { href: '#' }, 'Chat with us'), h('a', { href: '#' }, 'Report a bug'))))
+  }
+
+  /* ---------- examples: whole screens built from the components ---------- */
+  const panel = (extra) => ({ width: '100%', maxWidth: 760, borderRadius: 22, border: '1px solid var(--line)', background: 'var(--card)', padding: 24, boxShadow: '0 20px 60px rgba(31,26,46,.08)', ...extra })
+  function SignupExample() {
+    const [pw, setPw] = useState('')
+    return h('div', { style: panel({ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 24, padding: 0, overflow: 'hidden' }) },
+      h(C.LivatarBackground, { variants: [buddy, memoji, clay, human], count: 30, tile: 48, opacity: 0.6, style: { minHeight: 340, display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg,#7f5af0,#ff8fab)' } },
+        h('div', { style: { color: '#fff', textAlign: 'center', padding: '14px 20px', borderRadius: 18, background: 'rgba(31,26,46,.45)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' } }, h('div', { style: { fontSize: 26, fontWeight: 900 } }, '12,480 people'), h('div', { style: { opacity: 0.9 } }, 'already said hi'))),
+      h('form', { onSubmit: (e) => e.preventDefault(), style: { display: 'flex', flexDirection: 'column', gap: 10, padding: '28px 24px 28px 0', justifyContent: 'center' } },
+        h('div', { style: { fontSize: 22, fontWeight: 800 } }, 'Create your account'),
+        h(C.LivatarInput, { name: 'name', placeholder: 'Your name', avatar: { variant: memoji, seed: 'new-user' }, validate: (v) => v.trim().length > 1 }),
+        h(C.LivatarInput, { type: 'email', name: 'email', placeholder: 'you@example.com', required: true }),
+        h(C.LivatarInput, { type: 'password', name: 'pw', placeholder: 'Password', minLength: 8, required: true, value: pw, onChange: (e) => setPw(e.target.value), avatar: { variant: ui, options: { kind: 'lock', badge: false } } }),
+        h(C.LivatarPasswordStrength, { value: pw, avatar: { size: 28 } }),
+        h('button', { style: { font: 'inherit', fontWeight: 700, padding: 12, borderRadius: 12, border: 0, background: '#7f5af0', color: '#fff', cursor: 'pointer' } }, 'Sign up')))
+  }
+  function StoreExample() {
+    const [cart, setCart] = useState(1)
+    const [paid, setPaid] = useState(false)
+    return h('div', { style: panel({ display: 'flex', flexDirection: 'column', gap: 16 }) },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }, h('b', { style: { fontSize: 18 } }, '🍩 Donut Co.'), h('div', { style: { display: 'flex', gap: 14, alignItems: 'center' } }, h(C.LivatarBell, { count: paid ? 1 : 0, avatar: { size: 40 } }), h(C.LivatarCartButton, { count: cart, avatar: { size: 44 } }))),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12 } },
+        ['donut', 'cupcake', 'icecream'].map((k, i) => h('div', { key: k, style: { border: '1px solid var(--line)', borderRadius: 16, padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 } },
+          h(C.LivatarReaction, { variant: food, seed: k, options: { kind: k }, size: 64, text: '' }), h('b', null, k), h('span', { className: 'note' }, '$' + (3 + i * 2) + '.00'),
+          h('button', { onClick: () => setCart(cart + 1) }, 'Add')))),
+      h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } },
+        h(C.LivatarCheckout, { amount: '$' + (cart * 4) + '.00', onPay: async () => { await wait(1100); setPaid(true); return true } }),
+        paid && h(C.LivatarToast, { type: 'success', variant: ui, options: { kind: 'bell' }, title: 'Order placed', description: 'Your donuts are on the way', duration: 0 })))
+  }
+  function SupportExample() {
+    const [msgs, setMsgs] = useState([{ id: 1, from: 'helper', text: 'Hi! What can I help with?' }])
+    const [typing, setTyping] = useState(false)
+    const send = async (e) => {
+      e.preventDefault()
+      const text = e.currentTarget.elements.q.value.trim(); if (!text) return
+      e.currentTarget.reset()
+      setMsgs((m) => [...m, { id: Date.now(), from: 'me', text, me: true }]); setTyping(true)
+      await wait(1200); setTyping(false)
+      const mood = C.feel(text)
+      const reply = mood === 'angry' || mood === 'sad' ? "I'm sorry about that. Let me fix it right away." : mood === 'happy' || mood === 'love' ? 'Yay, so glad to hear it! 🎉' : 'Good question! Here is how that works.'
+      setMsgs((m) => [...m, { id: Date.now() + 1, from: 'helper', text: reply }])
+    }
+    return h('div', { style: panel({ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 440 }) },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }, h('b', null, 'Support'), h(C.LivatarConnection, { online: true })),
+      h(C.LivatarChat, { messages: msgs, typing: typing ? 'helper' : undefined, people: { helper: { variant: bot }, me: { variant: memoji } }, style: { minHeight: 200 } }),
+      h('form', { onSubmit: send }, h(C.LivatarInput, { name: 'q', placeholder: 'Type a message… (try: this is broken!)', avatar: { variant: emoji, seed: 'me' }, autoComplete: 'off', end: h('button', { style: { font: 'inherit', fontWeight: 700, padding: '8px 14px', borderRadius: 10, border: 0, background: '#7f5af0', color: '#fff', cursor: 'pointer' } }, 'Send') })))
+  }
+  function LaunchExample() {
+    const [to] = useState(() => Date.now() + 3 * 86400000 + 4 * 3600000)
+    return h(C.LivatarBackground, { variants: [planet, alien, monster, ghost, bot], count: 54, tile: 50, opacity: 0.5, seed: 'launch', style: { width: '100%', maxWidth: 760, minHeight: 380, borderRadius: 22, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle at 50% 0%, #2a1f5c, #0f0c1d 70%)', color: '#f2eefb', '--lv-card': 'rgba(255,255,255,.08)' } },
+      h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: 24, textAlign: 'center', background: 'rgba(15,12,29,.6)', borderRadius: 24, backdropFilter: 'blur(8px)' } },
+        h('div', { style: { fontSize: 34, fontWeight: 900, letterSpacing: '-0.03em', background: 'linear-gradient(90deg,#c4b5fd,#f9a8d4)', WebkitBackgroundClip: 'text', color: 'transparent' } }, 'Something alive is coming'),
+        h(C.LivatarCountdown, { to, avatar: { size: 56 } }),
+        h(C.LivatarNewsletter, { onSubscribe: async () => { await wait(700); return true }, style: { width: 360 } })))
+  }
+  function TeamExample() {
+    return h('div', { style: panel({ display: 'flex', flexDirection: 'column', gap: 18 }) },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 } },
+        h('div', null, h('b', { style: { fontSize: 18 } }, 'Daily standup'), h('div', { className: 'note' }, '10:00 · 4 of 6 joined')),
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'center' } }, h(C.LivatarStack, { avatar: { variant: memoji }, size: 34, max: 3, users: [{ id: 'eli', status: 'away' }, { id: 'fay', status: 'busy' }, { id: 'gus' }] }), h(C.LivatarConnection, {}))),
+      h(MeetDemo, { size: 76 }),
+      h(C.LivatarProgress, { value: 62, label: 'Sprint 14', avatar: { options: { kind: 'rocket' } } }))
+  }
+
+  /* ---------- registry ---------- */
+  const imp = (names, extra = "import { bot } from 'livatar'") => `${extra ? extra + '\n' : ''}import { ${names} } from 'livatar/components'`
+  const COMPONENTS = [
+    { id: 'input', name: 'Inline input', cat: 'Forms & input', char: 'emoji · lock · memoji', desc: 'The face lives inside the field on a transparent background: it watches the caret, covers its eyes on passwords and smiles once the value is valid.', demo: InputDemo,
+      code: `${imp('LivatarInput', "import { ui, memoji } from 'livatar'")}\n\n<LivatarInput type="email" placeholder="you@example.com" required />\n<LivatarInput type="password" minLength={8} avatar={{ variant: ui, options: { kind: 'lock' } }} />\n<LivatarInput name="user" avatar={{ variant: memoji, seed: user.id }}\n  validate={(v) => /^[a-z0-9_]{3,}$/.test(v)} end={<button>Check</button>} />`,
+      props: [['…input attributes', 'type, name, placeholder, required, pattern, value, onChange…'], ['avatar', 'Avatar props (background is transparent)'], ['validate', '(value) => boolean. Default: browser validity'], ['end', 'Content on the right, like a button'], ['face', 'Avatar size (34)']] },
+    { id: 'search', name: 'Search', cat: 'Forms & input', char: 'animal · owl', desc: 'An owl inside the field: chews while searching, beams at results, droops when nothing turns up.', demo: SearchDemo,
+      code: `${imp('LivatarSearch', '')}\n\n<LivatarSearch onSearch={async (q) => (await fetch('/api/search?q=' + q)).json()} />`,
+      props: [['onSearch', '(query) => results[] | count. 0 shows "nothing found"'], ['placeholder', ''], ['debounce', 'ms (300)'], ['avatar', '']] },
+    { id: 'otp', name: 'One-time code', cat: 'Forms & input', char: 'home · key', desc: 'A key watches each digit, nods at the right code and shakes at a wrong one. Paste works.', demo: OTPDemo,
+      code: `${imp('LivatarOTP', '')}\n\n<LivatarOTP length={6} onComplete={async (code) => (await verify(code)).ok} />`,
+      props: [['length', 'Digits (6)'], ['onComplete', '(code) => result. false or throw = wrong'], ['avatar', '']] },
+    { id: 'newsletter', name: 'Newsletter pill', cat: 'Forms & input', char: 'plant · sprout → sunflower', desc: 'An inline signup with a sprout inside. Subscribe and it blooms.', demo: NewsletterDemo,
+      code: `${imp('LivatarNewsletter', '')}\n\n<LivatarNewsletter onSubscribe={(email) => subscribe(email)} />`,
+      props: [['onSubscribe', '(email) => result. false or throw = error'], ['placeholder', ''], ['button', "Button text ('Subscribe')"], ['avatar', '']] },
+    { id: 'pricing', name: 'Pricing', cat: 'Payments & commerce', char: 'money · coin, piggy, gem', desc: 'A money character per tier. They light up on hover; the popular plan is already in love.', demo: PricingDemo,
+      code: `${imp('LivatarPricing', '')}\n\n<LivatarPricing tiers={[\n  { name: 'Hobby', price: '$0', period: 'mo', features: ['3 avatars'] },\n  { name: 'Pro', price: '$12', period: 'mo', popular: true, features: ['Unlimited'], onSelect: upgrade },\n  { name: 'Team', price: '$49', period: 'mo', features: ['SSO'] },\n]} />`,
+      props: [['tiers', '[{ name, price, period, features, cta, popular, avatar, onSelect }]']] },
+    { id: 'cookie-consent', name: 'Cookie consent', cat: 'Payments & commerce', char: 'food · donut', desc: 'A donut who really hopes you say yes. Hover Decline and watch.', demo: CookieDemo,
+      code: `${imp('LivatarCookieConsent', '')}\n\n<LivatarCookieConsent onAccept={allowTracking} onDecline={denyTracking} />`,
+      props: [['onAccept', ''], ['onDecline', ''], ['title', ''], ['description', ''], ['avatar', '']] },
+    { id: 'progress', name: 'Progress bar', cat: 'Loaders & states', char: 'vehicle · car', desc: 'A little car drives along the bar and cheers at the finish line.', demo: ProgressDemo,
+      code: `${imp('LivatarProgress', '')}\n\n<LivatarProgress value={percent} label="Uploading video.mp4" />`,
+      props: [['value', '0…100'], ['label', ''], ['avatar', "e.g. { options: { kind: 'rocket' } }"]] },
+    { id: 'stepper', name: 'Onboarding stepper', cat: 'Loaders & states', char: 'vehicle · rocket', desc: 'A rocket moves along the steps and launches when you finish.', demo: StepperDemo,
+      code: `${imp('LivatarStepper', '')}\n\n<LivatarStepper steps={['Account', 'Profile', 'Invite', 'Launch']} current={step} />`,
+      props: [['steps', 'Labels'], ['current', 'Index; steps.length = finished (launch)'], ['avatar', '']] },
+    { id: 'countdown', name: 'Countdown', cat: 'Loaders & states', char: 'home · clock', desc: 'A clock that dozes when it is far off, gets excited near the end, and celebrates at zero.', demo: CountdownDemo,
+      code: `${imp('LivatarCountdown', '')}\n\n<LivatarCountdown to="2026-12-31T23:59:59" label="Launching in" onDone={reveal} />`,
+      props: [['to', 'Date, timestamp or ISO string'], ['onDone', 'Called at zero'], ['label', ''], ['avatar', '']] },
+    { id: 'bell', name: 'Notification bell', cat: 'Feedback', char: 'ui · bell', desc: 'Jumps and shakes when something new arrives, dozes when it is quiet.', demo: BellDemo,
+      code: `${imp('LivatarBell', '')}\n\n<LivatarBell count={unread} onClick={openInbox} />`,
+      props: [['count', 'Unread count'], ['onClick', ''], ['avatar', '']] },
+    { id: 'like', name: 'Like button', cat: 'Feedback', char: 'planet · heart', desc: 'A little heart planet. Like it and it falls in love.', demo: LikeDemo,
+      code: `${imp('LivatarLike', '')}\n\n<LivatarLike liked={liked} count={post.likes} onChange={setLiked} />`,
+      props: [['liked', ''], ['onChange', '(liked) => void'], ['count', 'Shown next to it'], ['avatar', '']] },
+    { id: 'help', name: 'Help launcher', cat: 'AI & chat', char: 'bot', desc: 'A floating bot that peeks around while you browse and opens a help panel.', demo: HelpDemo,
+      code: `${imp('LivatarHelpLauncher', '')}\n\n<LivatarHelpLauncher title="Hi! Need a hand?">\n  <YourChatWidget />\n</LivatarHelpLauncher>`,
+      props: [['children', 'Panel content'], ['title', ''], ['position', "'fixed' (corner of the page) | 'absolute'"], ['avatar', '']] },
+    { id: 'example-signup', name: 'Signup page', cat: 'Examples', char: 'memoji · lock · emoji', desc: 'A split signup screen: a living crowd on one side, inline fields with faces and a braver-by-the-letter padlock on the other.', demo: SignupExample, wide: true,
+      code: `import { buddy, memoji, clay, human, ui } from 'livatar'\nimport { LivatarBackground, LivatarInput, LivatarPasswordStrength } from 'livatar/components'\n\nexport default function Signup() {\n  const [pw, setPw] = useState('')\n  return (\n    <div className="grid grid-cols-2 rounded-3xl overflow-hidden">\n      <LivatarBackground variants={[buddy, memoji, clay, human]} opacity={0.6} className="bg-gradient-to-br from-violet-500 to-pink-400 grid place-items-center">\n        <p className="text-white text-2xl font-black">12,480 people already said hi</p>\n      </LivatarBackground>\n      <form className="flex flex-col gap-3 p-8">\n        <h2>Create your account</h2>\n        <LivatarInput name="name" placeholder="Your name" avatar={{ variant: memoji }} />\n        <LivatarInput type="email" name="email" required placeholder="you@example.com" />\n        <LivatarInput type="password" value={pw} onChange={(e) => setPw(e.target.value)} avatar={{ variant: ui, options: { kind: 'lock' } }} />\n        <LivatarPasswordStrength value={pw} />\n        <button>Sign up</button>\n      </form>\n    </div>\n  )\n}`,
+      props: [['Uses', 'LivatarBackground, LivatarInput, LivatarPasswordStrength']] },
+    { id: 'example-store', name: 'Store & checkout', cat: 'Examples', char: 'food · cart · card · bell', desc: 'Add donuts to the cart (it cheers), pay with the living card, get a toast from the bell.', demo: StoreExample, wide: true,
+      code: `import { food, ui } from 'livatar'\nimport { LivatarCartButton, LivatarBell, LivatarCheckout, LivatarToast, LivatarReaction } from 'livatar/components'\n\n<header>\n  <LivatarBell count={notifications} />\n  <LivatarCartButton count={cart.length} onClick={openCart} />\n</header>\n{products.map((p) => <LivatarReaction key={p.id} variant={food} options={{ kind: p.kind }} text="" />)}\n<LivatarCheckout amount={total} onPay={pay} />\n<LivatarToast open={paid} type="success" title="Order placed" variant={ui} options={{ kind: 'bell' }} />`,
+      props: [['Uses', 'LivatarCartButton, LivatarBell, LivatarCheckout, LivatarToast']] },
+    { id: 'example-support', name: 'Support chat', cat: 'Examples', char: 'bot + memoji', desc: 'A support widget: the bot reads your mood (try "this is broken!"), types back, and the reply fits. Your field has a face too.', demo: SupportExample, wide: true,
+      code: `import { bot, memoji, emoji } from 'livatar'\nimport { LivatarChat, LivatarInput, LivatarConnection, feel } from 'livatar/components'\n\n<LivatarConnection online={socket.connected} />\n<LivatarChat messages={messages} typing={botTyping ? 'helper' : undefined}\n  people={{ helper: { variant: bot }, me: { variant: memoji } }} />\n<form onSubmit={send}>\n  <LivatarInput name="q" placeholder="Type a message…" avatar={{ variant: emoji }} end={<button>Send</button>} />\n</form>\n// pick a tone for the reply: feel(userText) → 'angry' | 'happy' | …`,
+      props: [['Uses', 'LivatarChat, LivatarInput, LivatarConnection, feel']] },
+    { id: 'example-launch', name: 'Launch page', cat: 'Examples', char: 'planet · alien · clock · sprout', desc: 'A coming-soon page: a space crowd watching your cursor, a countdown clock and a blooming signup.', demo: LaunchExample, wide: true,
+      code: `import { planet, alien, monster, ghost, bot } from 'livatar'\nimport { LivatarBackground, LivatarCountdown, LivatarNewsletter } from 'livatar/components'\n\n<LivatarBackground variants={[planet, alien, monster, ghost, bot]} className="min-h-screen grid place-items-center bg-[#0f0c1d] text-white">\n  <h1>Something alive is coming</h1>\n  <LivatarCountdown to={launchDate} />\n  <LivatarNewsletter onSubscribe={subscribe} />\n</LivatarBackground>`,
+      props: [['Uses', 'LivatarBackground, LivatarCountdown, LivatarNewsletter']] },
+    { id: 'example-team', name: 'Team standup', cat: 'Examples', char: 'human · memoji · rocket', desc: 'A meeting header with who is missing, a live call grid that follows the speaker, and the sprint driving along.', demo: TeamExample, wide: true,
+      code: `import { human, memoji } from 'livatar'\nimport { LivatarMeet, LivatarStack, LivatarConnection, LivatarProgress } from 'livatar/components'\n\n<LivatarStack users={notJoined} avatar={{ variant: memoji }} />\n<LivatarConnection />\n<LivatarMeet avatar={{ variant: human }} participants={participants} />\n<LivatarProgress value={sprint.done} label="Sprint 14" avatar={{ options: { kind: 'rocket' } }} />`,
+      props: [['Uses', 'LivatarMeet, LivatarStack, LivatarConnection, LivatarProgress']] },
+    { id: 'background', name: 'Avatar wall background', cat: 'Backgrounds', char: 'mixed', desc: 'A wall of avatars behind your hero, all following the cursor.', demo: BackgroundDemo,
+      code: `${imp('LivatarBackground', "import { buddy, animal, bot, monster, ghost } from 'livatar'")}\n\nexport function Hero() {\n  return (\n    <LivatarBackground variants={[buddy, animal, bot, monster, ghost]} count={60} opacity={0.4} className="h-[420px] grid place-items-center">\n      <h1>Join the waitlist</h1>\n    </LivatarBackground>\n  )\n}`,
+      props: [['variants', 'Styles to cycle through, tile by tile'], ['count', 'Number of tiles (48)'], ['tile', 'Tile size in px (56)'], ['gap', 'Gap in px (14)'], ['opacity', 'Wall opacity (0.35)'], ['seed', "Seed prefix ('bg')"], ['avatar', 'Extra avatar props for every tile'], ['children', 'Content on top']] },
+    { id: 'loader', name: 'Loader', cat: 'Loaders & states', char: 'tech · server', desc: 'Puzzled and glancing around while loading, a nod on success, a shake on failure.', demo: LoaderDemo,
+      code: `${imp('LivatarLoader', "import { tech } from 'livatar'")}\n\n<LivatarLoader\n  variant={tech} options={{ kind: 'server' }}\n  status={isPending ? 'loading' : error ? 'error' : 'success'}\n  label={isPending ? 'Deploying…' : error ? 'Build failed' : 'Deployed!'}\n/>`,
+      props: [['status', "'idle' | 'loading' | 'success' | 'error'"], ['label', 'Text under the avatar'], ['…avatar props', 'variant, seed, size, options…']] },
+    { id: 'empty-state', name: 'Empty state', cat: 'Loaders & states', char: 'office · folder', desc: 'Dozes off when nothing is there, wakes up surprised when you hover.', demo: EmptyDemo,
+      code: `${imp('LivatarEmptyState', "import { office } from 'livatar'")}\n\n<LivatarEmptyState\n  variant={office} options={{ kind: 'folder' }}\n  title="No files yet"\n  description="Drop something in to get started."\n  action={<button>Upload</button>}\n/>`,
+      props: [['title', 'Heading'], ['description', 'Sub text'], ['action', 'Button or link'], ['…avatar props', '']] },
+    { id: 'not-found', name: '404 page', cat: 'Loaders & states', char: 'ghost', desc: 'A lost little ghost looking around for the page.', demo: NotFoundDemo,
+      code: `${imp('LivatarNotFound', "import { ghost } from 'livatar'")}\n\n// app/not-found.tsx\nexport default function NotFound() {\n  return <LivatarNotFound variant={ghost} action={<a href="/">Take me home</a>} />\n}`,
+      props: [['code', "Big text ('404')"], ['title', 'Heading'], ['description', 'Sub text'], ['action', 'Link back']] },
+    { id: 'connection', name: 'Connection status', cat: 'Loaders & states', char: 'tech · cloud', desc: 'A cloud that sulks when the connection drops and cheers when it is back.', demo: ConnectionDemo,
+      code: `${imp('LivatarConnection', '')}\n\n<LivatarConnection />                       // follows navigator.onLine\n<LivatarConnection online={socket.connected} />`,
+      props: [['online', 'Override the detected state'], ['avatar', 'Avatar props']] },
+    { id: 'form', name: 'Login form', cat: 'Forms & input', char: 'ui · lock', desc: 'Watches your caret, covers its eyes for the password, reacts to validation and to your submit result.', demo: FormDemo,
+      code: `${imp('LivatarForm', "import { ui } from 'livatar'")}\n\n<LivatarForm\n  avatar={{ variant: ui, options: { kind: 'lock' } }}\n  onSubmit={async (data) => (await signIn(data)).ok}   // false or throw → error face\n>\n  <input name="email" type="email" required />\n  <input name="password" type="password" minLength={8} required />\n  <button>Sign in</button>\n</LivatarForm>`,
+      props: [['onSubmit', '(data: FormData, e) => result. false or throw shows the error face'], ['avatar', 'Avatar props'], ['moods', 'Override the bindForm moods'], ['placement', "'top' | 'left' | 'none'"], ['…form attributes', 'action, className, …']] },
+    { id: 'password-strength', name: 'Password strength', cat: 'Forms & input', char: 'ui · lock', desc: 'A padlock that grows braver as the password gets stronger.', demo: StrengthDemo,
+      code: `${imp('LivatarPasswordStrength', '')}\n\nconst [pw, setPw] = useState('')\n<input type="password" value={pw} onChange={(e) => setPw(e.target.value)} />\n<LivatarPasswordStrength value={pw} />`,
+      props: [['value', 'The password'], ['score', 'Your own scorer (value) => 0…4, e.g. zxcvbn'], ['avatar', 'Avatar props']] },
+    { id: 'upload', name: 'Upload drop zone', cat: 'Forms & input', char: 'office · folder', desc: 'Gasps when you drag a file over, chews while uploading, beams when done.', demo: UploadDemo,
+      code: `${imp('LivatarUpload', '')}\n\n<LivatarUpload accept="image/*" onFiles={(files) => upload(files)} />`,
+      props: [['onFiles', '(files) => result. false or throw shows failure'], ['accept', 'File types'], ['multiple', 'Allow several files (true)'], ['label', 'Prompt text'], ['avatar', 'Avatar props']] },
+    { id: 'checkout', name: 'Checkout', cat: 'Payments & commerce', char: 'money · card', desc: 'The card is the character: it watches you type its number, covers its eyes for the CVC, and is thrilled when paid. Try a number starting 4000 for a decline.', demo: CheckoutDemo,
+      code: `${imp('LivatarCheckout', '')}\n\n<LivatarCheckout\n  amount="$24.00"\n  onPay={async (card) => {\n    const res = await fetch('/api/pay', { method: 'POST', body: JSON.stringify(card) })\n    return res.ok   // false → declined face\n  }}\n/>`,
+      props: [['amount', 'Total shown and on the button'], ['onPay', '(card) => result. false or throw = declined'], ['avatar', 'Avatar props (default: money card)']] },
+    { id: 'cart', name: 'Cart button', cat: 'Payments & commerce', char: 'ui · cart', desc: 'Cheers when you add something, sad when you empty it.', demo: CartDemo,
+      code: `${imp('LivatarCartButton', '')}\n\n<LivatarCartButton count={items.length} onClick={openCart} />`,
+      props: [['count', 'Items in the cart'], ['onClick', 'Open the cart'], ['label', "Accessible name ('Cart')"]] },
+    { id: 'assistant', name: 'AI assistant', cat: 'AI & chat', char: 'bot', desc: 'Thinking, then talking while the reply streams, ending with a mood from the answer. Takes the Vercel AI SDK status as-is.', demo: AssistantDemo,
+      code: `'use client'\nimport { useChat } from '@ai-sdk/react'\nimport { bot } from 'livatar'\nimport { LivatarAssistant } from 'livatar/components'\n\nexport function ChatFace() {\n  const { messages, status } = useChat()\n  const reply = messages.findLast((m) => m.role === 'assistant')?.parts.map((p) => p.text ?? '').join('') ?? ''\n  return <LivatarAssistant variant={bot} seed="helper" status={status} text={reply} showState />\n}`,
+      props: [['status', "idle listening thinking speaking done error, or AI SDK 'submitted' | 'streaming' | 'ready'"], ['text', 'The reply so far'], ['showState', 'Show the state tag']] },
+    { id: 'chat', name: 'Chat thread', cat: 'AI & chat', char: 'bot + memoji', desc: 'Every sender has a living avatar: the latest one talks and shows the mood of their message.', demo: ChatDemo,
+      code: `${imp('LivatarChat', "import { bot, memoji } from 'livatar'")}\n\n<LivatarChat\n  messages={messages}               // [{ id, from, text, me? }]\n  typing={botTyping ? 'helper' : undefined}\n  people={{ helper: { variant: bot }, ada: { variant: memoji } }}\n/>`,
+      props: [['messages', '[{ id, from, text, me? }]'], ['typing', 'Who is typing'], ['people', 'Per-person avatar props'], ['avatar', 'Defaults for everyone'], ['size', 'Avatar size (36)']] },
+    { id: 'typing', name: 'Typing indicator', cat: 'AI & chat', char: 'dev · coding', desc: '"Ada is typing…" with a mouth that moves.', demo: TypingDemo,
+      code: `${imp('LivatarTyping', "import { dev } from 'livatar'")}\n\n{isTyping && <LivatarTyping variant={dev} seed="ada" name="Ada" />}`,
+      props: [['name', 'Shown as "<name> is typing…"'], ['…avatar props', '']] },
+    { id: 'call', name: 'Meeting window', cat: 'Social & people', char: 'human · memoji', desc: 'Video-call tiles. The speaker glows on a stage and everyone else turns to look at them. Hands wave, reactions float up, the room reacts.', demo: CallDemo,
+      code: `${imp('LivatarCall', "import { human } from 'livatar'")}\n\n<LivatarCall\n  title="Design review"\n  me={myId}\n  avatar={{ variant: human }}\n  participants={call.participants.map((p) => ({\n    id: p.id, name: p.name,\n    speaking: p.isSpeaking, muted: p.isMuted,\n    hand: p.handRaised, reaction: p.lastEmoji,\n  }))}\n  onMute={toggleMic}\n  onLeave={hangUp}\n/>`,
+      props: [['participants', '[{ id, name, speaking, muted, hand, reaction, reactionId, cameraOff, avatar }]'], ['layout', "'auto' (stage when someone speaks) | 'grid' | 'spotlight'"], ['me', 'Your id: enables the mic button'], ['title', 'Header'], ['controls', 'Show mic, reactions, leave (true)'], ['message', '{ id, from, text }: room reacts'], ['onMute / onReact / onLeave', 'Callbacks']] },
+    { id: 'meet', name: 'Meeting grid', cat: 'Social & people', char: 'human', desc: 'A call grid where everyone looks at the speaker, greets people who join and reacts to chat.', demo: MeetDemo,
+      code: `${imp('LivatarMeet', "import { human } from 'livatar'")}\n\n<LivatarMeet\n  avatar={{ variant: human }}\n  participants={call.participants.map((p) => ({\n    id: p.id, name: p.name, speaking: p.isSpeaking, muted: p.isMuted,\n  }))}\n  message={lastChat}   // { id, from, text }\n/>`,
+      props: [['participants', '[{ id, name, speaking, muted, avatar }]'], ['message', '{ id, from, text }: everyone reacts'], ['avatar', 'Defaults for every tile'], ['size', 'Tile size (96)'], ['renderLabel', 'Custom tile footer']] },
+    { id: 'chain-loader', name: 'Character loaders', cat: 'Loaders & states', char: 'mixed', desc: 'Loaders made of characters: a hand-holding chain with a wave, an orbit, a conga line, a tower that stacks and tumbles.', demo: ChainDemo,
+      code: `${imp('LivatarChainLoader', "import { buddy, animal, food } from 'livatar'")}\n\n<LivatarChainLoader kind="chain" variants={[buddy, animal, food]} label="Loading…" />\n<LivatarChainLoader kind="orbit" />\n<LivatarChainLoader kind="conga" size={32} />\n<LivatarChainLoader kind="stack" />`,
+      props: [['kind', "'chain' | 'orbit' | 'conga' | 'stack'"], ['variants', 'Styles to cycle through'], ['count', 'How many characters'], ['size', 'Character size (40)'], ['label', 'Text under it'], ['avatar', 'Avatar props for all']] },
+    { id: 'copy', name: 'Copy button', cat: 'Forms & input', char: 'office · clipboard', desc: 'A clipboard that grins and nods when the copy worked, frowns if it failed.', demo: CopyDemo,
+      code: `${imp('LivatarCopyButton', '')}\n\n<LivatarCopyButton text="npm i livatar" />`,
+      props: [['text', 'What to copy'], ['label', "Button text ('Copy')"], ['avatar', 'Overrides']] },
+    { id: 'poll', name: 'Poll', cat: 'Social & people', char: 'emoji', desc: 'Every option has a face. After you vote, the winner falls in love and the losers sulk.', demo: PollDemo,
+      code: `${imp('LivatarPoll', '')}\n\n<LivatarPoll\n  question="Friday team lunch?"\n  options={[{ id: 'tacos', label: 'Tacos', votes: 7 }, { id: 'sushi', label: 'Sushi', votes: 5 }]}\n  onVote={(id) => vote(id)}\n/>`,
+      props: [['question', 'Title'], ['options', '[{ id, label, votes }]'], ['onVote', '(id) => void'], ['voted', 'Controlled choice']] },
+    { id: 'focus', name: 'Focus timer', cat: 'Fun', char: 'home · mug', desc: 'A pomodoro timer with a coffee mug: alert while you work, thrilled at break time, napping while paused.', demo: FocusDemo,
+      code: `${imp('LivatarFocusTimer', '')}\n\n<LivatarFocusTimer focus={25} rest={5} onPhase={(p) => notify(p)} />`,
+      props: [['focus', 'Minutes (25)'], ['rest', 'Break minutes (5)'], ['onPhase', "('focus' | 'break') => void"]] },
+    { id: 'todo', name: 'Growing to-do list', cat: 'Fun', char: 'plant', desc: 'A plant that grows as you tick things off: sprout, succulent, monstera, then a sunflower in love.', demo: TodoDemo,
+      code: `${imp('LivatarTodoList', '')}\n\nconst [todos, setTodos] = useState([{ id: '1', text: 'Ship it' }])\n<LivatarTodoList items={todos} onChange={setTodos} />`,
+      props: [['items', '[{ id, text, done }]'], ['onChange', '(items) => void'], ['title', "Heading ('Today')"], ['adding', 'Show add field (true)']] },
+    { id: 'stack', name: 'Avatar stack', cat: 'Social & people', char: 'memoji', desc: 'Overlapping avatars with presence dots and "+N". Away people doze.', demo: StackDemo,
+      code: `${imp('LivatarStack', "import { memoji } from 'livatar'")}\n\n<LivatarStack avatar={{ variant: memoji }} max={4} users={[\n  { id: 'ada', status: 'online' }, { id: 'bob', status: 'away' }, { id: 'cy', status: 'busy' },\n]} />`,
+      props: [['users', '[{ id, name, status, avatar }]'], ['max', 'Shown before "+N" (5)'], ['size', 'Avatar size (40)'], ['avatar', 'Defaults']] },
+    { id: 'profile', name: 'Profile card', cat: 'Social & people', char: 'memoji', desc: 'Waves hello (a happy nod) when you hover it.', demo: ProfileDemo,
+      code: `${imp('LivatarProfileCard', "import { memoji } from 'livatar'")}\n\n<LivatarProfileCard variant={memoji} seed={user.id} name={user.name} role="Maintainer" status="online"\n  action={<button>Follow</button>} />`,
+      props: [['name', ''], ['role', ''], ['status', "'online' | 'away' | 'busy' | 'offline'"], ['action', 'Buttons']] },
+    { id: 'testimonial', name: 'Testimonial', cat: 'Social & people', char: 'clay', desc: 'The author reacts to their own words.', demo: TestimonialDemo,
+      code: `${imp('LivatarTestimonial', "import { clay } from 'livatar'")}\n\n<LivatarTestimonial variant={clay} seed="ada" quote="Our signup page finally smiles back." name="Ada Park" title="Founder" />`,
+      props: [['quote', 'Text (its mood picks the face)'], ['name', ''], ['title', '']] },
+    { id: 'toast', name: 'Toast', cat: 'Feedback', char: 'ui · bell', desc: 'A notification whose bell reacts: a nod for success, a shake for errors.', demo: ToastDemo,
+      code: `${imp('LivatarToast', "import { ui } from 'livatar'")}\n\n<LivatarToast open={saved} type="success" title="Saved" description="Your changes are live"\n  variant={ui} options={{ kind: 'bell' }} onClose={() => setSaved(false)} />`,
+      props: [['open', 'Show it'], ['type', "'success' | 'error' | 'info' | 'warning'"], ['title', ''], ['description', ''], ['onClose', ''], ['duration', 'Auto-close ms (4000, 0 = stay)']] },
+    { id: 'rating', name: 'Rating', cat: 'Feedback', char: 'emoji', desc: 'The face follows the score, from furious to in love.', demo: RatingDemo,
+      code: `${imp('LivatarRating', '')}\n\nconst [stars, setStars] = useState(0)\n<LivatarRating value={stars} onChange={setStars} />`,
+      props: [['value', 'Current score'], ['onChange', ''], ['max', 'Steps (5)']] },
+    { id: 'reaction', name: 'Comment reaction', cat: 'Feedback', char: 'emoji', desc: 'Reads the mood of what you type. No AI call.', demo: ReactionDemo,
+      code: `${imp('LivatarReaction', "import { emoji } from 'livatar'")}\n\n<LivatarReaction variant={emoji} text={draft} hold />`,
+      props: [['text', 'Text to react to'], ['hold', 'Keep the mood instead of flashing it']] },
+    { id: 'pet', name: 'Virtual pet', cat: 'Fun', char: 'animal · bunny', desc: 'Hunger, energy and happiness drift in real time. It levels up and grows.', demo: PetDemo,
+      code: `${imp('LivatarPet', "import { animal } from 'livatar'")}\n\n<LivatarPet variant={animal} seed="mochi" options={{ species: 'bunny' }} />\n\n// or your own UI\n<LivatarPet variant={animal} seed="mochi">{(pet, s) => <Bars stats={s} onFeed={() => pet.feed()} />}</LivatarPet>`,
+      props: [['pet', 'Pet options: key, store, decay…'], ['controls', 'Show bars and buttons (true)'], ['children', '(pet, stats) => your UI']] },
+    { id: 'theme-toggle', name: 'Theme toggle', cat: 'Fun', char: 'planet · sun/moon', desc: 'A sun that becomes a sleepy moon.', demo: ThemeDemo,
+      code: `${imp('LivatarThemeToggle', '')}\n\n<LivatarThemeToggle dark={theme === 'dark'} onChange={(d) => setTheme(d ? 'dark' : 'light')} />`,
+      props: [['dark', 'Current theme'], ['onChange', '(dark) => void'], ['size', 'px (40)']] },
+  ]
+  const ORDER = ['Examples', 'Backgrounds', 'Forms & input', 'Payments & commerce', 'AI & chat', 'Loaders & states', 'Social & people', 'Feedback', 'Fun']
+  const CATS = ORDER.filter((c) => COMPONENTS.some((x) => x.cat === c))
+  COMPONENTS.sort((a, b) => ORDER.indexOf(a.cat) - ORDER.indexOf(b.cat))
+
+  /* ---------- tiny highlighter ---------- */
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  const hl = (src) => esc(src)
+    .replace(/(\/\/[^\n]*)/g, '<span class="tok-c">$1</span>')
+    .replace(/('[^'\n]*'|"[^"\n]*"|`[^`]*`)/g, '<span class="tok-s">$1</span>')
+    .replace(/\b(import|from|export|default|function|return|const|await|async|new)\b/g, '<span class="tok-k">$1</span>')
+
+  /* ---------- views ---------- */
+  function Nav({ id }) {
+    return h(Fragment, null,
+      h('a', { href: '#', 'aria-current': !id ? 'page' : undefined }, 'All components'),
+      CATS.map((cat) => h(Fragment, { key: cat }, h('h4', null, cat),
+        COMPONENTS.filter((c) => c.cat === cat).map((c) => h('a', { key: c.id, href: '#' + c.id, 'aria-current': c.id === id ? 'page' : undefined }, c.name)))))
+  }
+  function Copy({ text, label = 'Copy' }) {
+    const [ok, setOk] = useState(false)
+    return h('button', { className: 'sm ghost', type: 'button', onClick: () => navigator.clipboard?.writeText(text).then(() => { setOk(true); setTimeout(() => setOk(false), 1200) }) }, ok ? 'Copied ✓' : label)
+  }
+  function Overview() {
+    const [q, setQ] = useState('')
+    const match = (c) => !q || (c.name + c.desc + c.char + c.cat).toLowerCase().includes(q.toLowerCase())
+    const count = COMPONENTS.filter((c) => c.cat !== 'Examples').length
+    return h(Fragment, null,
+      h(C.LivatarBackground, { variants: [buddy, animal, bot, money, ui, food, planet, ghost, memoji, plant], count: 72, tile: 46, gap: 12, opacity: 0.55, seed: 'hero', className: 'hero' },
+        h('div', { className: 'hero-in' },
+          h('span', { className: 'kicker' }, count + ' components, ' + COMPONENTS.filter((c) => c.cat === 'Examples').length + ' example screens'),
+          h('h1', { className: 'grad' }, 'UI that ', h('em', null, 'looks back'), '.'),
+          h('p', { className: 'lead', style: { margin: '0 auto' } }, 'React and Next.js components, each with a small face in it. A card that hides its eyes when you type the CVC, a lock that frowns at weak passwords, an owl that searches with you.'),
+          h('div', { className: 'install', style: { justifyContent: 'center', margin: '18px 0 0' } }, h('code', null, 'npm i livatar'), h(Copy, { text: 'npm i livatar' }), h('code', null, "from 'livatar/components'")))),
+      h('div', { className: 'filter' }, h(C.LivatarSearch, { placeholder: 'Filter components… (try "pay" or "form")', debounce: 120, onSearch: (v) => { setQ(v); return COMPONENTS.filter((c) => !v || (c.name + c.desc + c.char + c.cat).toLowerCase().includes(v.toLowerCase())).length } })),
+      CATS.map((cat) => {
+        const list = COMPONENTS.filter((c) => c.cat === cat && match(c))
+        if (!list.length) return null
+        return h(Fragment, { key: cat },
+          h('h2', { className: 'cat' }, cat, ' ', h('span', { className: 'chip' }, list.length)),
+          cat === 'Examples' && h('p', { className: 'note', style: { margin: '-6px 0 12px' } }, 'Whole screens put together from the components. Open one to play with it and copy the code.'),
+          h('div', { className: 'grid' + (cat === 'Examples' ? ' ex' : '') }, list.map((c) =>
+            h('a', { key: c.id, className: 'tile' + (c.wide ? ' wide' : ''), href: '#' + c.id },
+              h('div', { className: 'pv', 'aria-hidden': true, inert: '' }, h(c.demo, { small: !c.wide, size: 56 })),
+              h('div', { className: 'meta' }, h('b', null, c.name), ' ', h('span', { className: 'chip' }, c.char), h('small', null, c.desc))))))
+      }))
+  }
+  function Detail({ c }) {
+    const [tab, setTab] = useState('preview')
+    const [k, setK] = useState(0)
+    useEffect(() => { setTab('preview'); scrollTo(0, 0) }, [c.id])
+    const i = COMPONENTS.indexOf(c)
+    const prev = COMPONENTS[i - 1], next = COMPONENTS[i + 1]
+    return h(Fragment, null,
+      h('div', { className: 'crumbs' }, h('a', { href: '#' }, 'Components'), ' / ', c.cat),
+      h('h1', null, c.name),
+      h('p', { className: 'lead' }, c.desc, ' ', h('span', { className: 'chip' }, 'character: ' + c.char)),
+      h('div', { className: 'stage' },
+        h('div', { className: 'bar tabs', role: 'tablist', style: { margin: 0 } },
+          h('button', { role: 'tab', 'aria-selected': tab === 'preview', className: 'sm', onClick: () => setTab('preview') }, 'Preview'),
+          h('button', { role: 'tab', 'aria-selected': tab === 'code', className: 'sm', onClick: () => setTab('code') }, 'Code'),
+          h('span', { className: 'sp' }),
+          tab === 'preview' ? h('button', { className: 'sm ghost', onClick: () => setK(k + 1), title: 'Restart the demo' }, '↻ Replay') : h(Copy, { text: c.code })),
+        tab === 'preview'
+          ? h('div', { className: 'pv' + (c.cat === 'Examples' || c.wide || c.id === 'call' || c.id === 'background' ? '' : ' zoom'), key: k }, h(c.demo))
+          : h('pre', null, h('code', { dangerouslySetInnerHTML: { __html: hl(c.code) } }))),
+      h('h2', { style: { fontSize: 20, margin: '28px 0 4px' } }, 'Props'),
+      h('p', { className: 'note', style: { margin: 0 } }, 'Every component also takes the normal avatar props where noted: variant, seed, size, shape, options, mood…'),
+      h('table', null, h('thead', null, h('tr', null, h('th', null, 'Prop'), h('th', null, 'Description'))),
+        h('tbody', null, c.props.map(([p, d]) => h('tr', { key: p }, h('td', null, h('code', null, p)), h('td', null, d))))),
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 32, gap: 12 } },
+        prev ? h('a', { href: '#' + prev.id }, '← ' + prev.name) : h('span'),
+        next ? h('a', { href: '#' + next.id }, next.name + ' →') : h('span')))
+  }
+  function App() {
+    const [id, setId] = useState(location.hash.slice(1))
+    useEffect(() => { const f = () => setId(location.hash.slice(1)); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f) }, [])
+    const c = COMPONENTS.find((x) => x.id === id)
+    useEffect(() => { document.title = c ? `${c.name} · livatar components` : 'livatar components' }, [c])
+    return h(Fragment, null, c ? h(Detail, { c }) : h(Overview))
+  }
+  function NavApp() {
+    const [id, setId] = useState(location.hash.slice(1))
+    useEffect(() => { const f = () => setId(location.hash.slice(1)); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f) }, [])
+    return h(Nav, { id })
+  }
+  createRoot(document.getElementById('main')).render(h(App))
+  createRoot(document.getElementById('nav')).render(h(NavApp))
+  requestAnimationFrame(() => setTimeout(() => dispatchEvent(new Event('livatar:ready')), 50))
+</script>
+<script type="module" src="../ui.js"></script>
+</body>
+</html>

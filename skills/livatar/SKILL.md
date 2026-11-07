@@ -21,8 +21,10 @@ Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink,
 | Animated from a config/code, any style | `mountCode(el, config)` |
 | React / Next.js | `<Livatar variant={buddy} />` or `<LivatarCode variant="buddy" />` from `livatar/react` (already `'use client'`) |
 | Vue / Nuxt | `livatar/vue` |
-| Any framework / plain HTML | `<livatar-avatar>` from `livatar/element` |
+| Any framework / plain HTML | `<live-avatar>` from `livatar/element` |
 | Brand icons | `icon(name, opts)` from `livatar/icons` |
+| Personality, AI assistant face, virtual pet, multiplayer, context reactions, text → mood | `livatar/life` |
+| Ready-made React/Next components: checkout, cart, upload, loader, login form, password strength, AI assistant (Vercel AI SDK status), chat, meeting grid, toast, 404, background wall, pet, stack… (gallery: https://nuhmanpk.github.io/livatar/components/) | `livatar/components` |
 
 ## Examples
 ```js
@@ -46,6 +48,26 @@ mountCode(btn, { style: 'planet', mood: dark ? 'sleepy' : 'happy', background: f
   options: { kind: dark ? 'moon' : 'sun', satellite: false, stars: false } })
 ```
 
+```js
+// livatar/life: give it a character, make it the face of your AI, or a pet
+import { mount, bot, animal } from 'livatar'
+import { personality, assistant, pet, group, feel, context } from 'livatar/life'
+const me = personality(mount(a, bot, { seed: user.id }), { seed: user.id })  // same seed → same personality
+me.react('success')                                   // events: success error join leave mention celebrate…
+const ai = assistant(mount(b, bot, { seed: 'helper' }))
+ai.think(); const reply = await ai.stream(llmTokens)  // talks per token, ends with a mood from the reply
+const p = pet(mount(c, animal, { seed: 'mochi' }), { onChange: drawBars }); p.feed()
+const room = group(); room.join(id, handle); room.message(id, text)  // others look and react
+feel('this is broken!!')  // → 'angry'
+```
+
+```tsx
+import { LivatarAssistant, LivatarMeet, LivatarLoader } from 'livatar/components'   // 'use client' included
+<LivatarAssistant variant={bot} status={status} text={reply} />   // status from useChat() works as-is
+<LivatarMeet participants={[{ id: 'ada', speaking: true }, { id: 'bob', muted: true }]} />
+<LivatarLoader status={isPending ? 'loading' : 'success'} />
+```
+
 ## Facts to get right
 - Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human.
 - planet kinds: earth saturn mars moon sun gas comet star heart cloud.
@@ -53,4 +75,6 @@ mountCode(btn, { style: 'planet', mood: dark ? 'sleepy' : 'happy', background: f
 - Every style option also accepts `'random'` (picked from the seed). Same seed → same avatar.
 - `alive: false` renders static; animation respects `prefers-reduced-motion`.
 - Wrap interactive avatars/icons in a real `<button>` with an `aria-label`; use `describe(config)` for alt text.
+- Web component tag is `<live-avatar>` (not `<livatar-avatar>`).
+- `livatar/life` personalities: cheerful shy grumpy curious lazy playful calm (or `{ seed }`). Pet stats: hunger energy happiness xp level stage asleep.
 - Don't invent options. If unsure, fetch llms-full.txt.

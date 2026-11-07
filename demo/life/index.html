@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>livatar life</title>
+<meta name="description" content="Personality, AI assistant face, virtual pet, multiplayer and context-aware reactions for livatar avatars." />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="alternate" type="text/plain" href="../../llms.txt" title="llms.txt" />
+<script>
+  // relative links need the trailing slash: /demo/life → /demo/life/
+  if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)
+</script>
+<script>
+  try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light' // light by default; dark only when chosen
+</script>
+<link rel="stylesheet" href="../docs/docs.css" />
+<style>
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px }
+  h1 { font-size: clamp(32px, 6vw, 52px); letter-spacing: -0.03em; margin: 12px 0 4px }
+  .lead { color: var(--muted); margin: 0 0 28px; max-width: 640px }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+  .card h2 { margin: 0; font-size: 19px }
+  .card p.sub { margin: -6px 0 0; color: var(--muted); font-size: 14px }
+  .av { width: 120px; height: 120px; margin: 4px auto; display: block; border: 0; padding: 0; background: none; border-radius: 50% }
+  .av.sm { width: 64px; height: 64px; margin: 0 }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+  .row > input { flex: 1 }
+  .tag { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: var(--soft); color: var(--muted); text-transform: uppercase; letter-spacing: .04em }
+  .bars { display: grid; gap: 6px; font-size: 13px }
+  .bar { display: grid; grid-template-columns: 80px 1fr 34px; gap: 8px; align-items: center }
+  .bar i { display: block; height: 8px; border-radius: 9px; background: var(--soft); overflow: hidden }
+  .bar b { display: block; height: 100%; background: var(--accent); border-radius: 9px; transition: width .3s }
+  .traits { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 13px; color: var(--muted) }
+  .room { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; min-height: 64px }
+  .room figure { margin: 0; text-align: center; font-size: 12px; color: var(--muted) }
+  .room figure.talking figcaption { color: var(--accent); font-weight: 700 }
+  .log { font-size: 13px; color: var(--muted); max-height: 110px; overflow: auto; background: var(--soft); border-radius: 12px; padding: 8px 10px; margin: 0; white-space: pre-wrap }
+  .reply:empty { display: none }
+  .reply { min-height: 48px; font-size: 14px; background: var(--soft); border-radius: 12px; padding: 10px 12px }
+  .big { font-size: 28px; font-weight: 800; text-align: center }
+  select { width: auto }
+  .seedbar { margin: -12px 0 24px; max-width: 460px }
+  .seedbar label { font-weight: 700 }
+</style>
+</head>
+<body>
+<script src="../loader.js"></script>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../" aria-label="livatar home"><span class="logo" id="logo"></span>livatar <span class="badge">life</span></a>
+    <nav class="toplinks" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../docs/">Docs</a>
+      <a href="../components/">Components</a>
+      <a href="../icons/">Icons</a>
+      <a href="./" aria-current="page">Life</a>
+      <a href="../readme/">README</a>
+      <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+    </nav>
+    <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode"></button>
+  </div>
+</header>
+
+<main>
+  <h1>Give it a life.</h1>
+  <p class="lead">Avatars with a personality that remember how you treat them, react to the page, act as the face of your AI, and notice each other. <code>import … from 'livatar/life'</code></p>
+  <form class="row seedbar" id="seed-form">
+    <label for="seed">Seed</label>
+    <input id="seed" autocomplete="off" spellcheck="false" />
+    <button type="button" class="ghost" id="seed-dice" aria-label="Random seed" title="Random seed">🎲</button>
+    <button>Apply</button>
+  </form>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-p">
+      <h2 id="h-p">Personality</h2>
+      <p class="sub">Poke it a few times. A grumpy one gets cross; a shy one blushes.</p>
+      <div class="row">
+        <select id="p-pick" aria-label="Personality">
+          <option>cheerful</option><option>shy</option><option>grumpy</option><option>curious</option><option>lazy</option><option>playful</option><option>calm</option><option value="seed">from the seed</option>
+        </select>
+        <span class="tag" id="p-name"></span>
+      </div>
+      <button class="av" id="p-av" aria-label="Poke the avatar"></button>
+      <div class="traits" id="p-traits"></div>
+      <div class="row" id="p-events"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-a">
+      <h2 id="h-a">AI assistant face</h2>
+      <p class="sub">Listening → thinking → speaking → done. Talks per streamed token, ends with a mood from the reply.</p>
+      <div class="av" id="a-av" role="img" aria-label="Assistant avatar"></div>
+      <div class="row" style="justify-content:center"><span class="tag" id="a-state">idle</span></div>
+      <form class="row" id="a-form">
+        <input id="a-in" placeholder="Ask something…" aria-label="Message" value="Can you fix my broken build?" />
+        <button>Send</button>
+      </form>
+      <div class="reply" id="a-out" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-pet">
+      <h2 id="h-pet">Virtual pet</h2>
+      <p class="sub">Stats drift in real time, even with the tab closed. Saved in this browser.</p>
+      <button class="av" id="pet-av" aria-label="Pat the pet"></button>
+      <div class="row" style="justify-content:center"><span class="tag" id="pet-stage"></span></div>
+      <div class="bars" id="pet-bars"></div>
+      <div class="row">
+        <button class="sm" id="pet-feed">Feed</button>
+        <button class="sm" id="pet-play">Play</button>
+        <button class="sm ghost" id="pet-sleep">Sleep</button>
+        <button class="sm ghost" id="pet-time">+6 hours</button>
+        <button class="sm ghost" id="pet-reset">Reset</button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-g">
+      <h2 id="h-g">Multiplayer</h2>
+      <p class="sub">They greet joiners, look at whoever speaks and react to each message. Try <code>@ada</code>.</p>
+      <div class="room" id="g-room"></div>
+      <div class="row">
+        <select id="g-who" aria-label="Who speaks"></select>
+        <button class="sm ghost" id="g-join">Join</button>
+        <button class="sm ghost" id="g-leave">Leave</button>
+        <button class="sm ghost" id="g-talk" aria-pressed="false">Speaking</button>
+      </div>
+      <form class="row" id="g-form">
+        <input id="g-in" value="this is awesome @ada 🎉" aria-label="Message" />
+        <button>Send</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="h-f">
+      <h2 id="h-f">Text → mood</h2>
+      <p class="sub"><code>feel(text)</code>. A tiny local word list. No model, no network.</p>
+      <div class="av sm" id="f-av" style="margin:0 auto" role="img" aria-label="Mood preview"></div>
+      <div class="big" id="f-out">neutral</div>
+      <input id="f-in" value="ugh, the build is broken AGAIN" aria-label="Text" />
+    </section>
+
+    <section class="card" aria-labelledby="h-c">
+      <h2 id="h-c">Context-aware</h2>
+      <p class="sub">Yawns at night, sad when offline, "welcome back" after a minute away. Scroll fast to surprise it.</p>
+      <div class="av" id="c-av" role="img" aria-label="Context avatar"></div>
+      <pre class="log" id="c-log" aria-live="polite">waiting for something to happen…</pre>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+  import { mount, buddy, bot, animal, human, emoji, createAvatar } from '../../dist/index.js'
+  import { personality, PERSONALITIES, assistant, pet, group, feel, context, react } from '../../dist/life.js'
+  const $ = (id) => document.getElementById(id)
+
+  // one seed drives every avatar on the page; it lives in the URL so a look can be shared
+  const SEED = (new URLSearchParams(location.search).get('seed') || 'ada').slice(0, 40)
+  const sd = (part) => `${SEED}:${part}`
+  $('seed').value = SEED
+  const go = (v) => { const u = new URL(location.href); u.searchParams.set('seed', v || 'ada'); location.href = u }
+  $('seed-form').onsubmit = (e) => { e.preventDefault(); go($('seed').value.trim()) }
+  $('seed-dice').onclick = () => go(Math.random().toString(36).slice(2, 8))
+
+  // ── personality
+  let ph, me
+  const EVENTS = ['success', 'error', 'celebrate', 'mention', 'loading']
+  $('p-events').innerHTML = EVENTS.map((e) => `<button class="sm ghost" data-e="${e}">${e}</button>`).join('')
+  $('p-events').onclick = (e) => e.target.dataset.e && me?.react(e.target.dataset.e)
+  function makePersona() {
+    me?.destroy(); ph?.destroy()
+    const pick = $('p-pick').value
+    const input = pick === 'seed' ? { seed: SEED } : pick
+    ph = mount($('p-av'), buddy, { seed: sd('persona') })
+    me = personality(ph, input)
+    $('p-name').textContent = me.name
+    $('p-traits').innerHTML = Object.entries(me.traits).map(([k, v]) => `<span>${k}</span><span>${Math.round(v * 100)}%</span>`).join('')
+  }
+  $('p-pick').onchange = makePersona
+  makePersona()
+
+  // ── assistant
+  const ai = assistant(mount($('a-av'), bot, { seed: sd('assistant') }), { onState: (s) => ($('a-state').textContent = s) })
+  $('a-in').onfocus = () => ai.listen()
+  const REPLIES = {
+    angry: "Oh no, that sounds frustrating. Let's look at the error log together. It's usually a missing dependency.",
+    sad: "Sorry to hear that. Take a breath. We'll sort it out one step at a time.",
+    happy: 'Great news! Glad it works. Anything else you want to build?',
+    neutral: 'Sure! Here is a quick answer. It works great once you set it up.',
+  }
+  async function* stream(text) {
+    for (const w of text.split(/(?<= )/)) { await new Promise((r) => setTimeout(r, 70)); yield w }
+  }
+  $('a-form').onsubmit = async (e) => {
+    e.preventDefault()
+    $('a-out').textContent = ''
+    ai.think()
+    await new Promise((r) => setTimeout(r, 1400))
+    const mood = feel($('a-in').value)
+    const reply = REPLIES[mood] ?? REPLIES.neutral
+    async function* echo() { for await (const t of stream(reply)) { $('a-out').textContent += t; yield t } }
+    await ai.stream(echo())
+  }
+
+  // ── pet (a fake clock so "+6 hours" works; real time keeps ticking too)
+  let skew = 0
+  const petH = mount($('pet-av'), animal, { seed: sd('pet') })
+  const bar = (k, v) => `<div class="bar"><span>${k}</span><i><b style="width:${v}%"></b></i><span>${Math.round(v)}</span></div>`
+  const draw = (s) => {
+    $('pet-bars').innerHTML = bar('hunger', s.hunger) + bar('energy', s.energy) + bar('happiness', s.happiness)
+    $('pet-stage').textContent = `${s.asleep ? 'asleep · ' : ''}${s.stage} · level ${s.level} · ${s.xp} xp`
+    $('pet-sleep').textContent = s.asleep ? 'Wake' : 'Sleep'
+  }
+  const mochi = pet(petH, { key: 'livatar:demo-pet', now: () => Date.now() + skew, onChange: draw, tick: 5000 })
+  $('pet-feed').onclick = () => mochi.feed()
+  $('pet-play').onclick = () => mochi.play()
+  $('pet-sleep').onclick = () => (mochi.stats.asleep ? mochi.wake() : mochi.sleep())
+  $('pet-time').onclick = () => { skew += 6 * 3_600_000; mochi.reward(0) } // any action catches up on elapsed time
+  $('pet-reset').onclick = () => mochi.reset()
+
+  // ── multiplayer
+  const room = group({ idleAfter: 30000 })
+  const PEOPLE = ['ada', 'bob', 'cy', 'dee', 'eli']
+  const add = (id) => {
+    if (room.members.has(id)) return
+    const fig = document.createElement('figure')
+    fig.id = 'g-' + id
+    fig.innerHTML = `<div class="av sm"></div><figcaption>${id}</figcaption>`
+    $('g-room').append(fig)
+    room.join(id, mount(fig.firstChild, human, { seed: sd(id) }))
+    syncWho()
+  }
+  const syncWho = () => {
+    const ids = [...room.members.keys()]
+    $('g-who').innerHTML = ids.map((i) => `<option>${i}</option>`).join('')
+    $('g-who').value = ids[ids.length - 1] ?? ''
+  }
+  ;['ada', 'bob', 'cy'].forEach((id, i) => setTimeout(() => add(id), i * 500))
+  $('g-join').onclick = () => { const id = PEOPLE.find((p) => !room.members.has(p)); id && add(id) }
+  $('g-leave').onclick = () => {
+    const id = $('g-who').value
+    if (!id) return
+    room.members.get(id)?.handle.destroy()
+    room.leave(id)
+    $('g-' + id)?.remove()
+    syncWho()
+  }
+  $('g-talk').onclick = () => {
+    const on = $('g-talk').getAttribute('aria-pressed') !== 'true'
+    $('g-talk').setAttribute('aria-pressed', on)
+    document.querySelectorAll('.room figure').forEach((f) => f.classList.toggle('talking', on && f.id === 'g-' + $('g-who').value))
+    room.speaking($('g-who').value, on)
+  }
+  $('g-form').onsubmit = (e) => { e.preventDefault(); $('g-who').value && room.message($('g-who').value, $('g-in').value) }
+
+  // ── feel
+  const fFace = (m) => ($('f-av').innerHTML = createAvatar(emoji, { seed: sd('feel'), mood: m }))
+  const onFeel = () => { const m = feel($('f-in').value); $('f-out').textContent = m; fFace(m) }
+  $('f-in').oninput = onFeel
+  onFeel()
+
+  // ── context
+  const ch = mount($('c-av'), buddy, { seed: sd('context') })
+  const log = (e) => ($('c-log').textContent = `${new Date().toLocaleTimeString()}  ${e}\n` + $('c-log').textContent.replace('waiting for something to happen…', ''))
+  context(ch, { awayFor: 5000, onEvent: (e) => { log(e); react(ch, e) } })
+</script>
+<script type="module" src="../ui.js"></script>
+</body>
+</html>

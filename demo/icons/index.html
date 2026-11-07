@@ -8,6 +8,7 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
 <script>
   try { const t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light' // light by default; dark only when chosen
 </script>
 <style>
   :root { --bg:#fbf8f3; --fg:#1f1a2e; --muted:#6b6478; --card:#fff; --line:#ece6dc; --soft:#f3eee6; --accent:#7f5af0; color-scheme: light }
@@ -43,7 +44,7 @@
   .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 14px }
   .chips button { background: transparent; border: 1px solid var(--line); color: var(--fg); padding: 5px 12px; font-size: 13px }
   .chips button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg) }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(max(112px, calc(var(--ic, 36px) + 56px)), 1fr)); gap: 10px }
   .tile { display: grid; justify-items: center; gap: 8px; padding: 16px 8px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; cursor: pointer; color: var(--fg) }
   .tile:hover, .tile:focus-visible { border-color: var(--accent); outline: none }
   #sky { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px }
@@ -57,7 +58,8 @@
   .tabs button { padding: 5px 10px; font-size: 13px; cursor: pointer }
   .tabs button[aria-selected="true"] { border-color: var(--accent); color: var(--accent) }
   #sky .tile[aria-pressed="true"] { border-color: var(--accent) }
-  .tile .ic { height: 40px; display: grid; place-items: center }
+  .tile .ic { height: calc(var(--ic, 36px) + 4px); display: grid; place-items: center; transition: height .15s }
+  #sky .tile .ic { height: 40px }
   .tile span { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.2 }
   .count { color: var(--muted); font-size: 13px }
   dialog { border: 1px solid var(--line); border-radius: 20px; padding: 0; background: var(--card); color: var(--fg); width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px) }
@@ -80,12 +82,16 @@
 </style>
 </head>
 <body>
+<script src="../loader.js"></script>
 <header class="top"><div class="in">
   <a class="brand" href="../"><img src="../favicon.svg" alt="" />livatar</a>
   <nav aria-label="Site">
     <a href="../">Home</a>
     <a href="../docs/">Docs</a>
+    <a href="../components/">Components</a>
     <a href="./" aria-current="page">Icons</a>
+    <a href="../life/">Life</a>
+      <a href="../readme/">README</a>
     <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
   </nav>
   <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode">
@@ -299,6 +305,10 @@
     $('groups').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.g === group))
     $('customWrap').hidden = $('colorMode').value !== 'custom'
   }
+  // tiles grow with the icon size so big icons don't spill over their labels
+  const fit = () => document.documentElement.style.setProperty('--ic', $('size').value + 'px')
+  fit()
+  $('size').addEventListener('input', fit)
   for (const id of ['q', 'anim', 'trigger', 'tile', 'colorMode', 'custom', 'size']) $(id).addEventListener('input', draw)
   // every 2.5s, a few random icons switch to a new random animation
   setInterval(() => {

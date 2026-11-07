@@ -192,7 +192,7 @@ Entry points:
 - Animated: import { mount, buddy } from 'livatar'; const h = mount(el, buddy, { seed: 'ada', size: 64 }); h.emote('love', 900); h.nod()
 - From a config or code: mountCode(el, { style: 'planet', mood: 'happy', options: { kind: 'sun' } })
 - React / Next.js: import { LivatarCode } from 'livatar/react'; <LivatarCode variant="animal" seed={user.id} size={48} />  (already 'use client'; SSR renders static SVG)
-- Vue: 'livatar/vue' · Any framework: <livatar-avatar> from 'livatar/element' · Brand icons: icon(name) from 'livatar/icons'
+- Vue: 'livatar/vue' · Any framework: <live-avatar> from 'livatar/element' · Brand icons: icon(name) from 'livatar/icons'
 - Login forms: bindForm(handle, form) → covers eyes on password fields, happy/sad on validation
 
 Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human

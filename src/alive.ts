@@ -105,6 +105,8 @@ export interface AliveHandle {
   refresh(): void
   set(options: Partial<AliveOptions>): void
   readonly state: Readonly<AliveState>
+  /** The element this avatar lives in (null for a static handle). */
+  readonly el: Element | null
   destroy(): void
 }
 
@@ -183,6 +185,7 @@ const NOOP: AliveHandle = {
   refresh() {},
   set() {},
   state: { x: 0, y: 0, closed: 0, mouth: 0, shy: 0, mood: 'neutral' },
+  el: null,
   destroy() {},
 }
 
@@ -581,6 +584,7 @@ export function alive(target: Element | null | undefined, options: AliveOptions 
     get state() {
       return inst.s
     },
+    el: target,
     destroy() {
       clearTimeout(inst.moodTimer)
       instances.delete(inst)

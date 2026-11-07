@@ -49,7 +49,14 @@ createServer(async (req, res) => {
     return
   }
   try {
-    if ((await stat(file)).isDirectory()) file = join(file, 'index.html')
+    if ((await stat(file)).isDirectory()) {
+      // relative links in a page need the trailing slash: /demo/life → /demo/life/
+      if (!url.pathname.endsWith('/')) {
+        res.writeHead(301, { location: url.pathname + '/' + url.search }).end()
+        return
+      }
+      file = join(file, 'index.html')
+    }
     let body = await readFile(file)
     const type = types[extname(file)] || 'application/octet-stream'
     if (live && extname(file) === '.html') body = Buffer.from(body.toString().replace(/<\/body>|$/i, (m) => RELOAD + m))

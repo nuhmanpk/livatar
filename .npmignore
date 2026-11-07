@@ -1,0 +1,18 @@
+# The package ships only what "files" in package.json lists (dist, bin, skills, docs).
+# This list is a safety net in case "files" is ever removed.
+src/
+test/
+demo/
+scripts/
+assets/
+_site/
+node_modules/
+.github/
+*.map
+*.log
+*.tgz
+.DS_Store
+tsconfig.json
+tsup.config.ts
+ROADMAP.md
+package-lock.json
