@@ -7,9 +7,19 @@
 **Avatars that are alive.**
 
 [![npm](https://img.shields.io/npm/v/livatar?color=7f5af0)](https://www.npmjs.com/package/livatar)
+[![downloads](https://img.shields.io/npm/dm/livatar?color=7f5af0)](https://www.npmjs.com/package/livatar)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/livatar?label=gzip)](https://bundlephobia.com/package/livatar)
+[![zero deps](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/livatar?activeTab=dependencies)
+[![types](https://img.shields.io/npm/types/livatar)](https://www.npmjs.com/package/livatar)
+[![tree shakable](https://img.shields.io/badge/tree--shakable-yes-blue)](https://bundlephobia.com/package/livatar)
 [![license](https://img.shields.io/npm/l/livatar)](LICENSE)
+[![deploy](https://github.com/nuhmanpk/livatar/actions/workflows/pages.yml/badge.svg)](https://github.com/nuhmanpk/livatar/actions/workflows/pages.yml)
+[![demo](https://img.shields.io/badge/demo-live-ff6b6b)](https://nuhmanpk.github.io/livatar/)
+[![last commit](https://img.shields.io/github/last-commit/nuhmanpk/livatar)](https://github.com/nuhmanpk/livatar/commits/main)
+[![issues](https://img.shields.io/github/issues/nuhmanpk/livatar)](https://github.com/nuhmanpk/livatar/issues)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/nuhmanpk/livatar/pulls)
 [![GitHub stars](https://img.shields.io/github/stars/nuhmanpk/livatar?style=social)](https://github.com/nuhmanpk/livatar)
+
 
 **[Live demo and avatar builder →](https://nuhmanpk.github.io/livatar/)**
 
