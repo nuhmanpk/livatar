@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>livatar icons — animated social and dev icons</title>
+<meta name="description" content="540+ animated brand icons and badges as standalone SVG: GitHub, LinkedIn, Kaggle, Hugging Face, npm, Buy Me a Coffee and more. They animate inside <img>, so they work in READMEs." />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<script>
+  try { const t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+</script>
+<style>
+  :root { --bg:#fbf8f3; --fg:#1f1a2e; --muted:#6b6478; --card:#fff; --line:#ece6dc; --soft:#f3eee6; --accent:#7f5af0; color-scheme: light }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14121c; --fg:#f2eefb; --muted:#a39db3; --card:#1d1a28; --line:#2b2738; --soft:#24202f; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg:#14121c; --fg:#f2eefb; --muted:#a39db3; --card:#1d1a28; --line:#2b2738; --soft:#24202f; color-scheme: dark }
+  * { box-sizing: border-box }
+  [hidden] { display: none !important }
+  body { margin: 0; font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg) }
+  a { color: var(--accent) }
+  .top { position: sticky; top: 0; z-index: 5; backdrop-filter: blur(10px); background: color-mix(in srgb, var(--bg) 85%, transparent); border-bottom: 1px solid var(--line) }
+  .top .in { max-width: 1120px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 14px }
+  .brand { font-weight: 800; font-size: 18px; letter-spacing: -.02em; color: var(--fg); text-decoration: none; display: flex; align-items: center; gap: 8px }
+  .brand img { width: 26px; height: 26px }
+  .top nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap }
+  .top nav a { color: var(--fg); text-decoration: none; padding: 6px 10px; border-radius: 10px; font-size: 14px }
+  .top nav a:hover, .top nav a[aria-current="page"] { background: var(--soft) }
+  #theme { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; border-radius: 50%; background: var(--card); color: var(--fg); border: 1px solid var(--line); cursor: pointer }
+  #theme svg { width: 18px; height: 18px }
+  #theme .sun { display: none }
+  :root[data-theme="dark"] #theme .sun { display: block } :root[data-theme="dark"] #theme .moon { display: none }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #theme .sun { display: block } :root:not([data-theme="light"]) #theme .moon { display: none } }
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 16px 96px }
+  h1 { font-size: clamp(32px, 6vw, 52px); margin: 0; letter-spacing: -.03em }
+  .lead { color: var(--muted); font-size: 18px; max-width: 680px; margin: 8px 0 }
+  code, pre, textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px }
+  code { background: var(--soft); padding: 2px 6px; border-radius: 6px }
+  input, select, button, textarea { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg); min-width: 0 }
+  button { cursor: pointer }
+  button.primary { background: var(--accent); color: #fff; border: 0 }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin: 24px 0 12px; padding: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 16px }
+  .bar label { display: grid; gap: 4px; font-size: 12px; color: var(--muted) }
+  .bar .grow { flex: 1; min-width: 180px }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 14px }
+  .chips button { background: transparent; border: 1px solid var(--line); color: var(--fg); padding: 5px 12px; font-size: 13px }
+  .chips button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg) }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px }
+  .tile { display: grid; justify-items: center; gap: 8px; padding: 16px 8px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; cursor: pointer; color: var(--fg) }
+  .tile:hover, .tile:focus-visible { border-color: var(--accent); outline: none }
+  #sky { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 8px }
+  #sky .tile { padding: 12px 4px 10px; min-width: 0; touch-action: pan-y; -webkit-tap-highlight-color: transparent }
+  #sky .tile span { font-size: 11px }
+  #sky .row-label { grid-column: 1 / -1; font-size: 12px; color: var(--muted); margin: 6px 0 -2px }
+  @media (max-width: 820px) { #sky { grid-template-columns: repeat(5, minmax(0, 1fr)) } }
+  @media (max-width: 480px) { #sky { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0 8px }
+  .tabs b { font-size: 13px; margin-right: auto }
+  .tabs button { padding: 5px 10px; font-size: 13px; cursor: pointer }
+  .tabs button[aria-selected="true"] { border-color: var(--accent); color: var(--accent) }
+  #sky .tile[aria-pressed="true"] { border-color: var(--accent) }
+  .tile .ic { height: 40px; display: grid; place-items: center }
+  .tile span { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.2 }
+  .count { color: var(--muted); font-size: 13px }
+  dialog { border: 1px solid var(--line); border-radius: 20px; padding: 0; background: var(--card); color: var(--fg); width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px) }
+  dialog::backdrop { background: rgba(10, 8, 20, .45); backdrop-filter: blur(2px) }
+  .dlg { padding: 20px; display: grid; gap: 14px }
+  .dlg header { display: flex; align-items: center; gap: 12px }
+  .dlg header h2 { margin: 0; font-size: 20px; flex: 1 }
+  .previews { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; padding: 18px; border-radius: 14px; background: var(--soft) }
+  .previews.dark { background: #14121c }
+  .snip { display: grid; gap: 4px }
+  .snip small { color: var(--muted) }
+  .pre-wrap { position: relative }
+  pre { margin: 0; background: var(--soft); padding: 10px 44px 10px 12px; border-radius: 12px; white-space: pre-wrap; word-break: break-all }
+  .copy-btn { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; padding: 0; display: grid; place-items: center; border-radius: 8px; background: var(--card); color: var(--muted); border: 1px solid var(--line) }
+  .copy-btn svg { width: 15px; height: 15px }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end }
+  .row label { display: grid; gap: 4px; font-size: 12px; color: var(--muted) }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px }
+  @media (max-width: 560px) { .top nav a { padding: 6px 7px } }
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="../"><img src="../favicon.svg" alt="" />livatar</a>
+  <nav aria-label="Site">
+    <a href="../">Home</a>
+    <a href="../docs/">Docs</a>
+    <a href="./" aria-current="page">Icons</a>
+    <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+  </nav>
+  <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode">
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+</div></header>
+
+<main>
+  <h1>Animated icons</h1>
+  <p class="lead">Brand icons for socials, dev platforms, and sponsors that move. They are plain SVG with the animation inside, so they play in <code>&lt;img&gt;</code> tags, GitHub READMEs, and markdown. Click any icon for copy-ready snippets.</p>
+  <p><button type="button" class="lv-agent" data-agent-copy data-agent-task="Add animated brand icons (livatar/icons) and living UI icons (theme toggle, like, favorite) where they fit." aria-label="Copy setup prompt for AI coding agents">✨ Copy for AI agents <small>Claude, Cursor, Copilot, Codex…</small></button></p>
+
+  <h2 style="margin:28px 0 6px;font-size:20px">Living UI icons</h2>
+  <p class="lead" style="font-size:15px">Characters as interface icons: a sun and moon theme toggle that follows your cursor, plus UI toggles like theme, like and favorite. Hover or tap one to see it react, and click any tile for copy-ready JS, React, Next.js and AI agent code.</p>
+  <p id="skyHint" hidden style="font-size:13px;color:var(--muted);margin:0 0 8px">📱 Tap to react, drag a finger across the row, or tilt your phone to make them look around. <button id="tiltBtn" type="button" hidden>Enable tilt</button></p>
+  <div class="grid" id="sky" style="margin-bottom:8px"></div>
+  <div class="tabs" id="skyTabs" role="tablist" aria-label="Snippet"><b id="skyName">Sun (light)</b><button data-t="js" aria-selected="true">JavaScript</button><button data-t="react">React</button><button data-t="next">Next.js</button><button data-t="agent">AI agent prompt</button><button type="button" class="lv-agent" id="skyAgent" data-agent-copy style="padding:5px 12px;font-size:13px">✨ Copy for AI agents</button></div>
+  <pre id="skyCode"></pre>
+
+  <div class="bar" role="group" aria-label="Icon settings">
+    <label class="grow">Search <input id="q" type="search" placeholder="github, kaggle, coffee…" /></label>
+    <label>Animation <select id="anim"></select></label>
+    <label>Play <select id="trigger"><option value="loop">loop</option><option value="hover">on hover</option></select></label>
+    <label>Tile <select id="tile"><option value="none">none</option><option value="circle">circle</option><option value="rounded">rounded</option><option value="square">square</option></select></label>
+    <label>Color <select id="colorMode"><option value="brand">brand</option><option value="currentColor">text color</option><option value="custom">custom</option></select></label>
+    <label id="customWrap" hidden>Custom <input id="custom" type="color" value="#7f5af0" /></label>
+    <label>Size <input id="size" type="range" min="16" max="64" value="36" /></label>
+  </div>
+  <div class="chips" id="groups" role="group" aria-label="Category"></div>
+  <p class="count" id="count"></p>
+  <div class="grid" id="grid"></div>
+
+  <footer>Brand icons from <a href="https://simpleicons.org">Simple Icons</a> (CC0). The LinkedIn mark is a simple "in" glyph. All trademarks belong to their owners; use them to link to your profiles. · <a href="../">livatar</a></footer>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="dlg">
+    <header><span id="dlgIcon"></span><h2 id="dlgTitle"></h2><button id="close" type="button" aria-label="Close">✕</button></header>
+    <div class="previews" id="pLight"></div>
+    <div class="previews dark" id="pDark"></div>
+    <div class="row">
+      <label style="flex:1;min-width:160px">Badge label <input id="label" /></label>
+      <label>Badge theme <select id="btheme"><option value="brand">brand</option><option value="dark">dark</option><option value="light">light</option></select></label>
+      <label>Link URL <input id="href" placeholder="https://…" /></label>
+    </div>
+    <div class="snip"><small>Markdown (README) — hosted on GitHub Pages</small><pre id="sMd"></pre></div>
+    <div class="snip"><small>HTML</small><pre id="sHtml"></pre></div>
+    <div class="snip"><small>JavaScript</small><pre id="sJs"></pre></div>
+    <div class="row">
+      <button class="primary" id="dlIcon" type="button">Download icon SVG</button>
+      <button id="dlBadge" type="button">Download badge SVG</button>
+      <button id="cpSvg" type="button">Copy icon SVG</button>
+      <button id="agIcon" type="button" class="lv-agent" data-agent-copy>✨ Copy for AI agents</button>
+    </div>
+  </div>
+</dialog>
+
+<script type="module">
+  import { icon, badge, ICONS, ICON_GROUPS, ANIMATIONS } from '../../dist/icons.js'
+  import { mountCode } from '../../dist/index.js'
+  // living UI icons: characters that work as interface icons
+  const sky = document.getElementById('sky')
+  const handles = []
+  const P = (kind, mood, scale = 1) => ({ style: 'planet', mood, scale, background: false, options: { kind, satellite: false, stars: false } })
+  const tile = (label, cfg, onClick, alt) => {
+    const t = document.createElement('button'); t.type = 'button'; t.className = 'tile'
+    const d = document.createElement('div'); d.style.width = '48px'; d.style.height = '48px'
+    const sp = document.createElement('span'); sp.textContent = label
+    t.append(d, sp); sky.append(t)
+    let h = mountCode(d, { seed: label, ...cfg })
+    const ref = { get h() { return h } }; handles.push(ref)
+    const remount = (next, l) => { h.destroy(); d.innerHTML = ''; h = mountCode(d, { seed: label, ...next }); if (l) sp.textContent = l }
+    t.onpointerenter = () => h.emote('love', 900)
+    t.onclick = () => { onClick ? onClick(remount, () => h) : (h.emote('surprised', 700), h.nod()); select(t, label, cfg, alt) }
+    if (!sky.querySelector('[aria-pressed]')) select(t, label, cfg, alt)
+  }
+  const toggle = (labels, cfgs) => {
+    let on = 0
+    tile(labels[0], cfgs[0], (remount, h) => { on ^= 1; remount(cfgs[on], labels[on]); h().nod() }, { labels, cfg: cfgs[1] })
+  }
+  // snippets for the selected tile
+  let tab = 'js', sel
+  const cfgStr = (c) => JSON.stringify(c).replace(/"(\w+)":/g, '$1: ').replace(/"/g, "'").replace(/,/g, ', ')
+  const props = (c) => `variant="${c.style}" mood="${c.mood}"` + (c.scale && c.scale !== 1 ? ` scale={${c.scale}}` : '') + ' background={false}' + (c.options ? ` options={${cfgStr(c.options)}}` : '')
+  const snip = () => {
+    const { label, cfg, alt } = sel
+    const name = label.replace(/[^a-z]+/gi, '') || 'Icon'
+    if (tab === 'js') return alt
+      ? `import { mountCode } from 'livatar'\n\n// ${alt.labels[0]} ⇄ ${alt.labels[1]}: re-mount with the other config on click\nconst A = ${cfgStr(cfg)}\nconst B = ${cfgStr(alt.cfg)}\nlet on = false, h = mountCode(btn, A)\nbtn.onclick = () => { on = !on; h.destroy(); btn.innerHTML = ''; h = mountCode(btn, on ? B : A); h.nod() }\nbtn.onpointerenter = () => h.emote('love', 900)`
+      : `import { mountCode } from 'livatar'\n\nconst h = mountCode(btn, ${cfgStr(cfg)})\nbtn.onpointerenter = () => h.emote('love', 900)\nbtn.onclick = () => { h.emote('surprised', 700); h.nod() }`
+    const comp = alt
+      ? `export function ${name}Toggle() {\n  const [on, setOn] = useState(false)\n  const ref = useRef(null)\n  return (\n    <button aria-pressed={on} aria-label="${alt.labels[0]}" onClick={() => { setOn(!on); ref.current?.nod() }}\n      onPointerEnter={() => ref.current?.emote('love', 900)}>\n      {on\n        ? <LivatarCode key="b" ref={ref} size={40} ${props(alt.cfg)} />\n        : <LivatarCode key="a" ref={ref} size={40} ${props(cfg)} />}\n    </button>\n  )\n}`
+      : `export function ${name}Icon() {\n  const ref = useRef(null)\n  return (\n    <button aria-label="${label}" onPointerEnter={() => ref.current?.emote('love', 900)}\n      onClick={() => { ref.current?.emote('surprised', 700); ref.current?.nod() }}>\n      <LivatarCode ref={ref} size={40} ${props(cfg)} />\n    </button>\n  )\n}`
+    const imp = `import { useRef${alt ? ', useState' : ''} } from 'react'\nimport { LivatarCode } from 'livatar/react'`
+    if (tab === 'react') return `${imp}\n\n${comp}`
+    if (tab === 'next') return `// app/components/${name}.tsx — the component already ships 'use client'; SSR renders the static SVG, animation starts on hydrate\n'use client'\n${imp}\n\n${comp}\n\n// app/page.tsx\n// import { ${name}${alt ? 'Toggle' : 'Icon'} } from './components/${name}'`
+    return `Add a living "${label}" icon to this app using the npm package livatar (npm i livatar).\n\n- Character config: ${cfgStr(cfg)}${alt ? `\n- It is a toggle: "${alt.labels[0]}" uses the config above, "${alt.labels[1]}" uses ${cfgStr(alt.cfg)}. Swap configs on click (re-mount, or change the key in React) and reflect state with aria-pressed.` : ''}\n- Vanilla JS: import { mountCode } from 'livatar'; const h = mountCode(el, config). React/Next: import { LivatarCode } from 'livatar/react' and pass the same fields as props (style → variant), with a ref for the handle.\n- Wrap it in a real <button> with an aria-label. On pointerenter call h.emote('love', 900); on click call h.nod().\n- Size it 32–48px, background: false so it sits on any surface. Keep it working on touch (tap triggers click).\n- Docs: https://nuhmanpk.github.io/livatar/llms-full.txt`
+  }
+  const render = () => { const keep = tab; tab = 'agent'; document.getElementById('skyAgent').dataset.agentTask = snip(); tab = keep; document.getElementById('skyCode').textContent = snip(); document.getElementById('skyName').textContent = sel.label }
+  function select(t, label, cfg, alt) {
+    sky.querySelectorAll('[aria-pressed]').forEach((x) => x.removeAttribute('aria-pressed'))
+    t.setAttribute('aria-pressed', 'true'); sel = { label, cfg, alt }; render()
+  }
+  document.getElementById('skyTabs').onclick = (e) => {
+    const b = e.target.closest('button[data-t]'); if (!b) return
+    tab = b.dataset.t; document.querySelectorAll('#skyTabs button').forEach((x) => x.setAttribute('aria-selected', x === b)); render()
+  }
+  const label = (txt) => { const l = document.createElement('div'); l.className = 'row-label'; l.textContent = txt; sky.append(l) }
+
+  label('Space friends')
+  for (const [l, c] of [
+    ['Sun (light)', P('sun', 'happy', 1.05)], ['Moon (dark)', P('moon', 'sleepy', 1.2)], ['Star (favorite)', P('star', 'love')],
+    ['Comet (new)', P('comet', 'surprised', 1.15)], ['Earth (language)', P('earth', 'neutral', 1.2)], ['Saturn (explore)', P('saturn', 'wink')],
+    ['Mars (alerts)', P('mars', 'angry', 1.2)], ['Gas giant (settings)', P('gas', 'confused', 1.2)], ['Cloud (sync)', P('cloud', 'happy', 1.05)],
+  ]) tile(l, c)
+
+  label('UI toggles & states — click them')
+  toggle(['Theme: light', 'Theme: dark'], [P('sun', 'happy', 1.05), P('moon', 'sleepy', 1.2)])
+  toggle(['Like', 'Liked'], [P('heart', 'neutral', 1.1), P('heart', 'love', 1.1)])
+  toggle(['Liked', 'Unliked'], [P('heart', 'happy', 1.1), P('heart', 'sad', 1.1)])
+  toggle(['Favorite', 'Unfavorite'], [P('star', 'love'), P('star', 'sad')])
+  toggle(['Online', 'Offline'], [P('cloud', 'happy', 1.05), P('cloud', 'sleepy', 1.05)])
+  tile('Assistant', { style: 'bot', mood: 'happy', background: false })
+  tile('Empty state', { style: 'ghost', mood: 'sad', background: false })
+  tile('Error', { style: 'monster', mood: 'angry', background: false })
+  tile('Success', { style: 'emoji', mood: 'happy', background: false })
+
+  // mobile: no cursor to follow, so tilt the phone to steer their gaze, and let them glance around when idle
+  if (matchMedia('(hover: none), (pointer: coarse)').matches) {
+    const hint = document.getElementById('skyHint'); hint.hidden = false
+    const btn = document.getElementById('tiltBtn')
+    let tilting = false, idle
+    const onTilt = (e) => {
+      if (e.gamma == null) return
+      tilting = true
+      const x = Math.max(-1, Math.min(1, e.gamma / 30)), y = Math.max(-1, Math.min(1, (e.beta - 40) / 30))
+      handles.forEach((r) => r.h.look(x, y, 400))
+    }
+    const startTilt = () => { addEventListener('deviceorientation', onTilt); btn.hidden = true }
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      btn.hidden = false // iOS asks first
+      btn.onclick = () => DeviceOrientationEvent.requestPermission().then((r) => r === 'granted' && startTilt()).catch(() => {})
+    } else if ('DeviceOrientationEvent' in window) startTilt()
+    // idle glances: every few seconds, one friend looks around and blinks
+    idle = setInterval(() => {
+      if (tilting || document.hidden) return
+      const r = handles[(Math.random() * handles.length) | 0]
+      r.h.look(Math.random() * 2 - 1, Math.random() * 2 - 1, 1400); r.h.blink()
+    }, 1200)
+    // drag a finger across the row: each one you touch reacts
+    sky.addEventListener('pointermove', (e) => {
+      const t = document.elementFromPoint(e.clientX, e.clientY)?.closest('#sky .tile')
+      if (t && t !== sky._last) { sky._last = t; handles[[...sky.querySelectorAll('.tile')].indexOf(t)]?.h.emote('happy', 600) }
+    })
+  }
+  const $ = (id) => document.getElementById(id)
+
+  $('theme').onclick = () => {
+    const root = document.documentElement
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+    root.dataset.theme = dark ? 'light' : 'dark'
+    try { localStorage.setItem('livatar-theme', root.dataset.theme) } catch {}
+    if (typeof draw === 'function') draw()
+  }
+
+  const PROFILE = {
+    github: 'https://github.com/nuhmanpk', linkedin: 'https://www.linkedin.com/in/nuhmanpk', kaggle: 'https://www.kaggle.com/nuhmanpk',
+    npm: 'https://www.npmjs.com/package/livatar', buymeacoffee: 'https://www.buymeacoffee.com/nuhmanpk', githubsponsors: 'https://github.com/sponsors/nuhmanpk',
+    x: 'https://x.com/nuhmanpk', huggingface: 'https://huggingface.co/nuhmanpk',
+  }
+  const LABEL = { github: 'Follow on GitHub', githubsponsors: 'Sponsor', buymeacoffee: 'Buy me a coffee', kofi: 'Support on Ko-fi', npm: 'npm', linkedin: 'Connect', kaggle: 'Kaggle', huggingface: 'Hugging Face', youtube: 'Subscribe' }
+
+  for (const a of ['mixed', ...ANIMATIONS]) { const o = document.createElement('option'); o.value = o.textContent = a; $('anim').append(o) }
+  $('anim').value = 'mixed'
+  // "mixed": each icon gets a random animation, and keeps switching to new ones
+  const MIX = ANIMATIONS.filter((a) => a !== 'none')
+  const pickAnim = () => MIX[Math.floor(Math.random() * MIX.length)]
+
+  const groups = ['all', ...Object.keys(ICON_GROUPS)]
+  let group = 'all'
+  for (const g of groups) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = g; b.dataset.g = g
+    b.onclick = () => { group = g; draw() }; $('groups').append(b)
+  }
+
+  const opts = () => ({
+    animation: $('anim').value === 'mixed' ? 'doodle' : $('anim').value,
+    trigger: $('trigger').value,
+    tile: $('tile').value,
+    color: $('colorMode').value === 'custom' ? $('custom').value : $('colorMode').value,
+    size: Number($('size').value),
+  })
+
+  // hosted files exist for every icon × animation × tile in brand color (see scripts/build-site.mjs)
+  const base = new URL('svg/', location.href).href
+  const hostedName = (name, o) => `${name}-${o.animation}${o.tile !== 'none' ? '-' + o.tile : ''}.svg`
+  const isHosted = (o) => o.color === 'brand' && o.trigger === 'loop'
+
+  // near-black brand marks (GitHub, X, Notion…) would vanish on dark backgrounds
+  const isDark = () => document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+  const lum = (hex) => { const v = parseInt(hex, 16); return (0.2126 * ((v >> 16) & 255) + 0.7152 * ((v >> 8) & 255) + 0.0722 * (v & 255)) / 255 }
+  const view = (n, o) => (o.color === 'brand' && o.tile === 'none' && isDark() && lum(ICONS[n][1]) < 0.2 ? { ...o, color: 'currentColor' } : o)
+
+  function draw() {
+    const q = $('q').value.trim().toLowerCase()
+    const o = opts()
+    const names = (group === 'all' ? Object.keys(ICONS) : ICON_GROUPS[group]).filter((n) => !q || n.includes(q) || ICONS[n][0].toLowerCase().includes(q))
+    $('grid').innerHTML = names.map((n) => `<button class="tile" type="button" data-n="${n}" title="${ICONS[n][0]}"><div class="ic">${icon(n, view(n, $('anim').value === 'mixed' ? { ...o, animation: pickAnim() } : o))}</div><span>${ICONS[n][0]}</span></button>`).join('')
+    $('count').textContent = `${names.length} icon${names.length === 1 ? '' : 's'}`
+    $('groups').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.g === group))
+    $('customWrap').hidden = $('colorMode').value !== 'custom'
+  }
+  for (const id of ['q', 'anim', 'trigger', 'tile', 'colorMode', 'custom', 'size']) $(id).addEventListener('input', draw)
+  // every 2.5s, a few random icons switch to a new random animation
+  setInterval(() => {
+    if ($('anim').value !== 'mixed' || document.hidden) return
+    const tiles = [...$('grid').querySelectorAll('.tile')]
+    for (let k = 0; k < Math.max(3, tiles.length / 6); k++) {
+      const t = tiles[Math.floor(Math.random() * tiles.length)]; if (!t) break
+      t.querySelector('.ic').innerHTML = icon(t.dataset.n, view(t.dataset.n, { ...opts(), animation: pickAnim() }))
+    }
+  }, 2500)
+  draw()
+
+  /* ---------------- detail dialog ---------------- */
+  let current = null
+  const escHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  function detail() {
+    const n = current, o = { ...opts(), size: 48 }
+    const label = $('label').value || ICONS[n][0], theme = $('btheme').value, href = $('href').value || '#'
+    $('dlgTitle').textContent = ICONS[n][0]
+    $('dlgIcon').innerHTML = icon(n, { ...o, size: 28 })
+    for (const [id, dark] of [['pLight', false], ['pDark', true]])
+      $(id).innerHTML = icon(n, o) + icon(n, { ...o, tile: 'circle' }) + icon(n, { ...o, tile: 'rounded' }) +
+        badge(n, label, { animation: o.animation, trigger: o.trigger, theme }) + badge(n, label, { animation: o.animation, theme: dark ? 'dark' : 'light' })
+    const hosted = base + hostedName(n, o)
+    $('sMd').textContent = isHosted(o)
+      ? `[<img src="${hosted}" width="32" alt="${ICONS[n][0]}">](${href})`
+      : `Download the SVG (custom colors and hover play aren't hosted), commit it, then:\n[<img src="icons/${n}.svg" width="32" alt="${ICONS[n][0]}">](${href})`
+    $('sHtml').textContent = `<a href="${href}" aria-label="${ICONS[n][0]}">\n  <img src="${isHosted(o) ? hosted : n + '.svg'}" width="32" height="32" alt="">\n</a>`
+    $('agIcon').dataset.agentTask = `Add the animated ${ICONS[n][0]} icon from livatar/icons: icon('${n}', ${JSON.stringify({ animation: o.animation, tile: o.tile, size: 32 })}) linking to my profile, plus a badge('${n}', ${JSON.stringify(label)}) in the README if there is one.`
+    $('sJs').textContent = `import { icon, badge } from 'livatar/icons'\n\nel.innerHTML = icon('${n}', ${JSON.stringify({ animation: o.animation, tile: o.tile, color: o.color === 'brand' ? undefined : o.color, trigger: o.trigger === 'loop' ? undefined : o.trigger, size: 32 })})\nel.innerHTML = badge('${n}', ${JSON.stringify(label)}, { theme: '${theme}' })`
+  }
+  $('grid').addEventListener('click', (e) => {
+    const t = e.target.closest('.tile'); if (!t) return
+    current = t.dataset.n
+    $('label').value = LABEL[current] ?? ICONS[current][0]
+    $('href').value = PROFILE[current] ?? ''
+    detail(); $('dlg').showModal()
+  })
+  for (const id of ['label', 'btheme', 'href']) $(id).addEventListener('input', detail)
+  $('close').onclick = () => $('dlg').close()
+  $('dlg').addEventListener('click', (e) => { if (e.target === $('dlg')) $('dlg').close() })
+
+  const save = (svg, file) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })); a.download = file; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000) }
+  $('dlIcon').onclick = () => save(icon(current, { ...opts(), size: 32 }), `${current}.svg`)
+  $('dlBadge').onclick = () => save(badge(current, $('label').value || ICONS[current][0], { animation: opts().animation, theme: $('btheme').value }), `${current}-badge.svg`)
+  $('cpSvg').onclick = async () => { try { await navigator.clipboard.writeText(icon(current, { ...opts(), size: 32 })); $('cpSvg').textContent = 'Copied' ; setTimeout(() => ($('cpSvg').textContent = 'Copy icon SVG'), 1200) } catch {} }
+
+  // copy buttons on snippets
+  const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>'
+  const DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>'
+  document.querySelectorAll('pre').forEach((pre) => {
+    const wrap = document.createElement('div'); wrap.className = 'pre-wrap'; pre.replaceWith(wrap); wrap.append(pre)
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'copy-btn'; b.innerHTML = COPY; b.setAttribute('aria-label', 'Copy')
+    b.onclick = async () => { try { await navigator.clipboard.writeText(pre.textContent); b.innerHTML = DONE; setTimeout(() => (b.innerHTML = COPY), 1200) } catch {} }
+    wrap.append(b)
+  })
+</script>
+<script type="module" src="../ui.js"></script>
+</body>
+</html>

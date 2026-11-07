@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="alternate" type="text/plain" href="../../llms.txt" title="llms.txt" />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>livatar docs</title>
+<meta name="description" content="Documentation for livatar: tiny, zero-dependency SVG avatars that follow your cursor, blink, breathe, react to typing and show 10 moods. Guides for every framework, live examples, and the full API." />
+<script>
+  // theme before paint: ?theme=dark|light wins (handy for screenshots), then the saved choice
+  try {
+    const q = new URLSearchParams(location.search).get('theme')
+    const t = q === 'dark' || q === 'light' ? q : localStorage.getItem('livatar-theme')
+    if (t) document.documentElement.dataset.theme = t
+  } catch {}
+</script>
+<link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="./" aria-label="livatar docs home"><span class="logo" id="logo"></span>livatar <span class="badge">docs</span></a>
+    <nav class="toplinks" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="./" aria-current="page">Docs</a>
+      <a href="../icons/">Icons</a>
+      <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+    </nav>
+    <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <details class="toc" id="toc" open>
+      <summary>Contents <span class="cur" id="tocCur"></span></summary>
+      <div class="toc-body">
+        <div class="toc-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="tocFilter" type="search" placeholder="Filter sections…" aria-label="Filter sections" autocomplete="off" />
+        </div>
+        <nav aria-label="Documentation"><ol id="tocList"></ol></nav>
+      </div>
+    </details>
+  </aside>
+
+  <main class="content" id="content">
+<!-- ============================================================ -->
+<section id="introduction">
+  <h1>livatar docs</h1>
+  <p class="lead">Tiny, zero-dependency SVG avatars that are <b>alive</b>. They follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes on password fields, and show ten moods.</p>
+  <p><button type="button" class="lv-agent" data-agent-copy data-agent-task="" aria-label="Copy setup prompt for AI coding agents">✨ Copy for AI agents <small>Claude, Cursor, Copilot, Codex…</small></button></p>
+  <div class="hero-strip" id="heroStrip" aria-label="One avatar of each character"></div>
+  <div class="note"><p><b>For AI agents:</b> a plain-text summary of the whole API lives at <a href="../../llms.txt">llms.txt</a>. Point your coding assistant at it.</p></div>
+  <h2 id="why">Introduction &amp; why</h2>
+  <p>Most avatar libraries draw a picture and stop there. livatar draws a <em>character</em>: every avatar has eyes that track the pointer, a mouth that moves while you type, a body that breathes, and a mood. That makes empty states, login forms, chat bots and presence lists feel friendly without shipping a video, a Lottie file, or an animation runtime.</p>
+  <div class="cards">
+    <div class="card"><b>27 characters</b><span>human (baby to grandparent), buddy, memoji, clay, dev, animal (16 species), dino, alien, planet, food, fruit, drink, plant, monster, ghost, emoji, initials, bot, blob, pixel, ui, device, tech, vehicle, money, home, office.</span></div>
+    <div class="card"><b>10 moods</b><span>Static in SVG, or live with <code>handle.emote()</code>.</span></div>
+    <div class="card"><b>One code per avatar</b><span>A short URL-safe string you can store, share and render anywhere.</span></div>
+    <div class="card"><b>Small</b><span>One style plus the engine is about 9 KB gzipped. Zero dependencies.</span></div>
+    <div class="card"><b>Deterministic</b><span>The same seed draws the same avatar on the server and in the browser.</span></div>
+    <div class="card"><b>Polite</b><span>One shared rAF loop, offscreen avatars pause, honours reduced motion.</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="builder-section">
+  <h2 id="builder">Builder</h2>
+  <p>Pick a character and tweak it. You get a short <b>livatar code</b>: store it with the user, put it in a URL, and render it anywhere with <code>render(code)</code>. Links to this page that end in <code>#lv…</code> open straight into the builder.</p>
+  <div class="live builder">
+    <div class="preview">
+      <div class="big" id="bPreview"></div>
+      <div class="sizes" id="bSizes"></div>
+      <div class="btns" style="justify-content:center">
+        <button class="ghost sm" type="button" data-act="talk">Talk</button>
+        <button class="ghost sm" type="button" data-act="nod">Nod</button>
+        <button class="ghost sm" type="button" data-act="shake">Shake</button>
+        <button class="ghost sm" type="button" data-act="poke">Poke</button>
+      </div>
+      <div class="btns" style="justify-content:center">
+        <button class="sm" type="button" id="bShuffle">Shuffle</button>
+        <button class="ghost sm" type="button" id="bPng">Download PNG</button>
+      </div>
+    </div>
+    <div>
+      <div class="form-grid" id="controls">
+        <label>Character <select id="bStyle"></select></label>
+        <label>Seed
+          <span class="row" style="gap:6px;flex-wrap:nowrap"><input id="bSeed" value="nuhmanpk" style="flex:1;width:100%" /><button class="ghost" id="bDice" type="button" title="Random seed" aria-label="Random seed">🎲</button></span>
+        </label>
+        <label>Mood <select id="bMood"></select></label>
+        <label>Shape <select id="bShape"><option>circle</option><option>rounded</option><option>square</option></select></label>
+        <label>Palette <select id="bPalette"><option value="">style default</option></select></label>
+        <label>Background <select id="bBg"><option value="">palette</option><option value="none">transparent</option><option value="custom">custom color</option></select></label>
+        <label id="bBgColorWrap" hidden>Background color <input type="color" id="bBgColor" value="#ffd6a5" /></label>
+        <label class="check"><input type="checkbox" id="bGradient" /> Gradient</label>
+        <label class="check"><input type="checkbox" id="bFlip" /> Flip</label>
+        <label class="check"><input type="checkbox" id="bBorder" /> Border</label>
+        <div class="wide form-grid" id="bOptions"></div>
+      </div>
+      <h4>Your livatar code</h4>
+      <div class="codeline">
+        <input id="bCode" readonly aria-label="livatar code" />
+        <button id="bCopy" type="button">Copy</button>
+        <button id="bLink" class="ghost" type="button" title="Copy a link to this avatar">Link</button>
+      </div>
+      <div class="codeline" style="margin-top:8px">
+        <input id="bLoad" placeholder="Paste a code to load it…" aria-label="Load a livatar code" />
+        <button id="bLoadBtn" class="ghost" type="button">Load</button>
+      </div>
+      <div class="snips">
+        <small>HTML (web component)</small><pre data-lang="html"><code id="sHtml"></code></pre>
+        <small>JavaScript</small><pre data-lang="js"><code id="sJs"></code></pre>
+        <small>React</small><pre data-lang="jsx"><code id="sReact"></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="install-section">
+  <h2 id="install">Install</h2>
+  <div data-tabs>
+    <div class="tabs" role="tablist" aria-label="Package manager">
+      <button type="button" role="tab" data-tab="npm">npm</button>
+      <button type="button" role="tab" data-tab="pnpm">pnpm</button>
+      <button type="button" role="tab" data-tab="yarn">yarn</button>
+      <button type="button" role="tab" data-tab="bun">bun</button>
+      <button type="button" role="tab" data-tab="cdn">CDN</button>
+    </div>
+    <div role="tabpanel" data-panel="npm"><script type="text/plain" class="snip" data-lang="bash">npm i livatar</script></div>
+    <div role="tabpanel" data-panel="pnpm"><script type="text/plain" class="snip" data-lang="bash">pnpm add livatar</script></div>
+    <div role="tabpanel" data-panel="yarn"><script type="text/plain" class="snip" data-lang="bash">yarn add livatar</script></div>
+    <div role="tabpanel" data-panel="bun"><script type="text/plain" class="snip" data-lang="bash">bun add livatar</script></div>
+    <div role="tabpanel" data-panel="cdn">
+<script type="text/plain" class="snip" data-lang="html"><!-- ES module -->
+<script type="module">
+  import { mount, buddy } from 'https://unpkg.com/livatar/dist/index.js'
+  mount(document.querySelector('#me'), buddy, { seed: 'ada' })
+<\/script>
+
+<!-- classic script: a global `Livatar` + the <live-avatar> element -->
+<script src="https://unpkg.com/livatar"><\/script></script>
+    </div>
+  </div>
+  <p>Entry points (all ESM + CJS, with types):</p>
+  <div class="tw"><table>
+    <thead><tr><th>Import</th><th>What you get</th></tr></thead>
+    <tbody>
+      <tr><td><code>livatar</code></td><td>Core: <code>createAvatar</code>, <code>mount</code>, <code>mountCode</code>, <code>alive</code>, codes, forms, export, palettes, all styles (tree-shakable)</td></tr>
+      <tr><td><code>livatar/element</code></td><td>Registers <code>&lt;live-avatar&gt;</code> (side effect) and exports <code>defineElement</code></td></tr>
+      <tr><td><code>livatar/react</code></td><td><code>&lt;Livatar&gt;</code> and <code>&lt;LivatarCode&gt;</code> (marked <code>"use client"</code>)</td></tr>
+      <tr><td><code>livatar/vue</code></td><td><code>Livatar</code>, <code>LivatarCode</code>, <code>LivatarPlugin</code></td></tr>
+      <tr><td><code>livatar/svelte</code>, <code>livatar/action</code></td><td>The <code>livatar</code> / <code>livatarCode</code> actions (<code>use:livatar</code>)</td></tr>
+      <tr><td><code>livatar/global</code></td><td>IIFE build: <code>window.Livatar</code>, also registers <code>&lt;live-avatar&gt;</code></td></tr>
+      <tr><td><code>npx livatar</code></td><td>The CLI</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="quick-start-section">
+  <h2 id="quick-start">Quick start</h2>
+  <p>Give <code>mount()</code> an element, a style, and a seed. It renders the SVG and returns a <b>handle</b> you can drive.</p>
+<script type="text/plain" class="snip" data-lang="html"><div id="me" style="width:96px"></div></script>
+<script type="text/plain" class="snip" data-lang="js">import { mount, buddy } from 'livatar'
+
+const handle = mount(document.querySelector('#me'), buddy, {
+  seed: 'ada@example.com', // anything stable: user id, email, name…
+  mood: 'happy',
+})
+
+handle.talk(1500)              // animate speaking
+handle.emote('surprised', 800) // react for a moment, then go back
+handle.nod()                   // yes</script>
+  <div class="live">
+    <div class="row">
+      <div class="av-m" id="qsAv"></div>
+      <div class="stack">
+        <div class="btns" id="qsBtns">
+          <button class="ghost sm" type="button" data-q="talk">talk(1500)</button>
+          <button class="ghost sm" type="button" data-q="surprised">emote('surprised', 800)</button>
+          <button class="ghost sm" type="button" data-q="nod">nod()</button>
+          <button class="ghost sm" type="button" data-q="shake">shake()</button>
+          <button class="ghost sm" type="button" data-q="blink">blink()</button>
+        </div>
+        <small>Move your pointer, press the arrow keys, click it.</small>
+      </div>
+    </div>
+  </div>
+  <p>Prefer HTML? The web component needs no JavaScript of your own:</p>
+<script type="text/plain" class="snip" data-lang="html"><script type="module" src="https://unpkg.com/livatar/dist/element.js"><\/script>
+<live-avatar seed="ada" variant="animal" size="64" mood="happy"></live-avatar></script>
+</section>
+
+<!-- ============================================================ -->
+<section id="use-cases-section">
+  <h2 id="use-cases">Use cases</h2>
+  <p>Patterns you can lift straight into a product. Four live recipes below, plus ten built for mobile. The <a href="../#use-cases">homepage has all 43 as working demos</a>.</p>
+  <div class="uc-grid">
+    <div class="uc-card"><h4>Empty state</h4><div class="uc-row"><div class="uc-av" id="ucEmpty"></div><div><b id="ucEmptyTxt">No new messages</b><br><button type="button" class="ghost" id="ucEmptyGo">Check again</button></div></div></div>
+    <div class="uc-card"><h4>Signup with bindForm</h4><div class="uc-row"><div class="uc-av" id="ucForm"></div><form id="ucFormEl" novalidate><input type="email" required placeholder="you@example.com" aria-label="Email" /><button type="submit">Join</button></form></div></div>
+    <div class="uc-card"><h4>Chat bot that talks</h4><div class="uc-row"><div class="uc-av" id="ucBot"></div><div><span id="ucSay">Ask me something.</span><br><button type="button" class="ghost" id="ucTalk">Send</button></div></div></div>
+    <div class="uc-card"><h4>Feedback</h4><div class="uc-row"><div class="uc-av" id="ucRate"></div><input id="ucRateIn" type="range" min="0" max="4" value="2" aria-label="Rating" /></div></div>
+  </div>
+  <script type="text/plain" data-lang="js">// Empty state: sleepy until the user checks again
+const h = mountCode(el, { style: 'animal', seed: 'inbox', mood: 'sleepy', options: { species: 'koala' } })
+button.onclick = async () => { h.emote('surprised'); const items = await load(); if (!items.length) { h.emote('sad'); h.shake() } }
+
+// Forms: native validation drives the mood; call success()/error() when your request finishes
+const f = bindForm(mount(av, buddy, { seed: 'me' }), form)
+form.onsubmit = async () => (await save()) ? f.success() : f.error()
+
+// Chat: talk while tokens stream, set the mood per message
+bot.emote('happy'); for await (const chunk of stream) { bot.talk(300); append(chunk) }
+
+// Feedback: map a score to a mood
+slider.oninput = () => face.emote(['angry', 'sad', 'neutral', 'happy', 'love'][slider.value])</script>
+  <h3 id="use-cases-mobile">On mobile (touch, no mouse)</h3>
+  <p>Ten patterns built for phones: fingers, motion sensors, battery and network. They work with a mouse too, so try them here, or open this page on your phone.</p>
+  <div class="uc-grid">
+    <div class="uc-card"><h4>Tap to pet</h4><div class="uc-row"><button type="button" class="uc-av uc-tap" id="mTap" aria-label="Pet the cat"></button><span id="mTapTxt">Tap me.</span></div></div>
+    <div class="uc-card"><h4>Long-press to react</h4><div class="uc-row"><button type="button" class="uc-av uc-tap" id="mHold" aria-label="Press and hold"></button><span id="mHoldTxt">Press and hold.</span></div></div>
+    <div class="uc-card"><h4>Swipe to like or skip</h4><div class="uc-row"><div class="uc-av uc-swipe" id="mSwipe" aria-label="Swipe left or right"></div><span id="mSwipeTxt">Swipe the card ← →</span></div></div>
+    <div class="uc-card"><h4>Pull to refresh</h4><div class="uc-pull" id="mPull"><div class="uc-av" id="mPullAv"></div><span id="mPullTxt">Pull down ↓</span></div></div>
+    <div class="uc-card"><h4>PIN pad with feedback</h4><div class="uc-row"><div class="uc-av" id="mPin"></div><div><div class="uc-dots" id="mPinDots">○○○○</div><div class="uc-keys" id="mPinKeys"></div></div></div></div>
+    <div class="uc-card"><h4>Tilt to look around</h4><div class="uc-row"><div class="uc-av" id="mTilt"></div><div><span id="mTiltTxt">Tilt your phone.</span><br><button type="button" class="ghost" id="mTiltGo">Enable tilt</button></div></div></div>
+    <div class="uc-card"><h4>Shake to wake</h4><div class="uc-row"><div class="uc-av" id="mShake"></div><div><span id="mShakeTxt">Shake your phone.</span><br><button type="button" class="ghost" id="mShakeGo">Enable motion</button></div></div></div>
+    <div class="uc-card"><h4>Face-down to sleep</h4><div class="uc-row"><div class="uc-av" id="mFlip"></div><span id="mFlipTxt">Put the phone face down.</span></div></div>
+    <div class="uc-card"><h4>Double-tap to wink</h4><div class="uc-row"><button type="button" class="uc-av uc-tap" id="mDbl" aria-label="Double-tap"></button><span id="mDblTxt">Double-tap me.</span></div></div>
+    <div class="uc-card"><h4>Battery &amp; offline aware</h4><div class="uc-row"><div class="uc-av" id="mBatt"></div><span id="mBattTxt">Checking…</span></div></div>
+  </div>
+  <script type="text/plain" data-lang="js">// Tap to pet: a tap is a click, no mouse needed
+btn.onclick = () => { h.emote('love', 900); h.nod() }
+
+// Long-press: start a timer on pointerdown, cancel on pointerup
+btn.onpointerdown = () => (t = setTimeout(() => { h.emote('love', 1500); navigator.vibrate?.(20) }, 450))
+btn.onpointerup = btn.onpointerleave = () => clearTimeout(t)
+
+// Swipe: track the horizontal distance from pointerdown
+card.onpointerup = (e) => { const dx = e.clientX - x0; if (Math.abs(dx) > 40) h.emote(dx > 0 ? 'love' : 'sad', 900) }
+
+// Pull to refresh: surprised while pulling, happy when the data lands
+list.addEventListener('touchmove', () => h.emote('surprised'))
+onRefreshed(() => { h.emote('happy', 1200); h.nod() })
+
+// PIN pad: wrong code shakes, right code nods (plus a tiny buzz)
+ok ? (h.emote('happy'), h.nod()) : (h.emote('sad'), h.shake(), navigator.vibrate?.([30, 40, 30]))
+
+// Tilt: map phone orientation to gaze (iOS needs permission from a tap)
+addEventListener('deviceorientation', (e) => h.look(e.gamma / 30, (e.beta - 40) / 30, 400))
+
+// Shake: watch acceleration spikes (iOS: DeviceMotionEvent.requestPermission() from a tap)
+addEventListener('devicemotion', (e) => { const a = e.accelerationIncludingGravity; if (Math.hypot(a.x, a.y, a.z) > 24) { h.emote('confused'); h.shake() } })
+
+// Face-down: beta near ±180 means the screen faces the floor
+addEventListener('deviceorientation', (e) => h.emote(Math.abs(e.beta) > 150 ? 'sleepy' : 'neutral'))
+
+// Double-tap: two clicks within 300ms
+btn.onclick = () => { const t = performance.now(); if (t - last < 300) h.emote('wink', 1200); last = t }
+
+// Battery + network
+const b = await navigator.getBattery?.(); if (b?.level < 0.2) h.emote('sleepy')
+addEventListener('offline', () => h.emote('sad')); addEventListener('online', () => h.emote('happy'))</script>
+  <h3 id="use-case-index">All use cases</h3>
+  <div class="uc-cat"><b>Forms</b> <a class="uc-chip" href="../#use-cases">Login that cares</a> <a class="uc-chip" href="../#use-cases">Username availability</a> <a class="uc-chip" href="../#use-cases">Live email check</a> <a class="uc-chip" href="../#use-cases">2FA code</a> <a class="uc-chip" href="../#use-cases">Character limit</a> <a class="uc-chip" href="../#use-cases">Card number</a> <a class="uc-chip" href="../#use-cases">Password strength</a></div><div class="uc-cat"><b>States</b> <a class="uc-chip" href="../#use-cases">Empty state</a> <a class="uc-chip" href="../#use-cases">No search results</a> <a class="uc-chip" href="../#use-cases">Offline</a> <a class="uc-chip" href="../#use-cases">404 page</a> <a class="uc-chip" href="../#use-cases">Server error</a> <a class="uc-chip" href="../#use-cases">Maintenance</a> <a class="uc-chip" href="../#use-cases">Session timeout</a> <a class="uc-chip" href="../#use-cases">Loading</a> <a class="uc-chip" href="../#use-cases">Permission denied</a></div><div class="uc-cat"><b>Feedback</b> <a class="uc-chip" href="../#use-cases">Rating slider</a> <a class="uc-chip" href="../#use-cases">NPS score</a> <a class="uc-chip" href="../#use-cases">Reactions</a> <a class="uc-chip" href="../#use-cases">Was this helpful?</a></div><div class="uc-cat"><b>Social</b> <a class="uc-chip" href="../#use-cases">Chat bot</a> <a class="uc-chip" href="../#use-cases">Typing indicator</a> <a class="uc-chip" href="../#use-cases">Mentions</a> <a class="uc-chip" href="../#use-cases">Leaderboard</a> <a class="uc-chip" href="../#use-cases">Notifications</a> <a class="uc-chip" href="../#use-cases">Team presence</a></div><div class="uc-cat"><b>Commerce</b> <a class="uc-chip" href="../#use-cases">Shopping cart</a> <a class="uc-chip" href="../#use-cases">Checkout</a> <a class="uc-chip" href="../#use-cases">Price drop alert</a></div><div class="uc-cat"><b>Onboarding</b> <a class="uc-chip" href="../#use-cases">Setup wizard</a> <a class="uc-chip" href="../#use-cases">Quiz</a> <a class="uc-chip" href="../#use-cases">Pick your avatar</a> <a class="uc-chip" href="../#use-cases">Shuffle a profile</a> <a class="uc-chip" href="../#use-cases">Download your avatar</a></div><div class="uc-cat"><b>Productivity</b> <a class="uc-chip" href="../#use-cases">Pomodoro</a> <a class="uc-chip" href="../#use-cases">To-do list</a> <a class="uc-chip" href="../#use-cases">Dark mode switch</a> <a class="uc-chip" href="../#use-cases">Upload</a></div><div class="uc-cat"><b>Fun</b> <a class="uc-chip" href="../#use-cases">Pet me</a> <a class="uc-chip" href="../#use-cases">Mood mirror</a> <a class="uc-chip" href="../#use-cases">Follow the cursor</a> <a class="uc-chip" href="../#use-cases">Keyboard steering</a> <a class="uc-chip" href="../#use-cases">Zero-JS web component</a></div>
+</section>
+
+<section id="characters-section" data-subnav>
+  <h2 id="characters">Characters</h2>
+  <p>Every style (27 of them) shares one engine. Each style is a plain object you import by name (<code>import { animal } from 'livatar'</code>), and each has its own <code>options</code>. Every option accepts <code>'random'</code> (the default), which lets the seed decide. The option tables below are generated at runtime from <code>styles[name].variants</code>, so they are always in sync with the library.</p>
+  <div id="charSections"></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="moods-section">
+  <h2 id="moods">Moods</h2>
+  <p>Ten expressions, drawn by every style: <span id="moodList"></span>. Import the list as <code>MOODS</code>.</p>
+  <div class="live">
+    <div class="tabs" id="moodTabs" aria-label="Character for the mood gallery"></div>
+    <div class="moodgal" id="moodGal"></div>
+  </div>
+  <h3 id="moods-static-live">Static vs live</h3>
+  <p>Pass <code>mood</code> when you render: it is baked into the SVG, so it works in <code>&lt;img&gt;</code>, email and server HTML. Change it later with <code>handle.emote(mood)</code>, or flash it with <code>handle.emote(mood, ms)</code>, which reverts afterwards.</p>
+<script type="text/plain" class="snip" data-lang="js">import { createAvatar, toDataUri, mount, emoji } from 'livatar'
+
+createAvatar(emoji, { seed: 'ada', mood: 'love' }) // static '<svg …>'
+img.src = toDataUri(emoji, { seed: 'ada', mood: 'love' })
+
+const h = mount(el, emoji, { seed: 'ada' })
+h.emote('happy')          // switch mood (redraws the face)
+h.emote('surprised', 800) // temporary reaction</script>
+  <div class="live">
+    <div class="row top">
+      <figure class="cap"><img id="moodImg" width="96" height="96" alt="A static emoji avatar in the love mood" /><figcaption>static &lt;img&gt;</figcaption></figure>
+      <figure class="cap"><div class="av-m" id="moodLive"></div><figcaption id="moodLiveCap">live: neutral</figcaption></figure>
+      <div class="stack">
+        <div class="btns" id="moodBtns"></div>
+        <label class="check"><input type="checkbox" id="moodFlash" /> Temporary (1200 ms)</label>
+      </div>
+    </div>
+  </div>
+  <h3 id="mood-usage">Usage</h3>
+  <div class="cases">
+    <section class="case">
+      <h4>Empty state</h4><p>Something sleepy instead of a blank box.</p>
+      <div class="row"><div class="av" id="uEmpty"></div>
+        <div class="stack"><b id="uEmptyTxt">No new messages</b><button class="sm ghost" type="button" id="uEmptyGo" style="justify-self:start">Check again</button></div></div>
+    </section>
+    <section class="case">
+      <h4>Feedback</h4><p>The face answers before you submit.</p>
+      <div class="row"><div class="av" id="uRate"></div>
+        <div class="stack"><input id="uRateIn" type="range" min="0" max="4" value="2" aria-label="Rating" /><small id="uRateTxt">okay</small></div></div>
+    </section>
+  </div>
+  <h3 id="mood-motion">Mood motion &amp; extras</h3>
+  <p>Moods change how an avatar moves, not just how it looks. Floating extras (hearts, zzz, a tear) are tagged <code>data-lv-float</code>, so they bob or drip.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Mood</th><th>Face</th><th>Motion</th><th>Extras</th></tr></thead>
+    <tbody>
+      <tr><td><code>neutral</code></td><td>The style's seeded default face</td><td>Normal</td><td>none</td></tr>
+      <tr><td><code>happy</code></td><td>Smiling eyes, open grin</td><td>Bounces</td><td>Blush</td></tr>
+      <tr><td><code>sad</code></td><td>Worried brows, frown</td><td>Looks down, breathes slowly</td><td>A dripping tear</td></tr>
+      <tr><td><code>angry</code></td><td>Lowered brows, clenched teeth</td><td>Trembles</td><td>Anger mark</td></tr>
+      <tr><td><code>surprised</code></td><td>Big eyes, raised brows, "o" mouth</td><td>Does not blink</td><td>Surprise lines</td></tr>
+      <tr><td><code>sleepy</code></td><td>Closed eyes</td><td>Droops, breathes slowly, no blinking</td><td>zzz</td></tr>
+      <tr><td><code>love</code></td><td>Heart eyes</td><td>Gaze sways</td><td>Hearts</td></tr>
+      <tr><td><code>wink</code></td><td>One eye closed, smirk</td><td>Normal</td><td>Sparkle</td></tr>
+      <tr><td><code>silly</code></td><td>Uneven eyes, tongue out</td><td>Wobbles</td><td>none</td></tr>
+      <tr><td><code>confused</code></td><td>Uneven eyes and brows, wavy mouth</td><td>Tilts its head</td><td>Question mark</td></tr>
+    </tbody>
+  </table></div>
+  <p>Two more ways moods change on their own: clicking an avatar flashes <code>pokeMood</code> (default <code>'surprised'</code>), and <code>alive: { sleepAfter: 30000 }</code> makes it doze off when nobody touches the page for 30 seconds.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="customization-section" data-subnav>
+  <h2 id="customization">Customization</h2>
+  <p>Every look option is part of <code>AvatarOptions</code>, shared by <code>createAvatar</code>, <code>mount</code>, the components and the codes.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>seed</code></td><td><code>string | number</code></td><td><code>'livatar'</code></td><td>Same seed, same avatar</td></tr>
+      <tr><td><code>size</code></td><td><code>number | string</code></td><td>fluid (<code>100%</code>)</td><td>Pixels or any CSS length</td></tr>
+      <tr><td><code>mood</code></td><td>one of <code>MOODS</code></td><td><code>'neutral'</code></td><td></td></tr>
+      <tr><td><code>shape</code></td><td><code>'circle' | 'rounded' | 'square'</code></td><td><code>'circle'</code></td><td></td></tr>
+      <tr><td><code>radius</code></td><td><code>number</code> 0…50</td><td>from <code>shape</code></td><td>Overrides <code>shape</code>; 50 is a circle</td></tr>
+      <tr><td><code>background</code></td><td><code>boolean | string</code></td><td><code>true</code></td><td><code>true</code> picks from the palette, <code>false</code> is transparent</td></tr>
+      <tr><td><code>gradient</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Diagonal two-color background</td></tr>
+      <tr><td><code>colors</code></td><td><code>string[]</code></td><td>style palette</td><td>Or one of <code>palettes</code></td></tr>
+      <tr><td><code>border</code></td><td><code>boolean | string</code></td><td><code>false</code></td><td><code>true</code> picks a contrasting ring color</td></tr>
+      <tr><td><code>borderWidth</code></td><td><code>number</code></td><td><code>4</code></td><td>In viewBox units (the avatar is 100 wide), 0.5…20</td></tr>
+      <tr><td><code>flip</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Mirrors the avatar; gaze still follows correctly</td></tr>
+      <tr><td><code>scale</code></td><td><code>number</code> 0.5…1.5</td><td><code>1</code></td><td>Zooms the character, not the background</td></tr>
+      <tr><td><code>rotate</code></td><td><code>number</code> −180…180</td><td><code>0</code></td><td>Degrees</td></tr>
+      <tr><td><code>title</code></td><td><code>string</code></td><td>none</td><td>Accessible name; without it the SVG is <code>aria-hidden</code></td></tr>
+      <tr><td><code>className</code></td><td><code>string</code></td><td></td><td>Class on the <code>&lt;svg&gt;</code></td></tr>
+      <tr><td><code>options</code></td><td>style options</td><td></td><td>See <a href="#characters">Characters</a></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="playground">Playground</h3>
+  <div class="live">
+    <div class="split">
+      <div class="stack" style="justify-items:center">
+        <div id="cPrevWrap" style="width:180px;max-width:100%"><div id="cPrev"></div></div>
+      </div>
+      <div class="form-grid" id="cControls">
+        <label>Character <select id="cStyle"></select></label>
+        <label>Seed <input id="cSeed" value="ada" /></label>
+        <label>Shape <select id="cShape"><option>circle</option><option>rounded</option><option>square</option></select></label>
+        <label>Palette <select id="cPalette"><option value="">style default</option></select></label>
+        <label>Radius <span class="mono" id="cRadiusV">auto</span><input type="range" id="cRadius" min="-1" max="50" value="-1" aria-describedby="cRadiusV" /></label>
+        <label>Scale <span class="mono" id="cScaleV">1</span><input type="range" id="cScale" min="0.5" max="1.5" step="0.05" value="1" /></label>
+        <label>Rotate <span class="mono" id="cRotateV">0</span><input type="range" id="cRotate" min="-180" max="180" step="5" value="0" /></label>
+        <label>Border width <span class="mono" id="cBwV">4</span><input type="range" id="cBw" min="0.5" max="20" step="0.5" value="4" /></label>
+        <label>Background <select id="cBg"><option value="">palette</option><option value="none">transparent</option><option value="color">color</option></select></label>
+        <label>Color (background / border) <input type="color" id="cColor" value="#ffd6a5" /></label>
+        <label class="check"><input type="checkbox" id="cGradient" /> gradient</label>
+        <label class="check"><input type="checkbox" id="cFlip" /> flip</label>
+        <label class="check"><input type="checkbox" id="cBorder" /> border</label>
+        <label class="check"><input type="checkbox" id="cBorderColor" /> custom border color</label>
+        <label class="wide">Size <span class="mono" id="cSizeV">180px</span><input type="range" id="cSize" min="32" max="240" step="4" value="180" /></label>
+      </div>
+    </div>
+    <pre data-lang="js"><code id="cCode"></code></pre>
+  </div>
+
+  <h3 id="shape-radius">Shape &amp; radius</h3>
+  <p><code>shape</code> is the quick choice. <code>radius</code> (0…50) gives exact control and wins over <code>shape</code>. The background and character are clipped to the shape; a border follows it.</p>
+  <h3 id="background">Background &amp; gradient</h3>
+  <p>By default the first color of the seeded, shuffled palette is the background. Pass a color string to pin it, <code>false</code> for transparent (great on colored UI), and <code>gradient: true</code> for a diagonal two-stop gradient picked from the same palette, chosen before the character draws so the character colors do not shift.</p>
+  <h3 id="border">Border</h3>
+  <p><code>border: true</code> draws a ring in dark or white depending on the background brightness. Pass a color to choose it, and <code>borderWidth</code> to thicken it. Rings make stacked avatars (presence lists, team rows) read well.</p>
+  <h3 id="palettes">Palettes</h3>
+  <p>Ten ready-made palettes. Pass one as <code>colors</code> (lean) or as <code>palette</code> in a code config.</p>
+<script type="text/plain" class="snip" data-lang="js">import { createAvatar, palettes, buddy } from 'livatar'
+
+createAvatar(buddy, { seed: 'ada', colors: palettes.ocean })
+createAvatar(buddy, { seed: 'ada', colors: ['#ffadad', '#ffd6a5', '#caffbf'] })</script>
+  <div class="live"><div class="palettes" id="palStrip"></div></div>
+  <h3 id="flip-scale-rotate">Flip, scale, rotate</h3>
+  <p><code>flip</code> mirrors the character and sets <code>data-lv-flip</code> on the root, so the live gaze is mirrored too and the avatar still looks at your pointer. <code>scale</code> zooms the character inside its frame (0.5…1.5), and <code>rotate</code> turns it (−180…180°). Both leave the background and border alone.</p>
+  <h3 id="size">Size &amp; fluid layout</h3>
+  <p>Without <code>size</code> the SVG is <code>width="100%"</code>, so it fills its container: size the wrapper with CSS and it stays sharp at any resolution. Pass a number for pixels, or any CSS length (<code>'3rem'</code>).</p>
+<script type="text/plain" class="snip" data-lang="html"><div style="width: 48px"></div>   <!-- mount() into this: the avatar is 48px -->
+<live-avatar seed="ada" size="3rem"></live-avatar></script>
+</section>
+
+<!-- ============================================================ -->
+<section id="codes-section" data-subnav>
+  <h2 id="codes">livatar codes</h2>
+  <p>A <b>livatar code</b> packs a whole avatar (style, seed, mood, shape, flip, gradient, background, border, palette or colors, radius, scale, rotate, and every option you set) into one short URL-safe string such as <code>lvAQQBAG51aG1hbnBr</code>. Store it in a single DB column, put it in a URL, and render it anywhere.</p>
+<script type="text/plain" class="snip" data-lang="js">import { encode, decode, resolve, render, mountCode, isCode, randomConfig } from 'livatar'
+
+const code = encode({ style: 'animal', seed: 'ada', mood: 'happy', palette: 'ocean', options: { species: 'owl' } })
+decode(code)            // → { style: 'animal', seed: 'ada', mood: 'happy', palette: 'ocean', options: { species: 'owl' } }
+render(code, { size: 64, title: 'Ada' }) // → '<svg …>' (server, <img>, email)
+mountCode(el, code)     // alive in the browser
+resolve(code)           // → { style, options } for createAvatar / <Livatar>
+isCode('lvAQQ…')        // → true
+randomConfig('buddy')   // → a random config (shuffle buttons)</script>
+
+  <h3 id="code-format">Format</h3>
+  <p><code>"lv"</code> followed by base64url of a small byte layout (version 1):</p>
+  <div class="tw"><table>
+    <thead><tr><th>Bytes</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>[version]</code></td><td>Format version (1)</td></tr>
+      <tr><td><code>[style]</code></td><td>Index in the style registry (255 = name follows, for custom styles)</td></tr>
+      <tr><td><code>[mood | shape&lt;&lt;4 | flip&lt;&lt;6 | gradient&lt;&lt;7]</code></td><td>Mood index, shape, flip and gradient bits</td></tr>
+      <tr><td><code>[flags]</code></td><td>Which optional fields follow: background, border, border width, palette, colors, options</td></tr>
+      <tr><td>optional fields</td><td>Background color, border color, border width ×10, palette index, colors</td></tr>
+      <tr><td><code>[options]</code></td><td>Count, then (key index, value index) pairs into the style's <code>variants</code>; other values are escaped as key + typed raw value (radius, scale and rotate ride along this way)</td></tr>
+      <tr><td><code>[seed…]</code></td><td>The seed as UTF-8, to the end</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="code-stability">Stability guarantees</h3>
+  <ul>
+    <li><b>Versioned.</b> The first byte is the format version. Decoders reject versions they do not know instead of guessing.</li>
+    <li><b>Append-only lists.</b> The style registry order, the palette order and every style's <code>variants</code> lists only ever grow. Old indexes keep meaning the same thing, so old codes keep drawing the same avatar.</li>
+    <li><b>Seed-picked options stay seed-picked.</b> Options you leave out (or set to <code>'random'</code>) are not stored, so they are decided by the seed at render time.</li>
+    <li><b>Validate untrusted input.</b> <code>decode()</code> throws on malformed codes; check with <code>isCode()</code> first, or wrap it in <code>try</code>.</li>
+  </ul>
+
+  <h3 id="encode-playground">Encode playground</h3>
+  <div class="live">
+    <div class="split">
+      <div class="stack" style="justify-items:center">
+        <div class="av-l" id="eAv"></div>
+        <a id="eOpen" href="#">Open in the builder</a>
+      </div>
+      <div class="stack">
+        <div class="form-grid">
+          <label>Character <select id="eStyle"></select></label>
+          <label>Seed <input id="eSeed" value="ada" /></label>
+          <label>Mood <select id="eMood"></select></label>
+          <label>Palette <select id="ePalette"><option value="">style default</option></select></label>
+          <div class="wide form-grid" id="eOptions"></div>
+        </div>
+        <label class="field"><span>Code <span class="mono" id="eLen"></span></span><input id="eCode" readonly class="mono" style="width:100%" /></label>
+        <div class="btns"><button type="button" class="sm" id="eCopy">Copy</button><button type="button" class="ghost sm" id="eRandom">randomConfig()</button></div>
+        <pre data-lang="js" class="wrap"><code id="eCall"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="decode-playground">Decode playground</h3>
+  <div class="live">
+    <div class="split">
+      <div class="stack">
+        <label class="field">Paste a code <textarea id="dIn" rows="2" spellcheck="false">lvAQQBAG51aG1hbnBr</textarea></label>
+        <div class="log" id="dErr" role="status"></div>
+        <div class="av-m" id="dAv"></div>
+      </div>
+      <div class="stack"><small>decode(code)</small><pre data-lang="js"><code id="dOut"></code></pre></div>
+    </div>
+  </div>
+
+  <h3 id="code-urls">Sharing in URLs</h3>
+  <p>Codes only contain <code>A–Z a–z 0–9 - _</code>, so they need no escaping in paths, query strings or hashes.</p>
+<script type="text/plain" class="snip" data-lang="js">import { isCode, mountCode, encode } from 'livatar'
+
+// share
+const url = `${location.origin}/profile?avatar=${encode(config)}`
+
+// read it back, safely
+const code = new URLSearchParams(location.search).get('avatar')
+if (isCode(code)) mountCode(document.querySelector('#avatar'), code)</script>
+  <h3 id="code-db">Storing in a database</h3>
+  <p>Store the code as a short text column next to the user. Render it on the server for lists and emails, and mount it on the client for the live version.</p>
+<script type="text/plain" class="snip" data-lang="js">// SQL: ALTER TABLE users ADD COLUMN avatar text;  -- e.g. 'lvAQQBAG51aG1hbnBr'
+import { encode, render } from 'livatar'
+
+await db.user.update({ where: { id }, data: { avatar: encode(builderConfig) } })
+
+// later, anywhere
+const svg = render(user.avatar ?? 'buddy', { size: 40, title: user.name })</script>
+  <div class="note"><p><code>render</code>, <code>decode</code>, <code>mountCode</code> and the batteries-included components need every style to read any code, so they add every style to your bundle. See <a href="#bundle">Bundle size</a>.</p></div>
+</section>
+
+<!-- ============================================================ -->
+<section id="engine-section" data-subnav>
+  <h2 id="engine">Animation engine</h2>
+  <p><code>alive(element, options)</code> wakes up any livatar SVG (or any SVG with <a href="#make-alive"><code>data-lv-*</code> attributes</a>). <code>element</code> can be the <code>&lt;svg&gt;</code> or any element that contains it. <code>mount()</code> calls it for you and also passes <code>rerender</code>, which lets <code>emote()</code> redraw the face. During SSR (no <code>window</code>) it returns a no-op handle.</p>
+  <div class="live">
+    <div class="split">
+      <div class="stack" style="justify-items:center">
+        <div class="av-l" id="enAv"></div>
+        <div class="readout" id="enState" aria-live="off"></div>
+        <div class="log" id="enLog" role="status">Click the avatar to poke it.</div>
+      </div>
+      <div class="stack">
+        <div class="btns">
+          <button class="ghost sm" type="button" data-en="look-left">look(-1, 0)</button>
+          <button class="ghost sm" type="button" data-en="look-up">look(0, -1)</button>
+          <button class="ghost sm" type="button" data-en="talk">talk(1500)</button>
+          <button class="ghost sm" type="button" data-en="blink">blink()</button>
+          <button class="ghost sm" type="button" data-en="poke">poke()</button>
+          <button class="ghost sm" type="button" data-en="nod">nod()</button>
+          <button class="ghost sm" type="button" data-en="shake">shake()</button>
+          <button class="ghost sm" type="button" data-en="love">emote('love', 1500)</button>
+          <button class="ghost sm" type="button" data-en="angry">emote('angry')</button>
+          <button class="ghost sm" type="button" data-en="neutral">emote('neutral')</button>
+        </div>
+        <div class="form-grid" id="enOpts"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cases">
+    <section class="case">
+      <h4>Chat bot</h4><p><code>talk(ms)</code> while text streams, <code>emote()</code> per message.</p>
+      <div class="row"><div class="av" id="uBot"></div><div class="bubble" id="uSay">Hi! Ask me something.</div></div>
+      <button class="sm" type="button" id="uTalk" style="justify-self:start">Send a message</button>
+    </section>
+    <section class="case">
+      <h4>Upload</h4><p>Surprised at start, happy when done, sad on failure.</p>
+      <div class="row"><div class="av" id="uUp"></div>
+        <div class="stack"><progress id="uUpBar" max="100" value="0" aria-label="Upload progress" style="width:100%"></progress>
+          <div class="btns"><button class="sm" type="button" id="uUpGo">Upload</button><button class="sm ghost" type="button" id="uUpFail">Fail</button></div></div></div>
+    </section>
+  </div>
+  <h3 id="alive-options">Options</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>track</code></td><td><code>true</code></td><td>Follow the mouse or touch pointer</td></tr>
+      <tr><td><code>focus</code></td><td><code>true</code></td><td>Look at the caret of the focused text field</td></tr>
+      <tr><td><code>keyboard</code></td><td><code>true</code></td><td>Mouth moves while you type; arrow keys steer the gaze</td></tr>
+      <tr><td><code>shy</code></td><td><code>true</code></td><td>On password fields: turn away, close eyes, raise <code>data-lv-shy</code> parts</td></tr>
+      <tr><td><code>blink</code></td><td><code>true</code></td><td>Blink at random (sometimes twice)</td></tr>
+      <tr><td><code>breathe</code></td><td><code>true</code></td><td>Subtle breathing</td></tr>
+      <tr><td><code>idle</code></td><td><code>true</code></td><td>Let the gaze wander when the pointer is idle</td></tr>
+      <tr><td><code>poke</code></td><td><code>true</code></td><td>Squash on click/tap and dispatch <code>livatar:poke</code></td></tr>
+      <tr><td><code>pokeMood</code></td><td><code>'surprised'</code></td><td>Mood flashed when poked (needs <code>rerender</code>), or <code>false</code></td></tr>
+      <tr><td><code>sleepAfter</code></td><td><code>0</code></td><td>ms without pointer/keyboard input before dozing off; 0 = never</td></tr>
+      <tr><td><code>intensity</code></td><td><code>1</code></td><td>Motion amount multiplier</td></tr>
+      <tr><td><code>speed</code></td><td><code>1</code></td><td>Smoothing speed multiplier</td></tr>
+      <tr><td><code>range</code></td><td>auto</td><td>Pixel distance at which gaze reaches ~50% (default <code>max(160, 1.5 × size)</code>)</td></tr>
+      <tr><td><code>idleAfter</code></td><td><code>4000</code></td><td>ms of pointer inactivity before idle wandering</td></tr>
+      <tr><td><code>reducedMotion</code></td><td><code>'auto'</code></td><td><code>'auto'</code> honours <code>prefers-reduced-motion</code>; <code>'ignore'</code> does not</td></tr>
+      <tr><td><code>behaviors</code></td><td><code>[]</code></td><td>Per-frame plugins, see <a href="#behaviors">Behaviors</a></td></tr>
+      <tr><td><code>rerender</code></td><td>set by <code>mount</code></td><td><code>(mood) =&gt; markup</code>; lets <code>emote()</code> redraw the face</td></tr>
+    </tbody>
+  </table></div>
+  <p>With <code>mount()</code> and <code>mountCode()</code>, pass them as <code>alive: { … }</code>, or <code>alive: false</code> for a static avatar.</p>
+
+  <h3 id="handle-api">Handle API</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>look(x, y, ms = 1200)</code></td><td>Look in a direction (−1…1) for a while</td></tr>
+      <tr><td><code>talk(ms = 1200)</code></td><td>Animate talking. Call it per streamed LLM chunk.</td></tr>
+      <tr><td><code>blink()</code></td><td>Blink now</td></tr>
+      <tr><td><code>poke()</code></td><td>Same as a click: squash, <code>pokeMood</code>, <code>livatar:poke</code> event</td></tr>
+      <tr><td><code>emote(mood, ms?)</code></td><td>Switch mood; with <code>ms</code>, a temporary reaction that reverts</td></tr>
+      <tr><td><code>nod()</code> / <code>shake()</code></td><td>Yes / no gestures</td></tr>
+      <tr><td><code>refresh()</code></td><td>Re-scan parts after you replaced the SVG yourself</td></tr>
+      <tr><td><code>set(options)</code></td><td>Change <code>AliveOptions</code> live (e.g. <code>set({ track: false })</code>)</td></tr>
+      <tr><td><code>state</code></td><td>Read-only <code>{ x, y, closed, mouth, shy, mood }</code></td></tr>
+      <tr><td><code>destroy()</code></td><td>Stop animating and clean up. Always call it when you unmount.</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="events">Events</h3>
+  <p>Poking (click, tap, or <code>handle.poke()</code>) dispatches a bubbling <code>livatar:poke</code> <code>CustomEvent</code> on the element you passed to <code>alive()</code>, so one listener can handle every avatar:</p>
+<script type="text/plain" class="snip" data-lang="js">document.addEventListener('livatar:poke', (e) => {
+  console.log('poked', e.target) // the mounted element
+})</script>
+  <h3 id="reduced-motion">Reduced motion</h3>
+  <p>When the user prefers reduced motion, the engine halves the motion and drops idle wandering, breathing, bouncing, wobbling and squashing. Eyes still follow the pointer gently and still blink, so the avatar does not look broken. Pass <code>reducedMotion: 'ignore'</code> only if motion is the point of your UI.</p>
+  <h3 id="offscreen">Offscreen pausing &amp; the shared loop</h3>
+  <p>Every avatar on the page is driven by <b>one</b> <code>requestAnimationFrame</code> loop and one set of global listeners. An <code>IntersectionObserver</code> marks avatars that are off screen, and the loop skips them. The loop stops entirely when the tab is hidden or no avatars remain. See <a href="#performance">Performance</a>.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="forms-section" data-subnav>
+  <h2 id="forms">Forms</h2>
+  <p><code>bindForm(handle, form, moods?)</code> lets a form drive an avatar's mood using native constraint validation (<code>required</code>, <code>type="email"</code>, <code>minlength</code>, <code>pattern</code>…), so most forms need no configuration.</p>
+<script type="text/plain" class="snip" data-lang="js">import { mount, bindForm, buddy } from 'livatar'
+
+const handle = mount(document.querySelector('#guard'), buddy, { seed: 'guard' })
+const form = document.querySelector('form')
+const binding = bindForm(handle, form)
+
+form.addEventListener('submit', async (e) => {
+  if (!form.checkValidity()) return // bindForm already showed 'sad' + shake
+  const res = await fetch('/api/signup', { method: 'POST', body: new FormData(form) })
+  res.ok ? binding.success() : binding.error()
+})</script>
+  <div class="live">
+    <div class="row top">
+      <div class="av-m" id="fAv"></div>
+      <form id="fForm" class="stack" novalidate style="min-width:220px">
+        <label class="field">Email <input name="email" type="email" required placeholder="you@example.com" autocomplete="off" /></label>
+        <label class="field">Password (8+ characters) <input name="password" type="password" required minlength="8" autocomplete="new-password" /></label>
+        <label class="check"><input type="checkbox" name="fail" id="fFail" /> Make the server fail</label>
+        <div class="btns"><button type="submit">Sign up</button><button type="button" class="ghost" id="fReset">reset()</button></div>
+        <div class="log" id="fLog" role="status"></div>
+      </form>
+    </div>
+  </div>
+  <div class="cases">
+    <section class="case">
+      <h4>Newsletter signup</h4><p>One field, <code>bindForm</code>, no config.</p>
+      <div class="row"><div class="av" id="uNews"></div>
+        <form id="uNewsForm" novalidate><input type="email" required placeholder="you@example.com" aria-label="Email" autocomplete="off" /><button class="sm" type="submit" style="justify-self:start">Subscribe</button></form></div>
+    </section>
+    <section class="case">
+      <h4>Password strength</h4><p><code>bindInput</code> grades it as you type.</p>
+      <div class="row"><div class="av" id="uPw"></div>
+        <div class="stack"><input id="uPwIn" type="text" placeholder="type a password…" autocomplete="off" aria-label="Password to grade" /><small id="uPwTxt">empty</small></div></div>
+    </section>
+  </div>
+  <h3 id="form-moods">Moods</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Key</th><th>Default</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>idle</code></td><td><code>'neutral'</code></td><td>Nothing typed yet, or the field was cleared</td></tr>
+      <tr><td><code>valid</code></td><td><code>'happy'</code></td><td>The edited field has a valid value</td></tr>
+      <tr><td><code>invalid</code></td><td><code>'confused'</code></td><td>The edited field has an invalid value</td></tr>
+      <tr><td><code>rejected</code></td><td><code>'sad'</code> + shake</td><td>Submitted with errors (submit is prevented)</td></tr>
+      <tr><td><code>submitting</code></td><td><code>'surprised'</code></td><td>Valid submit, waiting for <code>success()</code> / <code>error()</code></td></tr>
+      <tr><td><code>success</code></td><td><code>'love'</code> + nod</td><td>After <code>binding.success()</code></td></tr>
+      <tr><td><code>error</code></td><td><code>'sad'</code> + shake</td><td>After <code>binding.error()</code></td></tr>
+      <tr><td><code>validate</code></td><td>native</td><td><code>(field) =&gt; boolean | null</code>; <code>null</code> falls back to <code>checkValidity()</code></td></tr>
+      <tr><td><code>preventSubmit</code></td><td><code>true</code></td><td>Calls <code>preventDefault()</code> on valid submits (for fetch-based forms)</td></tr>
+    </tbody>
+  </table></div>
+  <p>The binding returns <code>{ success(), error(), reset(), destroy() }</code>.</p>
+  <h3 id="bind-input">bindInput</h3>
+  <p>The smallest binding: map one field's value to a mood on every keystroke. Return <code>null</code> to leave the mood alone. It returns an unbind function.</p>
+<script type="text/plain" class="snip" data-lang="js">import { bindInput } from 'livatar'
+
+const taken = ['admin', 'root', 'ada']
+const unbind = bindInput(handle, document.querySelector('#username'), (value) =>
+  !value ? 'neutral' : value.length < 3 ? 'confused' : taken.includes(value.toLowerCase()) ? 'sad' : 'happy',
+)</script>
+  <div class="live">
+    <div class="row">
+      <div class="av" id="biAv"></div>
+      <label class="field stack">Pick a username (try “ada”) <input id="biIn" autocomplete="off" placeholder="username" /></label>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="mobile-section">
+  <h2 id="mobile">Mobile &amp; touch</h2>
+  <p>Phones have no cursor, so livatar leans on the things touch does have. Out of the box, with no extra code:</p>
+  <ul>
+    <li><b>Tap</b> pokes the avatar and it reacts (<code>poke</code>, <code>pokeMood</code>).</li>
+    <li><b>Drag a finger</b> and the eyes follow it, because touch fires the same pointer events as a mouse (<code>track</code>).</li>
+    <li><b>Typing</b> needs no mouse at all: avatars watch the caret, chew while you type, cover their eyes on password fields, and react to validation (<code>focus</code>, <code>shy</code>, <code>bindForm</code>).</li>
+    <li><b>Idle life</b>: they blink, breathe, and fall asleep after a while (<code>blink</code>, <code>breathe</code>, <code>sleepAfter</code>).</li>
+    <li><b>Reduced motion</b> is honoured, and nothing blocks scrolling.</li>
+  </ul>
+  <p>On top of that, two small recipes make them feel alive when nobody is touching the screen: <b>tilt to look</b> and <b>idle glances</b>. Try the phone below: drag on the screen, tap a face, or switch the modes.</p>
+  <div class="phone-demo">
+    <div class="phone" aria-label="Phone preview">
+      <div class="phone-notch"></div>
+      <div class="phone-screen" id="phScreen">
+        <div class="phone-row"><div class="ph-av" id="ph1"></div><div class="ph-av" id="ph2"></div><div class="ph-av" id="ph3"></div></div>
+        <div class="phone-row"><div class="ph-av" id="ph4"></div><div class="ph-av" id="ph5"></div><div class="ph-av" id="ph6"></div></div>
+        <div class="ph-finger" id="phFinger" hidden></div>
+        <p class="ph-hint" id="phHint">Drag here like a finger</p>
+      </div>
+    </div>
+    <div class="phone-ctl">
+      <label><input type="radio" name="phMode" value="touch" checked> Finger tracking</label>
+      <label><input type="radio" name="phMode" value="wander"> Idle glances</label>
+      <label><input type="radio" name="phMode" value="tilt"> Tilt (real phone) / simulated</label>
+      <button type="button" class="ghost" id="phTap">Simulate a tap</button>
+      <p class="muted" id="phNote">On desktop, tilt is simulated by a slow sway.</p>
+    </div>
+  </div>
+  <script type="text/plain" data-lang="js">import { mountCode } from 'livatar'
+
+const faces = [...document.querySelectorAll('.avatar')].map((el, i) => mountCode(el, { style: 'animal', seed: 'pal' + i }))
+const touch = matchMedia('(hover: none), (pointer: coarse)').matches
+
+// 1. Tilt to look: map phone orientation to gaze (-1..1)
+function onTilt(e) {
+  const x = Math.max(-1, Math.min(1, e.gamma / 30))        // left/right
+  const y = Math.max(-1, Math.min(1, (e.beta - 40) / 30))  // forward/back, phone held at ~40°
+  faces.forEach((h) => h.look(x, y, 400))
+}
+function enableTilt() {   // iOS 13+ asks permission, and only from a tap
+  const D = window.DeviceOrientationEvent
+  if (D?.requestPermission) D.requestPermission().then((r) => r === 'granted' && addEventListener('deviceorientation', onTilt))
+  else addEventListener('deviceorientation', onTilt)
+}
+tiltButton.onclick = enableTilt
+
+// 2. Idle glances: nobody touching? one face looks around and blinks
+if (touch) setInterval(() => {
+  const h = faces[(Math.random() * faces.length) | 0]
+  h.look(Math.random() * 2 - 1, Math.random() * 2 - 1, 1400); h.blink()
+}, 1200)
+
+// 3. Taps and long-presses are clicks and pointer events, so they just work
+el.onclick = () => { h.emote('love', 900); h.nod() }</script>
+  <div class="note"><p>Use <code>touch-action: pan-y</code> on swipeable areas so vertical scrolling still works, keep tap targets at least 44px, and add <code>navigator.vibrate?.(20)</code> for a tiny buzz on Android.</p></div>
+</section>
+
+<section id="export-section" data-subnav>
+  <h2 id="export">Export</h2>
+  <p>Avatars are plain SVG strings, so exporting is easy.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Function</th><th>Returns</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td><code>createAvatar(style, opts)</code></td><td>SVG string</td><td>Anywhere (no DOM)</td></tr>
+      <tr><td><code>render(codeOrConfig, extra?)</code></td><td>SVG string</td><td>Anywhere (no DOM)</td></tr>
+      <tr><td><code>toDataUri(style, opts)</code></td><td><code>data:image/svg+xml;utf8,…</code></td><td>Anywhere</td></tr>
+      <tr><td><code>toImage(svg, size = 256, type = 'image/png')</code></td><td><code>Promise&lt;Blob&gt;</code> (PNG, JPEG or WebP)</td><td>Browser</td></tr>
+      <tr><td><code>download(svg, filename = 'livatar.svg', size = 512)</code></td><td>Downloads <code>.svg</code>, or <code>.png</code> when the name ends in <code>.png</code></td><td>Browser</td></tr>
+    </tbody>
+  </table></div>
+<script type="text/plain" class="snip" data-lang="js">import { createAvatar, toDataUri, toImage, download, animal } from 'livatar'
+
+const svg = createAvatar(animal, { seed: 'ada', mood: 'happy' })
+
+img.src = toDataUri(animal, { seed: 'ada' })        // <img>, CSS background
+const png = await toImage(svg, 256)                 // Blob, e.g. for an upload
+await download(svg, 'ada.png')                      // save as PNG (512px)
+await download(svg, 'ada.svg')                      // save as SVG</script>
+  <div class="live">
+    <div class="row top">
+      <div class="av-m" id="xAv"></div>
+      <div class="stack">
+        <div class="btns">
+          <label class="field" style="min-width:110px">Size <select id="xSize"><option>64</option><option>128</option><option selected>256</option><option>512</option></select></label>
+        </div>
+        <div class="btns">
+          <button type="button" class="sm" id="xImg">toImage() → preview</button>
+          <button type="button" class="ghost sm" id="xPng">download PNG</button>
+          <button type="button" class="ghost sm" id="xSvg">download SVG</button>
+        </div>
+        <div class="log" id="xLog" role="status"></div>
+        <div class="row"><img id="xOut" alt="PNG rendered with toImage()" hidden style="max-width:128px;border-radius:12px;border:1px solid var(--line)" />
+          <figure class="cap"><div class="bgdemo" id="xBg" role="img" aria-label="Avatar as a CSS background"></div><figcaption>CSS background</figcaption></figure></div>
+      </div>
+    </div>
+  </div>
+  <h3 id="server-render">Server render</h3>
+  <p><code>createAvatar</code> and <code>render</code> are pure string functions: no DOM, no <code>window</code>, deterministic. Use them in Node, Deno, Bun, edge functions and workers. The same seed renders identical markup on the server and client, so there is no hydration mismatch.</p>
+  <h3 id="email">Email</h3>
+  <p>Many email clients (Gmail and Outlook among them) do not display SVG. For email, rasterize on the server, for example with <a href="https://sharp.pixelplumbing.com/">sharp</a>, and send a PNG:</p>
+<script type="text/plain" class="snip" data-lang="js">import sharp from 'sharp'
+import { render } from 'livatar'
+
+const png = await sharp(Buffer.from(render(user.avatar, { size: 128 }))).png().toBuffer()</script>
+  <h3 id="og-images">OG images</h3>
+  <p>Social cards need PNG too. Render the SVG and rasterize it, for example with <code>@resvg/resvg-js</code>:</p>
+<script type="text/plain" class="snip" data-lang="js">import { Resvg } from '@resvg/resvg-js'
+import { render } from 'livatar'
+
+export function ogAvatar(code) {
+  const svg = render(code, { size: 630, shape: 'square' })
+  return new Resvg(svg).render().asPng() // Buffer
+}</script>
+</section>
+
+<!-- ============================================================ -->
+<section id="frameworks-section" data-subnav>
+  <h2 id="frameworks">Framework guides</h2>
+  <p>Two flavors everywhere: <b>lean</b> (<code>mount</code>, <code>Livatar</code>, <code>livatar</code> action) takes a style object and ships only that style; <b>batteries-included</b> (<code>mountCode</code>, <code>LivatarCode</code>, <code>livatarCode</code>, <code>&lt;live-avatar&gt;</code>) accepts codes and style names and ships all styles.</p>
+
+  <h3 id="fw-vanilla">Vanilla JS</h3>
+<script type="text/plain" class="snip" data-lang="js">import { mount, mountCode, animal } from 'livatar'
+
+const h = mount(document.querySelector('#a'), animal, { seed: 'ada', options: { species: 'fox' } })
+const h2 = mountCode(document.querySelector('#b'), 'lvAQQBAG51aG1hbnBr')
+
+// when you remove the element
+h.destroy()</script>
+
+  <h3 id="fw-cdn">CDN / script tag</h3>
+<script type="text/plain" class="snip" data-lang="html"><div id="me" style="width:64px"></div>
+<script src="https://unpkg.com/livatar"><\/script>
+<script>
+  const h = Livatar.mount(document.querySelector('#me'), Livatar.emoji, { seed: 'hi', mood: 'wink' })
+  // the global build also registers <live-avatar>
+<\/script></script>
+
+  <h3 id="fw-wc">Web Component</h3>
+  <p><code>import 'livatar/element'</code> registers <code>&lt;live-avatar&gt;</code>. It works in any framework, or none.</p>
+<script type="text/plain" class="snip" data-lang="html"><script type="module" src="https://unpkg.com/livatar/dist/element.js"><\/script>
+
+<live-avatar seed="ada" variant="buddy" size="64" mood="happy"></live-avatar>
+<live-avatar seed="r2" variant="animal" options='{"species":"owl"}' shape="rounded"></live-avatar>
+<live-avatar code="lvAQQBAG51aG1hbnBr" size="48" label="Nuhman"></live-avatar>
+
+<script>
+  document.querySelector('live-avatar').handle?.emote('love', 1500)
+<\/script></script>
+  <div class="live">
+    <div class="row">
+      <live-avatar seed="ada" variant="buddy" size="56" mood="happy" id="wc1"></live-avatar>
+      <live-avatar seed="r2" variant="animal" options='{"species":"owl"}' shape="rounded" size="56"></live-avatar>
+      <live-avatar code="lvAQQBAG51aG1hbnBr" size="56" label="Nuhman"></live-avatar>
+      <live-avatar seed="boo" variant="ghost" size="56" gradient border></live-avatar>
+      <button type="button" class="ghost sm" id="wcBtn">.handle.emote('love', 1500)</button>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><code>code</code></td><td>A livatar code. Other attributes override what it says.</td></tr>
+      <tr><td><code>seed</code>, <code>variant</code></td><td>Seed and style name (default <code>blob</code>)</td></tr>
+      <tr><td><code>mood</code></td><td>One of the ten moods</td></tr>
+      <tr><td><code>options</code></td><td>Style options as JSON, e.g. <code>'{"hair":"afro"}'</code></td></tr>
+      <tr><td><code>size</code></td><td>Number (px) or any CSS length; default 64px</td></tr>
+      <tr><td><code>shape</code></td><td><code>circle</code>, <code>rounded</code>, <code>square</code></td></tr>
+      <tr><td><code>palette</code>, <code>colors</code></td><td>Palette name, or comma-separated colors</td></tr>
+      <tr><td><code>background</code></td><td>A color, or <code>none</code></td></tr>
+      <tr><td><code>gradient</code>, <code>flip</code>, <code>border</code>, <code>border-width</code></td><td>Look tweaks (<code>border</code> may hold a color)</td></tr>
+      <tr><td><code>label</code></td><td>Accessible name</td></tr>
+      <tr><td><code>intensity</code>, <code>sleep-after</code></td><td>Motion amount, ms before dozing off</td></tr>
+      <tr><td><code>static</code>, <code>no-track</code>, <code>no-keyboard</code>, <code>no-blink</code>, <code>no-poke</code></td><td>Turn motion off, or parts of it</td></tr>
+    </tbody>
+  </table></div>
+  <p>The element's <code>.handle</code> property is its <a href="#handle-api">animation handle</a> (<code>null</code> with <code>static</code>). Register under another tag name with <code>defineElement('my-avatar')</code>.</p>
+
+  <h3 id="fw-react">React</h3>
+<script type="text/plain" class="snip" data-lang="jsx">import { useRef } from 'react'
+import { animal } from 'livatar'
+import { Livatar, LivatarCode } from 'livatar/react'
+
+export function Profile({ user }) {
+  const ref = useRef(null) // AliveHandle
+  return (
+    <>
+      {/* lean: only the `animal` style is bundled */}
+      <Livatar ref={ref} variant={animal} seed={user.id} mood="happy" size={48} />
+      <button onClick={() => ref.current?.emote('love', 1500)}>Love</button>
+
+      {/* batteries included: codes and style names */}
+      <LivatarCode code={user.avatar} size={48} />
+      <LivatarCode variant="ghost" seed={user.id} alive={{ intensity: 1.5 }} />
+      <LivatarCode code={user.avatar} alive={false} /> {/* static */}
+    </>
+  )
+}</script>
+  <p>Props are the <a href="#customization">avatar options</a> plus <code>alive</code>, <code>className</code> and <code>style</code>. The component renders a <code>&lt;span&gt;</code>; on the server it outputs the static SVG, and animation starts in an effect. For chat bots, call <code>ref.current.talk(800)</code> on each streamed chunk.</p>
+
+  <h3 id="fw-next">Next.js</h3>
+  <p><code>livatar/react</code> ships with <code>"use client"</code>, so you can render it directly from Server Components. Pass serializable props only (a code or a style <em>name</em>); style objects contain functions, so use the lean <code>&lt;Livatar variant={buddy}&gt;</code> inside your own client component.</p>
+<script type="text/plain" class="snip" data-lang="tsx" data-file="app/team/page.tsx (App Router, Server Component)">import { render } from 'livatar'
+import { LivatarCode } from 'livatar/react'
+
+export default async function Team() {
+  const people = await getTeam()
+  return (
+    <ul>
+      {people.map((p) => (
+        <li key={p.id}>
+          {/* zero JS: static SVG rendered on the server */}
+          <span dangerouslySetInnerHTML={{ __html: render(p.avatar, { size: 32, title: p.name }) }} />
+          {/* alive: client component, server-rendered first */}
+          <LivatarCode code={p.avatar} size={48} />
+        </li>
+      ))}
+    </ul>
+  )
+}</script>
+<script type="text/plain" class="snip" data-lang="tsx" data-file="app/chat-avatar.tsx (client component, lean)">'use client'
+import { useRef } from 'react'
+import { bot, type AliveHandle } from 'livatar'
+import { Livatar } from 'livatar/react'
+
+export function ChatAvatar({ streaming }: { streaming: boolean }) {
+  const ref = useRef<AliveHandle>(null)
+  if (streaming) ref.current?.talk(400)
+  return <Livatar ref={ref} variant={bot} seed="assistant" size={40} />
+}</script>
+<script type="text/plain" class="snip" data-lang="tsx" data-file="pages/profile.tsx (Pages Router)">import { LivatarCode } from 'livatar/react'
+
+export default function Profile({ user }) {
+  return <LivatarCode code={user.avatar} size={96} title={user.name} />
+}</script>
+
+  <h3 id="fw-remix">Remix / React Router</h3>
+<script type="text/plain" class="snip" data-lang="tsx">import { useLoaderData } from '@remix-run/react'
+import { LivatarCode } from 'livatar/react'
+
+export async function loader() {
+  return { user: await getUser() } // user.avatar is a livatar code
+}
+
+export default function Route() {
+  const { user } = useLoaderData<typeof loader>()
+  return <LivatarCode code={user.avatar} size={64} />
+}</script>
+
+  <h3 id="fw-preact">Preact</h3>
+  <p>With <code>preact/compat</code> aliased as <code>react</code> (done for you by <code>@preact/preset-vite</code>), <code>livatar/react</code> works unchanged. Or skip compat and use hooks:</p>
+<script type="text/plain" class="snip" data-lang="jsx">import { useEffect, useRef } from 'preact/hooks'
+import { mount, buddy } from 'livatar'
+
+export function Avatar({ seed, mood }) {
+  const el = useRef(null)
+  useEffect(() => {
+    const h = mount(el.current, buddy, { seed, mood })
+    return () => h.destroy()
+  }, [seed, mood])
+  return <div ref={el} style={{ width: 64 }} />
+}</script>
+
+  <h3 id="fw-vue">Vue 3</h3>
+<script type="text/plain" class="snip" data-lang="vue"><script setup>
+import { ref } from 'vue'
+import { buddy } from 'livatar'
+import { Livatar, LivatarCode } from 'livatar/vue'
+
+const av = ref()
+const cheer = () => av.value.handle.emote('happy', 1500)
+<\/script>
+
+<template>
+  <Livatar ref="av" :variant="buddy" seed="ada" mood="happy" :size="64" @click="cheer" />
+  <LivatarCode code="lvAQQBAG51aG1hbnBr" :size="48" :alive="{ intensity: 1.5 }" />
+</template></script>
+  <p>Register both globally with <code>app.use(LivatarPlugin)</code>. Prefer the web component? Tell the compiler with <code>compilerOptions.isCustomElement = (tag) =&gt; tag === 'live-avatar'</code>.</p>
+
+  <h3 id="fw-nuxt">Nuxt 3</h3>
+<script type="text/plain" class="snip" data-lang="ts" data-file="plugins/livatar.ts">import { LivatarPlugin } from 'livatar/vue'
+
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.use(LivatarPlugin) // <Livatar> and <LivatarCode> everywhere
+})</script>
+  <p>The components render the static SVG during SSR and start animating in <code>onMounted</code>, which only runs in the browser, so no <code>&lt;ClientOnly&gt;</code> is needed. If you use <code>&lt;live-avatar&gt;</code> instead, load it in a <code>plugins/livatar.client.ts</code> (<code>import 'livatar/element'</code>), set <code>vue: { compilerOptions: { isCustomElement: (tag) =&gt; tag === 'live-avatar' } }</code> in <code>nuxt.config.ts</code>, and give it a fixed size: custom elements render nothing on the server.</p>
+
+  <h3 id="fw-svelte">Svelte &amp; SvelteKit</h3>
+<script type="text/plain" class="snip" data-lang="svelte"><script>
+  import { buddy } from 'livatar'
+  import { livatar, livatarCode } from 'livatar/svelte'
+  export let seed = 'ada'
+  export let code
+  let mood = 'happy'
+  let handle
+<\/script>
+
+<div style="width:64px" use:livatar={{ variant: buddy, seed, mood, onHandle: (h) => (handle = h) }}></div>
+<div style="width:48px" use:livatarCode={{ code }}></div>
+<button on:click={() => handle?.talk(1200)}>Talk</button></script>
+  <p>The action re-renders when its parameters change and cleans up on destroy. In SvelteKit, actions only run in the browser; for server-rendered markup, put <code>{@html render(code)}</code> in a container and call <code>alive(el)</code> in <code>onMount</code> (moods then change motion only), or keep the action and give the box a fixed size to avoid layout shift.</p>
+
+  <h3 id="fw-solid">Solid</h3>
+<script type="text/plain" class="snip" data-lang="jsx">import { onCleanup, onMount } from 'solid-js'
+import { mount, buddy } from 'livatar'
+
+export function Avatar(props) {
+  let el
+  onMount(() => {
+    const h = mount(el, buddy, { seed: props.seed, mood: props.mood })
+    onCleanup(() => h.destroy())
+  })
+  return <div ref={el} style={{ width: '64px' }} />
+}</script>
+  <p>Or wrap the framework-agnostic action as a directive:</p>
+<script type="text/plain" class="snip" data-lang="jsx">import { createEffect, onCleanup } from 'solid-js'
+import { livatar as action } from 'livatar/action'
+
+export function livatar(el, accessor) {
+  const a = action(el, accessor())
+  createEffect(() => a.update(accessor()))
+  onCleanup(() => a.destroy())
+}
+
+// <div use:livatar={{ variant: buddy, seed: user().id }} style={{ width: '48px' }} /></script>
+
+  <h3 id="fw-angular">Angular</h3>
+<script type="text/plain" class="snip" data-lang="ts">// main.ts
+import 'livatar/element'
+
+// avatar.component.ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Input, ViewChild } from '@angular/core'
+import type { AliveHandle } from 'livatar'
+
+@Component({
+  selector: 'app-avatar',
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `<live-avatar #av [attr.seed]="seed" [attr.mood]="mood" variant="buddy" size="48"></live-avatar>`,
+})
+export class AvatarComponent {
+  @Input() seed = 'ada'
+  @Input() mood = 'neutral'
+  @ViewChild('av') av!: ElementRef<HTMLElement & { handle: AliveHandle | null }>
+  cheer() { this.av.nativeElement.handle?.emote('happy', 1500) }
+}</script>
+
+  <h3 id="fw-lit">Lit</h3>
+<script type="text/plain" class="snip" data-lang="js">import { LitElement, html } from 'lit'
+import 'livatar/element'
+
+class UserChip extends LitElement {
+  static properties = { name: {} }
+  render() {
+    return html`<live-avatar seed=${this.name} variant="animal" size="32"></live-avatar> ${this.name}`
+  }
+}
+customElements.define('user-chip', UserChip)</script>
+
+  <h3 id="fw-qwik">Qwik</h3>
+<script type="text/plain" class="snip" data-lang="tsx">import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
+import { createAvatar, mount, buddy } from 'livatar'
+
+export const Avatar = component$(({ seed }: { seed: string }) => {
+  const el = useSignal<HTMLElement>()
+  // runs in the browser once visible; the server already sent the SVG
+  useVisibleTask$(({ cleanup }) => {
+    const h = mount(el.value!, buddy, { seed })
+    cleanup(() => h.destroy())
+  })
+  return <div ref={el} style={{ width: '64px' }} dangerouslySetInnerHTML={createAvatar(buddy, { seed })} />
+})</script>
+
+  <h3 id="fw-astro">Astro</h3>
+<script type="text/plain" class="snip" data-lang="astro" data-file="src/components/Avatar.astro">---
+import { render } from 'livatar'
+const { code, size = 64 } = Astro.props
+---
+<div class="avatar" data-code={code} style={`width:${size}px`} set:html={render(code)}></div>
+
+<script>
+  import { mountCode } from 'livatar'
+  // take over the server markup and bring it to life
+  document.querySelectorAll('.avatar').forEach((el) => mountCode(el, el.dataset.code))
+<\/script></script>
+  <p>Static pages can skip the script entirely; the <code>set:html</code> output is a complete SVG.</p>
+
+  <h3 id="fw-alpine">Alpine.js &amp; htmx</h3>
+  <p>Use the web component. Attribute bindings re-render it, and elements swapped in by htmx upgrade themselves and clean up on removal.</p>
+<script type="text/plain" class="snip" data-lang="html"><script type="module" src="https://unpkg.com/livatar/dist/element.js"><\/script>
+
+<div x-data="{ seed: 'ada', mood: 'neutral' }">
+  <live-avatar :seed="seed" :mood="mood" variant="buddy" size="64"></live-avatar>
+  <input x-model="seed" aria-label="Seed">
+  <button @click="mood = 'happy'">Cheer up</button>
+</div>
+
+<!-- htmx: returned fragments can contain avatars -->
+<ul hx-get="/team" hx-trigger="load">
+  <!-- <li><live-avatar code="lvAQ…" size="32" border></live-avatar> Ada</li> -->
+</ul></script>
+
+  <h3 id="fw-node">Node / SSR</h3>
+<script type="text/plain" class="snip" data-lang="js">import express from 'express'
+import { createAvatar, render, animal } from 'livatar' // or require('livatar')
+
+const app = express()
+app.get('/avatar/:seed.svg', (req, res) => {
+  res.type('image/svg+xml')
+  res.set('Cache-Control', 'public, max-age=31536000, immutable') // deterministic
+  res.send(createAvatar(animal, { seed: req.params.seed, size: 128 }))
+})
+
+// HTML: server-render, then wake up on the client with mountCode(el, code)
+const html = `<div class="av" data-code="${user.avatar}">${render(user.avatar)}</div>`</script>
+
+  <h3 id="fw-deno">Deno &amp; Bun</h3>
+<script type="text/plain" class="snip" data-lang="ts" data-file="Deno">import { createAvatar, animal } from 'npm:livatar'
+
+Deno.serve((req) => {
+  const seed = new URL(req.url).searchParams.get('seed') ?? 'deno'
+  return new Response(createAvatar(animal, { seed }), { headers: { 'content-type': 'image/svg+xml' } })
+})</script>
+<script type="text/plain" class="snip" data-lang="ts" data-file="Bun">import { createAvatar, buddy } from 'livatar'
+
+Bun.serve({
+  port: 3000,
+  fetch(req) {
+    const seed = new URL(req.url).searchParams.get('seed') ?? 'bun'
+    return new Response(createAvatar(buddy, { seed }), { headers: { 'content-type': 'image/svg+xml' } })
+  },
+})</script>
+
+  <h3 id="fw-cli">CLI</h3>
+<script type="text/plain" class="snip" data-lang="bash">npx livatar ada --style animal --mood happy --size 128 > ada.svg
+npx livatar --code lvAQQBAG51aG1hbnBr -o me.svg
+npx livatar ada --style buddy --opt hair=afro --opt glasses=round --encode   # print a code
+npx livatar --random --style animal --json                                 # random config
+npx livatar ada --palette ocean --shape rounded --border --gradient
+npx livatar --list                                                         # styles, options, moods, palettes</script>
+  <p>Flags: <code>-s/--style</code>, <code>-m/--mood</code>, <code>--size</code>, <code>--shape</code>, <code>--radius</code>, <code>--palette</code>, <code>--background</code> (color or <code>none</code>), <code>--flip</code>, <code>--gradient</code>, <code>--border</code>, <code>--opt key=value</code>, <code>--code</code>, <code>--random</code>, <code>--encode</code>, <code>--json</code>, <code>-o/--out</code>, <code>--list</code>, <code>--help</code>.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="icons-section" data-subnav>
+  <h2 id="icons">Icons</h2>
+  <p><code>livatar/icons</code> renders animated brand icons (GitHub, npm, X, LinkedIn, Kaggle and more) and pill badges as standalone SVG strings. The animation is CSS inside the SVG, so it also plays in <code>&lt;img&gt;</code>, GitHub READMEs and markdown. Browse them all on the <a href="../icons/">Icons page</a>.</p>
+<script type="text/plain" class="snip" data-lang="js">import { icon, badge, iconUri, ICONS, ICON_GROUPS, ANIMATIONS } from 'livatar/icons'
+
+icon('github', { animation: 'wiggle', size: 32 })     // '<svg …>'
+icon('kaggle', { tile: 'circle' })                    // white glyph on a brand tile
+icon('npm', { animation: 'rocket', trigger: 'hover' }) // plays only while hovered (inline SVG)
+badge('npm', 'livatar', { animation: 'bounce' })      // pill badge with label
+img.src = iconUri('linkedin', { animation: 'pulse' })</script>
+  <h3 id="icon-options">Options</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Option</th><th>Default</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="nw"><code>size</code></td><td><code>24</code></td><td>Pixels (square)</td></tr>
+      <tr><td class="nw"><code>color</code></td><td><code>'brand'</code></td><td><code>'brand'</code>, <code>'currentColor'</code>, or any color</td></tr>
+      <tr><td class="nw"><code>animation</code></td><td><code>'bounce'</code></td><td>One of <code>ANIMATIONS</code> (<span id="animCount"></span> values, see below)</td></tr>
+      <tr><td class="nw"><code>trigger</code></td><td><code>'loop'</code></td><td><code>'loop'</code> plays forever with a rest; <code>'hover'</code> only while hovered (inline SVG only)</td></tr>
+      <tr><td class="nw"><code>duration</code></td><td>per animation</td><td>Seconds per cycle</td></tr>
+      <tr><td class="nw"><code>tile</code></td><td><code>'none'</code></td><td><code>'circle'</code>, <code>'rounded'</code>, <code>'square'</code>: glyph on a brand-colored tile</td></tr>
+      <tr><td class="nw"><code>title</code></td><td>brand name</td><td>Accessible name</td></tr>
+    </tbody>
+  </table></div>
+  <p><code>badge(name, label, opts)</code> takes the same options minus <code>tile</code>/<code>size</code>, plus <code>height</code> (default 28) and <code>theme</code> (<code>'brand'</code>, <code>'dark'</code>, <code>'light'</code>).</p>
+  <h3 id="icon-animations">Animations</h3>
+  <div class="live">
+    <label class="field" style="max-width:220px">Icon <select id="icName"></select></label>
+    <div class="icons-gal" id="icGal"></div>
+    <div class="badges" id="icBadges"></div>
+  </div>
+<script type="text/plain" class="snip" data-lang="html"><!-- README.md: animated icons work as images -->
+<img src="https://example.com/github.svg" width="32" alt="GitHub"></script>
+</section>
+
+<!-- ============================================================ -->
+<section id="make-alive-section">
+  <h2 id="make-alive">Make anything alive</h2>
+  <p>The engine does not care who drew the SVG. Tag parts with <code>data-lv-*</code> attributes and call <code>alive()</code>. This mug is hand-written SVG:</p>
+  <div class="live">
+    <div class="row">
+      <div id="mugHost" style="width:150px"></div>
+      <div class="stack">
+        <div class="btns" id="mugBtns">
+          <button class="ghost sm" type="button" data-m="talk">talk()</button>
+          <button class="ghost sm" type="button" data-m="poke">poke()</button>
+          <button class="ghost sm" type="button" data-m="happy">emote('happy')</button>
+          <button class="ghost sm" type="button" data-m="angry">emote('angry')</button>
+          <button class="ghost sm" type="button" data-m="confused">emote('confused')</button>
+          <button class="ghost sm" type="button" data-m="neutral">emote('neutral')</button>
+        </div>
+        <form onsubmit="return false"><label class="field">Focus this password field: the hands come up <input type="password" autocomplete="new-password" placeholder="password" /></label></form>
+      </div>
+    </div>
+  </div>
+  <div id="mugSnip"></div>
+<script type="text/plain" class="snip" data-lang="js">import { alive } from 'livatar'
+
+const handle = alive(document.querySelector('#mug'))
+handle.emote('happy') // without `rerender`, emote changes the motion only</script>
+  <div class="tw"><table>
+    <thead><tr><th>Attribute</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>data-lv-depth="0.8"</code></td><td>Parallax: moves with the gaze by depth × 4 units. Nest groups to add depth.</td></tr>
+      <tr><td><code>data-lv-tilt="5"</code></td><td>Rotates with horizontal gaze (degrees)</td></tr>
+      <tr><td><code>data-lv-eye=""</code></td><td>Blinks and closes</td></tr>
+      <tr><td><code>data-lv-mouth="1"</code></td><td>Opens when talking or typing (the value sets how much)</td></tr>
+      <tr><td><code>data-lv-body=""</code></td><td>Breathes, bounces with its mood, squashes when poked</td></tr>
+      <tr><td><code>data-lv-shy=""</code></td><td>Hidden; slides up while a password field is focused. Add <code>opacity="0"</code> so static renders hide it.</td></tr>
+      <tr><td><code>data-lv-float=""</code></td><td>Bobs gently; <code>data-lv-float="drip"</code> falls and fades (tears)</td></tr>
+      <tr><td><code>data-lv-mood="happy"</code> (root)</td><td>Mood motion: bounce, tremble, tilt, wobble…</td></tr>
+      <tr><td><code>data-lv-flip</code> (root)</td><td>Mirrors the gaze for mirrored drawings</td></tr>
+    </tbody>
+  </table></div>
+  <p>Output must be valid XML when you build it as a string, so write <code>data-lv-eye=""</code> rather than a bare attribute.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="custom-style-section">
+  <h2 id="custom-style">Write your own style</h2>
+  <p>A style is a plain object: a <code>name</code>, a default palette, optional <code>defaults</code> and <code>variants</code>, and a <code>render(ctx)</code> that returns inner SVG for a 100×100 viewBox. <code>defineStyle</code> is an identity helper that gives you type inference. The code below is the exact source running in the live example.</p>
+<script type="text/plain" class="snip" data-lang="js" id="jellySrc" data-file="jelly.js">import { defineStyle, faceEyes, faceBrows, faceMouth, faceExtras } from 'livatar'
+
+export const jelly = defineStyle({
+  name: 'jelly',
+  colors: ['#e0e7ff', '#fce7f3', '#dcfce7', '#fef9c3', '#ffe4e6', '#cffafe'],
+  defaults: { eyes: 'random' },
+  variants: { eyes: ['round', 'tall'] },
+  render(ctx) {
+    const { color, background, mood } = ctx
+    const ry = ctx.pick('eyes', ['round', 'tall']) === 'tall' ? 4.6 : 3.4
+    const face = {
+      x: 50, ey: 58, gap: 10, my: 67, ink: '#1f1a2e',
+      eye: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="3.2" ry="${ry}" fill="#1f1a2e"/>`,
+    }
+    const mouth = faceMouth(face, mood) || '<ellipse cx="50" cy="69" rx="4" ry="2" fill="#1f1a2e"/>'
+    return `
+      <g data-lv-body="">
+        <path data-lv-depth=".3" fill="${color(background)}" stroke="#1f1a2e" stroke-width="2.5"
+          d="M22 92V58a28 28 0 0 1 56 0v34l-7-5-7 5-7-5-7 5-7-5-7 5-7-5z"/>
+        <g data-lv-depth="1">
+          ${faceEyes(face, mood)}${faceBrows(face, mood)}
+          <g data-lv-mouth="1.5">${mouth}</g>
+        </g>
+        ${faceExtras(face, mood)}
+      </g>`
+  },
+})</script>
+<script type="text/plain" class="snip" data-lang="js">import { mount } from 'livatar'
+import { jelly } from './jelly.js'
+
+const h = mount(el, jelly, { seed: 'ada' })
+h.emote('love') // moods work: the face helpers draw them</script>
+  <div class="live">
+    <div class="gal" id="jellyGal"></div>
+    <div class="btns" id="jellyBtns"></div>
+    <div class="log err" id="jellyErr"></div>
+  </div>
+  <h3 id="style-context">The render context</h3>
+  <div class="tw"><table>
+    <thead><tr><th><code>ctx</code> member</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td><code>rand</code></td><td>Seeded PRNG: <code>rand()</code>, <code>.int(min, max)</code>, <code>.float(min, max)</code>, <code>.pick(list)</code>, <code>.bool(p?)</code>. Use it for every random decision.</td></tr>
+      <tr><td><code>pick(key, choices)</code></td><td><code>options[key]</code>, or a seeded pick from <code>choices</code> when it is missing or <code>'random'</code></td></tr>
+      <tr><td><code>color(against?)</code></td><td>Next palette color; pass a color to get one that contrasts with it</td></tr>
+      <tr><td><code>colors</code></td><td>The seeded, shuffled palette</td></tr>
+      <tr><td><code>background</code></td><td>The background color (<code>"none"</code> when transparent)</td></tr>
+      <tr><td><code>mood</code></td><td>The mood to draw; draw your seeded default face for <code>'neutral'</code></td></tr>
+      <tr><td><code>id</code></td><td>Unique deterministic prefix for <code>&lt;defs&gt;</code> ids</td></tr>
+      <tr><td><code>options</code>, <code>seed</code></td><td>Merged options and the seed string</td></tr>
+    </tbody>
+  </table></div>
+  <h3 id="face-helpers">FaceSpec helpers</h3>
+  <p><code>faceEyes</code>, <code>faceBrows</code>, <code>faceMouth</code> and <code>faceExtras</code> draw all ten moods from a small <code>FaceSpec</code>: face centre <code>x</code>, eye line <code>ey</code>, half eye distance <code>gap</code>, mouth top <code>my</code>, <code>ink</code> color, optional scale <code>s</code> (1 suits ~7-unit eyes), your open <code>eye(x, y)</code>, and an optional <code>extra: [x, y]</code> spot for floating extras. <code>faceMouth</code> returns <code>''</code> for neutral, so draw your own default mouth. <code>heart(x, y, r, fill?)</code> is exported too, as are <code>hash</code>, <code>createRand</code>, <code>luma</code> and <code>smoothPath</code> (a closed Catmull-Rom path through points, handy for organic shapes).</p>
+  <p>Custom styles work with codes too: pass your own registry as the last argument, e.g. <code>encode(cfg, { ...styles, jelly })</code> and <code>render(code, {}, { ...styles, jelly })</code>, and append new styles at the end so old indexes stay stable.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="behaviors-section">
+  <h2 id="behaviors">Behaviors</h2>
+  <p>A behavior is a function the engine calls every frame for each avatar, before smoothing. It can rewrite <code>target</code> (the gaze, −1…1) or call the handle. The source below is what runs in the example.</p>
+<script type="text/plain" class="snip" data-lang="js" id="behSrc" data-file="behaviors.js">// orbit: look at a moon circling the avatar
+export const followMoon = ({ target, now }) => {
+  target.x = Math.cos(now / 1000)
+  target.y = Math.sin(now / 1000) * 0.6
+}
+
+// avoid eye contact: look away from wherever it would look
+export const avoid = ({ target }) => {
+  target.x = -target.x
+  target.y = -target.y
+}
+
+// nervous: a little jitter on top of normal tracking
+export const nervous = ({ target, now }) => {
+  target.x += Math.sin(now / 37) * 0.12
+  target.y += Math.cos(now / 53) * 0.08
+}</script>
+<script type="text/plain" class="snip" data-lang="js">import { mount, alive, ghost } from 'livatar'
+import { followMoon, nervous } from './behaviors.js'
+
+const h = mount(el, ghost, { seed: 'boo', alive: { behaviors: [followMoon] } })
+h.set({ behaviors: [nervous] }) // swap at any time</script>
+  <div class="live">
+    <div class="row">
+      <div class="av-m" id="behAv"></div>
+      <div class="tabs" id="behTabs" aria-label="Behavior"></div>
+    </div>
+  </div>
+  <p>The context: <code>{ target, state, rect, now, dt, root, handle }</code>. <code>state</code> is the smoothed <code>{ x, y, closed, mouth, shy, mood }</code>, <code>rect</code> the element's bounding box for this frame (read once per frame for all avatars), <code>dt</code> seconds since the last frame.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="performance-section">
+  <h2 id="performance">Performance</h2>
+  <ul>
+    <li><b>One loop for everything.</b> A single <code>requestAnimationFrame</code> callback and one set of passive global listeners serve every avatar. Mounting more avatars adds work to that loop, never more loops or listeners.</li>
+    <li><b>No layout thrash.</b> Each frame reads every visible avatar's bounding box first, then writes transforms. Reads and writes never interleave.</li>
+    <li><b>Transforms only.</b> Animation writes <code>transform</code> (and occasionally <code>opacity</code>) on tagged parts, skips writes when the value has not changed, and never touches layout properties.</li>
+    <li><b>Offscreen avatars pause.</b> An <code>IntersectionObserver</code> skips avatars that are not visible. A hidden tab stops the loop.</li>
+    <li><b>Rendering is a string.</b> <code>createAvatar</code> builds markup with no DOM, so server and static renders cost nothing at runtime.</li>
+  </ul>
+  <h3 id="stress-test">Stress test</h3>
+  <div class="live">
+    <div class="row">
+      <div class="btns">
+        <button type="button" class="sm" data-n="100">Mount 100</button>
+        <button type="button" class="sm" data-n="300">Mount 300</button>
+        <button type="button" class="sm" data-n="600">Mount 600</button>
+        <button type="button" class="ghost sm" id="stClear">Clear</button>
+      </div>
+      <div class="fps" id="fps" role="status">– fps · 0 avatars</div>
+    </div>
+    <div class="stress" id="stress"></div>
+  </div>
+  <p class="muted">Scroll the grid partly out of view: avatars outside the viewport stop costing anything.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="a11y-section">
+  <h2 id="accessibility">Accessibility</h2>
+  <ul>
+    <li><b>Names.</b> Pass <code>title</code> (or <code>label</code> on the web component) and the SVG gets <code>role="img"</code>, <code>aria-label</code> and a <code>&lt;title&gt;</code>. Without it the SVG is <code>aria-hidden="true"</code>, which is right when a visible name sits next to it.</li>
+    <li><b>Reduced motion.</b> <code>prefers-reduced-motion</code> is honoured by default (see <a href="#reduced-motion">above</a>). Use <code>alive: false</code> or <code>static</code> for no motion at all.</li>
+    <li><b>Password privacy.</b> On password fields the avatar looks away and covers its eyes, and keystrokes in a password field never move its mouth, so the animation does not leak typing rhythm or length.</li>
+    <li><b>No focus traps.</b> Avatars are not focusable and do not steal focus; poking is pointer-only. If poking does something important in your UI, put a real button next to it.</li>
+  </ul>
+<script type="text/plain" class="snip" data-lang="js">mount(el, buddy, { seed: user.id, title: user.name })
+// <svg role="img" aria-label="Ada Lovelace"><title>Ada Lovelace</title>…</script>
+  <div class="live">
+    <div class="row">
+      <div class="av-m" id="pwAv"></div>
+      <form class="stack" onsubmit="return false" style="min-width:200px">
+        <label class="field">Email <input type="email" autocomplete="off" placeholder="you@example.com" /></label>
+        <label class="field">Password <input type="password" autocomplete="new-password" placeholder="type here: no chewing" /></label>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section id="bundle-section">
+  <h2 id="bundle">Bundle size &amp; tree-shaking</h2>
+  <p>The package is ESM with <code>sideEffects</code> limited to the web component and global builds, so bundlers drop whatever you do not import. Each style is its own export.</p>
+  <div class="tw"><table>
+    <thead><tr><th>You import</th><th>You ship (approx., gzipped)</th></tr></thead>
+    <tbody>
+      <tr><td><code>createAvatar</code> + one style (static, SSR)</td><td>a few KB</td></tr>
+      <tr><td><code>mount</code> + one style, <code>&lt;Livatar variant={buddy}&gt;</code>, <code>use:livatar</code></td><td>≈ 9 KB (engine + that style)</td></tr>
+      <tr><td><code>mountCode</code>, <code>render</code>, <code>decode</code>, <code>&lt;LivatarCode&gt;</code>, <code>livatarCode</code>, <code>&lt;live-avatar&gt;</code>, <code>livatar/global</code></td><td>≈ 20 KB (everything: all 8 styles)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Rule of thumb: if you know the style at build time, use the lean API. If avatars come from user-made codes, the batteries-included API is what you want, and 20 KB buys every character.</p>
+<script type="text/plain" class="snip" data-lang="js">// lean: ≈ 9 KB
+import { mount, animal } from 'livatar'
+mount(el, animal, { seed })
+
+// batteries included: ≈ 20 KB
+import { mountCode } from 'livatar'
+mountCode(el, user.avatarCode)</script>
+</section>
+
+<!-- ============================================================ -->
+<section id="comparison-section">
+  <h2 id="comparison">Comparison</h2>
+  <p>Great avatar libraries already exist; they mostly generate a picture. livatar's difference is the animation engine. Pick what fits.</p>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>livatar</th><th>DiceBear</th><th>boring-avatars</th><th>minidenticons</th><th>jdenticon</th><th>react-nice-avatar</th></tr></thead>
+    <tbody>
+      <tr><td>Kind</td><td>Animated characters</td><td>Many art styles</td><td>Abstract shapes</td><td>Identicons</td><td>Identicons</td><td>Cartoon faces</td></tr>
+      <tr><td>Follows cursor, blinks, reacts</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>Expressions / moods</td><td class="yes">10, live</td><td>Per style, static</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>Static options</td></tr>
+      <tr><td>Number of styles</td><td>8</td><td>Many (30+)</td><td>A handful</td><td>1</td><td>1</td><td>1</td></tr>
+      <tr><td>Framework</td><td>Any; React, Vue, Svelte bindings, web component</td><td>Any (JS library)</td><td>React-focused</td><td>Any</td><td>Any</td><td>React</td></tr>
+      <tr><td>HTTP API</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      <tr><td>Best for</td><td>Characters that feel alive in your UI</td><td>Choice of art style, avatars by URL</td><td>Elegant abstract placeholders</td><td>The smallest identicon</td><td>Classic geometric identicons</td><td>Customizable faces in React</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">Corrections welcome; check each project for its latest features.</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="faq-section">
+  <h2 id="faq">FAQ</h2>
+  <details class="faq"><summary>Is the same seed always the same avatar?</summary><p>Yes. Rendering is a pure function of the style, seed and options, using a seeded PRNG, so it matches on server and client and across machines. Style output can still improve between versions; store a <a href="#codes">code</a> if you want a user's choices pinned.</p></details>
+  <details class="faq"><summary>Does it send any data anywhere?</summary><p>No. There are no network requests, no tracking and no dependencies. The seed is hashed locally.</p></details>
+  <details class="faq"><summary>Can I use it for user-uploaded photos?</summary><p>No, livatar generates characters. Use it as the default avatar until someone uploads a photo.</p></details>
+  <details class="faq"><summary>How do I turn the animation off?</summary><p><code>mount(el, style, { alive: false })</code>, <code>&lt;Livatar alive={false} /&gt;</code>, or the <code>static</code> attribute. Or never call <code>alive()</code>: <code>createAvatar</code> on its own is static.</p></details>
+  <details class="faq"><summary>Why did an avatar stop moving?</summary><p>It is off screen, the tab is hidden, the user prefers reduced motion (motion is reduced, not removed), or <code>destroy()</code> was called.</p></details>
+  <details class="faq"><summary>Do I need to call destroy()?</summary><p>Yes, when you remove an avatar yourself. The React, Vue and Svelte bindings and the web component do it for you.</p></details>
+  <details class="faq"><summary>Can I use it in emails?</summary><p>The SVG works where SVG is supported, but many clients block it. Rasterize to PNG on the server, see <a href="#email">Email</a>.</p></details>
+  <details class="faq"><summary>Is it MIT?</summary><p>Yes, code and generated avatars alike. Use them anywhere.</p></details>
+</section>
+
+<!-- ============================================================ -->
+<section id="changelog-section">
+  <h2 id="changelog">Changelog</h2>
+  <h4>0.1.0</h4>
+  <ul>
+    <li>Initial release: 8 characters, 10 moods, the alive engine, livatar codes, palettes, <code>bindForm</code> / <code>bindInput</code>, PNG export, React, Vue, Svelte action, web component, CDN global and CLI.</li>
+  </ul>
+  <p>See <a href="https://github.com/nuhmanpk/livatar/releases">GitHub releases</a> for the full history.</p>
+</section>
+
+<footer>
+  <span>MIT · made by <a href="https://github.com/nuhmanpk">@nuhmanpk</a></span>
+  <a href="../">Home</a>
+  <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+  <a href="https://www.npmjs.com/package/livatar">npm</a>
+  <a href="https://github.com/sponsors/nuhmanpk">Sponsor</a>
+  <a href="../../llms.txt">llms.txt</a>
+</footer>
+  </main>
+</div>
+
+<script type="text/plain" id="mugSrc"><svg id="mug" viewBox="0 0 100 100" width="100%" data-lv-mood="neutral" role="img" aria-label="A coffee mug that is alive">
+  <rect width="100" height="100" rx="22" fill="#ffe6c7"/>
+  <g data-lv-float="">
+    <path d="M42 24c-4-5 4-7 0-12M52 24c-4-5 4-7 0-12M62 24c-4-5 4-7 0-12" fill="none" stroke="#b98a62" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <g data-lv-body="">
+    <g data-lv-tilt="3">
+      <path d="M76 46h4a10 10 0 0 1 0 20h-4" fill="none" stroke="#1f1a2e" stroke-width="5"/>
+      <rect x="24" y="30" width="54" height="58" rx="10" fill="#ffffff" stroke="#1f1a2e" stroke-width="3"/>
+      <rect x="24" y="30" width="54" height="10" rx="5" fill="#7f5af0"/>
+      <g data-lv-depth="1">
+        <g data-lv-eye=""><ellipse cx="41" cy="56" rx="3.6" ry="4.6" fill="#1f1a2e"/></g>
+        <g data-lv-eye=""><ellipse cx="61" cy="56" rx="3.6" ry="4.6" fill="#1f1a2e"/></g>
+        <g data-lv-mouth="1.4"><path d="M45 67q6 5 12 0z" fill="#1f1a2e" stroke="#1f1a2e" stroke-width="2.5" stroke-linejoin="round"/></g>
+      </g>
+      <g data-lv-shy="" opacity="0">
+        <circle cx="41" cy="57" r="8" fill="#ffd2a8" stroke="#1f1a2e" stroke-width="2.5"/>
+        <circle cx="61" cy="57" r="8" fill="#ffd2a8" stroke="#1f1a2e" stroke-width="2.5"/>
+      </g>
+    </g>
+  </g>
+</svg></script>
+
+<script type="module" src="docs.js"></script>
+<script type="module" src="../ui.js"></script>
+</body>
+</html>

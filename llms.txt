@@ -1,0 +1,51 @@
+# livatar
+
+> Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, chew while you type, watch the caret, cover their eyes on password fields, and show 10 moods. Deterministic from a seed. Works in vanilla JS, React/Next.js, Vue/Nuxt, Svelte, Solid, Angular (web component), SSR, <img>, email, and a CLI. Also ships 540+ animated brand icons (livatar/icons). MIT.
+
+Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.md (or `npx livatar skill`). Docs: https://nuhmanpk.github.io/livatar/docs/
+
+## Core API (import from 'livatar')
+- `createAvatar(style, { seed, mood, size, shape, radius, background, gradient, colors, border, borderWidth, flip, scale, rotate, title, options }) → svg string` (SSR-safe, static)
+- `mount(el, style, { ...options, alive?: AliveOptions | false }) → handle` (lean: only that style is bundled)
+- `mountCode(el, codeOrStyleNameOrConfig, opts) → handle` (bundles all styles)
+- handle: `look(x,y,ms) talk(ms) blink() poke() emote(mood, ms?) nod() shake() refresh() set(opts) destroy() state`
+- `alive(el, { track, focus, keyboard, shy, blink, breathe, idle, poke, pokeMood, sleepAfter, intensity, speed, range, idleAfter, reducedMotion, behaviors, rerender })`
+- Codes: `encode(config) → 'lv…'`, `decode(code)`, `render(codeOrConfig, extra?)`, `resolve(code) → { style, options }`, `isCode(v)`, `randomConfig(style?)`. Config: `{ style: 'buddy', seed, mood, shape, palette, colors, options, ... }`
+- Forms: `bindForm(handle, form, moods?) → { success(), error(), reset(), destroy() }` (native validation drives moods), `bindInput(handle, input, value => mood)`
+- Export: `toDataUri(style, opts)`, `toImage(svg, size, type) → Promise<Blob>` (browser), `download(svg, 'me.png')`
+- `palettes` (pastel vivid candy ocean forest sunset mono neon retro earth), `MOODS`, `styles`, `defineStyle`, `faceEyes/faceBrows/faceMouth/faceExtras`
+
+## Styles and options (every option also accepts 'random' = picked by seed)
+- buddy: hair, facialHair, glasses, accessory, clothes, mouth, freckles, skin, hairColor
+- animal: species (cat dog bear bunny fox panda frog mouse shark penguin owl chick parrot pig koala lion), fur, pattern, whiskers, outline
+- monster: eyes(1|2|3), horns, teeth, spots · ghost: accessory, blush · emoji: tone, eyes, mouth, blush
+- memoji: hair, beard, glasses, skin, hairColor, shirt · clay: hair, skin, hairColor, outfit · planet: kind (earth saturn mars moon sun gas comet star heart cloud), satellite, stars · dino: kind, spots, hat · alien: eyes, antenna, head, helmet · food: kind, topping, outline · plant: kind, pot, flower · initials: name, chars, face, weight
+- bot: eyes, antenna, glow · blob: eyes, mouth, blush, spots · pixel: density · ui: kind (toggle bell folder trash lock gear cart chat), badge · device: kind (phone laptop watch camera headphones tv tablet gamepad), screen · fruit: kind (apple banana cherry lemon peach grape orange pear pineapple kiwi), leaf · drink: kind (coffee tea juicebox soda milk bottle smoothie cocoa), steam · vehicle: kind (car bus rocket plane scooter van train boat), color · tech: kind (server database cloud chip terminal plug router drive), leds · money: kind (coin wallet piggy card receipt gem bag bill), sparkle · home: kind (house lamp sofa door key mug clock bed), smoke · office: kind (clipboard calendar note paperclip folder stapler pencil briefcase), lines
+- human (realistic portrait): age (baby toddler kid teen adult senior), gender (boy girl neutral), skin, hair (short long curly coily bun braids ponytail bob bald buzz hijab turban wavy), hairColor, eyes, facialHair, glasses (none round square sun), accessory, clothes, clothesColor, freckles, pacifier
+- dev (developer at work): activity (coding thinking debugging solved coffee reviewing shipping stuck), hair (short long curly bun buzz beanie), skin, hairColor, hoodie, glasses, headphones
+- Moods: neutral happy sad angry surprised sleepy love wink silly confused
+
+## Extras
+- `describe(config) → "A happy owl"` alt text. Style `initials` (options.name, chars).
+- Server: `import { avatarHandler } from 'livatar/server'` → `(Request) => Response`; URLs `/<style>/<seed>.svg?mood=&size=&<option>=`, `/<code>.svg`
+
+## Framework entry points
+- React/Next.js: `import { Livatar, LivatarCode } from 'livatar/react'` (`'use client'` included) — `<Livatar variant={buddy} seed="ada" mood="happy" size={48} ref={ref} />`, `<LivatarCode code="lv…" />`
+- Vue/Nuxt: `import { Livatar, LivatarCode, LivatarPlugin } from 'livatar/vue'`
+- Svelte/Solid/vanilla action: `import { livatar, livatarCode } from 'livatar/svelte'` → `<div use:livatar={{ variant: buddy, seed }} />`
+- Web component (any framework): `import 'livatar/element'` → `<live-avatar seed="ada" variant="animal" mood="love" options='{"species":"owl"}'></live-avatar>` or `<live-avatar code="lv…">`
+- CDN: `<script src="https://unpkg.com/livatar"></script>` → `window.Livatar`
+- CLI: `npx livatar ada --style animal --mood happy --opt species=owl --size 128 > ada.svg`, `--code lv…`, `--random`, `--encode`, `--list`
+
+## Icons (import from 'livatar/icons')
+- `icon(name, { animation, size, color, tile, trigger })`, `badge(name, label, { animation, theme })`, `iconUri()`, `ICONS`, `ICON_GROUPS`, `ANIMATIONS` (bounce wiggle pulse float tada heartbeat jelly spin shake glow draw doodle walk peek rocket)
+- Hosted for READMEs: https://nuhmanpk.github.io/livatar/icons/svg/<name>-<animation>[-circle|-rounded].svg
+
+## Custom SVG
+Any SVG comes alive via attributes: data-lv-depth, data-lv-tilt, data-lv-eye, data-lv-mouth, data-lv-body, data-lv-shy, data-lv-float; root data-lv-mood.
+
+## Links
+- [Docs](https://nuhmanpk.github.io/livatar/docs/)
+- [Demo and use cases](https://nuhmanpk.github.io/livatar/)
+- [Icons](https://nuhmanpk.github.io/livatar/icons/)
+- [Source](https://github.com/nuhmanpk/livatar)

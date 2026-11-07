@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>livatar browser smoke test</title>
+<!-- open via `npm run serve` → http://localhost:5173/test/browser-smoke.html ; prints PASS/FAIL lines -->
+<div id="a" style="width:80px"></div><div id="b" style="width:80px"></div>
+<form id="f"><input name="email" type="email" required><input name="pw" minlength="4" required></form>
+<live-avatar id="w" size="40"></live-avatar>
+<pre id="out"></pre>
+<script type="module">
+import { mount, encode, bindForm, toImage, animal } from '../dist/index.js'
+import { livatar } from '../dist/action.js'
+import '../dist/element.js'
+const out = [], ok = (name, cond) => out.push(`${cond ? 'PASS' : 'FAIL'} ${name}`)
+const mood = (el) => el.querySelector('svg')?.getAttribute('data-lv-mood')
+const tick = () => new Promise((r) => setTimeout(r, 150))
+
+const h = mount(document.getElementById('a'), animal, { seed: 'x' })
+h.emote('love'); ok('emote re-renders the face', mood(document.getElementById('a')) === 'love')
+h.emote('sad', 50); await new Promise((r) => setTimeout(r, 120)); await tick()
+ok('temporary emote reverts', mood(document.getElementById('a')) === 'love')
+
+const f = document.getElementById('f'), b = bindForm(h, f)
+const type = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })) }
+type(f.email, 'nope'); ok('invalid field → confused', h.state.mood === 'confused')
+type(f.email, 'a@b.co'); ok('valid field → happy', h.state.mood === 'happy')
+f.pw.value = ''; f.checkValidity(); ok('invalid form → sad + shake', h.state.mood === 'sad')
+f.pw.value = 'abcd'; f.requestSubmit(); ok('good submit → surprised', h.state.mood === 'surprised')
+b.success(); ok('success → love', h.state.mood === 'love')
+
+const act = livatar(document.getElementById('b'), { seed: 'q', mood: 'wink' })
+ok('action mounts', mood(document.getElementById('b')) === 'wink')
+act.update({ seed: 'q', mood: 'silly' }); ok('action updates', mood(document.getElementById('b')) === 'silly')
+
+const w = document.getElementById('w'); w.setAttribute('code', encode({ style: 'ghost', seed: 'g', mood: 'happy' }))
+ok('web component renders codes', w.querySelector('svg')?.getAttribute('data-lv-root') === 'ghost' && mood(w) === 'happy')
+
+const png = await toImage(document.getElementById('a').innerHTML, 64)
+ok('toImage makes a PNG', png.type === 'image/png' && png.size > 500)
+document.getElementById('out').textContent = out.join('\n') + '\nDONE'
+</script>

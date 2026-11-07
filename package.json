@@ -1,0 +1,200 @@
+{
+  "name": "livatar",
+  "version": "0.1.0",
+  "description": "Tiny, zero-dependency SVG avatars that are alive: they follow your cursor, blink, breathe, react to typing, and show 10 moods. 8 characters (humans, animals, robots, monsters, ghosts, emoji, pixel, blobs), shareable avatar codes, and it runs everywhere: vanilla, React, Vue, Svelte, Web Components, SSR, CDN.",
+  "keywords": [
+    "avatar",
+    "svg",
+    "animated",
+    "identicon",
+    "generative",
+    "character",
+    "mascot",
+    "eyes",
+    "cursor",
+    "web-component",
+    "react",
+    "vue",
+    "svelte",
+    "livatar",
+    "alive",
+    "interactive",
+    "emoji",
+    "animal",
+    "emotions",
+    "mood",
+    "monster",
+    "ghost",
+    "pixel-art",
+    "nuxt",
+    "nextjs",
+    "solid",
+    "angular",
+    "cli",
+    "png"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Nuhman PK",
+    "url": "https://github.com/nuhmanpk"
+  },
+  "homepage": "https://nuhmanpk.github.io/livatar/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuhmanpk/livatar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nuhmanpk/livatar/issues"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/nuhmanpk"
+    },
+    {
+      "type": "buymeacoffee",
+      "url": "https://www.buymeacoffee.com/nuhmanpk"
+    }
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./dist/element.*",
+    "./dist/livatar.global.js"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/livatar.global.js",
+  "jsdelivr": "./dist/livatar.global.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./element": {
+      "import": {
+        "types": "./dist/element.d.ts",
+        "default": "./dist/element.js"
+      },
+      "require": {
+        "types": "./dist/element.d.cts",
+        "default": "./dist/element.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react.d.ts",
+        "default": "./dist/react.js"
+      },
+      "require": {
+        "types": "./dist/react.d.cts",
+        "default": "./dist/react.cjs"
+      }
+    },
+    "./vue": {
+      "import": {
+        "types": "./dist/vue.d.ts",
+        "default": "./dist/vue.js"
+      },
+      "require": {
+        "types": "./dist/vue.d.cts",
+        "default": "./dist/vue.cjs"
+      }
+    },
+    "./svelte": {
+      "import": {
+        "types": "./dist/action.d.ts",
+        "default": "./dist/action.js"
+      },
+      "require": {
+        "types": "./dist/action.d.cts",
+        "default": "./dist/action.cjs"
+      }
+    },
+    "./action": {
+      "import": {
+        "types": "./dist/action.d.ts",
+        "default": "./dist/action.js"
+      },
+      "require": {
+        "types": "./dist/action.d.cts",
+        "default": "./dist/action.cjs"
+      }
+    },
+    "./icons": {
+      "import": {
+        "types": "./dist/icons.d.ts",
+        "default": "./dist/icons.js"
+      },
+      "require": {
+        "types": "./dist/icons.d.cts",
+        "default": "./dist/icons.cjs"
+      }
+    },
+    "./server": {
+      "import": {
+        "types": "./dist/server.d.ts",
+        "default": "./dist/server.js"
+      },
+      "require": {
+        "types": "./dist/server.d.cts",
+        "default": "./dist/server.cjs"
+      }
+    },
+    "./global": "./dist/livatar.global.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE",
+    "llms.txt",
+    "llms-full.txt",
+    "skills",
+    "AGENTS.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsup && node scripts/use-client.mjs && node scripts/build-llms.mjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "demo": "npm run build && node scripts/serve.mjs --watch",
+    "prepublishOnly": "npm run typecheck && npm test",
+    "serve": "node scripts/serve.mjs",
+    "site": "npm run build && node scripts/build-site.mjs",
+    "art": "npm run build && node scripts/readme-art.mjs",
+    "demo:static": "npm run build && node scripts/serve.mjs",
+    "icons": "node scripts/build-icons.mjs"
+  },
+  "peerDependencies": {
+    "react": ">=16.8",
+    "vue": ">=3.2"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "simple-icons": "^16.36.0",
+    "tsup": "^9.0.0",
+    "typescript": "5.9",
+    "vue": "^3.5.45"
+  },
+  "bin": {
+    "livatar": "./bin/livatar.mjs"
+  }
+}
