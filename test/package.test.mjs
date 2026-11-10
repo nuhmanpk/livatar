@@ -6,7 +6,11 @@ import { readFileSync, existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
-const packed = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { encoding: 'utf8' }))[0]
+// Run with a clean env: under `npm publish`, inherited npm_config_* / npm_lifecycle_* vars change what nested `npm pack` prints.
+const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^npm_/i.test(k)))
+const raw = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { encoding: 'utf8', env }))
+const packed = Array.isArray(raw) ? raw[0] : (raw.files ? raw : Object.values(raw)[0])
+if (!packed?.files) throw new Error(`unexpected npm pack output: ${JSON.stringify(raw).slice(0, 300)}`)
 const files = packed.files.map((f) => f.path)
 
 test('npm tarball has only what the package needs', () => {
@@ -55,4 +59,24 @@ test('CLI prints help and installs nothing by accident', () => {
 
 test('core has zero runtime dependencies', () => {
   assert.equal(Object.keys(pkg.dependencies ?? {}).length, 0)
+})
+
+test('cli: components lists, add scaffolds a wrapper, api serves svg', async () => {
+  const { execFileSync, spawn } = await import('node:child_process')
+  const { mkdtempSync, readFileSync, existsSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const bin = new URL('../bin/livatar.mjs', import.meta.url).pathname
+  assert.ok(execFileSync('node', [bin, 'components'], { encoding: 'utf8' }).includes('LivatarSkeleton'))
+  const dir = mkdtempSync(join(tmpdir(), 'lv-'))
+  execFileSync('node', [bin, 'add', 'skeleton', dir])
+  assert.ok(readFileSync(join(dir, 'skeleton.tsx'), 'utf8').includes("from 'livatar/components'"))
+  assert.throws(() => execFileSync('node', [bin, 'add', 'nope'], { stdio: 'pipe' }))
+  const srv = spawn('node', [bin, 'api', '8793'], { stdio: 'ignore' })
+  try {
+    let res
+    for (let i = 0; i < 30 && !res; i++) { try { res = await fetch('http://localhost:8793/animal/ada.svg?mood=happy') } catch { await new Promise((r) => setTimeout(r, 100)) } }
+    assert.equal(res.status, 200); assert.ok((await res.text()).startsWith('<svg'))
+  } finally { srv.kill() }
+  assert.ok(existsSync(new URL('../figma-plugin/manifest.json', import.meta.url)))
 })

@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#7f5af0" />
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"livatar","description":"Tiny zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, and show 10 moods. 27 characters, shareable codes, React/Vue/Svelte/web component, animated icons, avatar API.","codeRepository":"https://github.com/nuhmanpk/livatar","programmingLanguage":"TypeScript","license":"https://opensource.org/licenses/MIT","author":{"@type":"Person","name":"Nuhman PK","url":"https://github.com/nuhmanpk"},"url":"https://nuhmanpk.github.io/livatar/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"livatar","description":"Tiny zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, and show 10 moods. 37 characters, shareable codes, React/Vue/Svelte/web component, animated icons, avatar API.","codeRepository":"https://github.com/nuhmanpk/livatar","programmingLanguage":"TypeScript","license":"https://opensource.org/licenses/MIT","author":{"@type":"Person","name":"Nuhman PK","url":"https://github.com/nuhmanpk"},"url":"https://nuhmanpk.github.io/livatar/"}</script>
 <script>
   // apply saved theme before paint (no flash)
   try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
@@ -199,11 +199,12 @@
 </style>
 </head>
 <body>
+<script>if (location.hash === "#characters") location.replace("characters/")</script>
 <script src="loader.js"></script>
 <header class="top"><div class="in">
   <a class="brand" href="./"><img src="favicon.svg" alt="" />livatar</a>
   <nav aria-label="Site">
-    <a class="page" href="#characters">Characters</a>
+    <a href="characters/">Characters</a>
     <a class="page" href="#moods">Moods</a>
     <a class="page" href="#use-cases">Use cases</a>
     <span class="sep" aria-hidden="true"></span>
@@ -232,7 +233,18 @@
 
   <div class="hero" id="hero"></div>
 
+  <h2 id="why">Why livatar</h2>
+  <div id="whyCards"></div>
+  <div id="whyCarousel"></div>
+  <h3>Compared</h3>
+  <div id="whyTable"></div>
+  <div class="why2" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:8px">
+    <div><h3>Works everywhere</h3><div id="whyList"></div></div>
+    <div><h3>Quick answers</h3><div id="whyFaq"></div></div>
+  </div>
+
   <h2 id="characters">Characters</h2>
+  <p><a class="btn primary" href="characters/">See all characters, options &amp; create your own →</a></p>
   <p class="lead">Every style, from the same engine. Each one is deterministic: the same seed always draws the same face.</p>
   <div class="row" style="gap:10px;margin:12px 0">
     <input id="gSeed" value="nuhmanpk" placeholder="Type any seed: a name, an email, an id…" aria-label="Seed" style="flex:1;max-width:360px" />
@@ -661,7 +673,7 @@
     ['kaggle', 'https://www.kaggle.com/nuhmanpk', 'pulse'], ['npm', 'https://www.npmjs.com/package/livatar', 'bounce'],
     ['githubsponsors', 'https://github.com/sponsors/nuhmanpk', 'heartbeat'], ['buymeacoffee', 'https://www.buymeacoffee.com/nuhmanpk', 'tada'],
   ]
-  $('footIcons').innerHTML = SOCIAL.map(([n, href, animation]) => `<a href="${href}" aria-label="${n}">${icon(n, { animation, tile: 'circle', size: 34, trigger: 'hover' })}</a>`).join('')
+  if ($('footIcons')) $('footIcons').innerHTML = SOCIAL.map(([n, href, animation]) => `<a href="${href}" aria-label="${n}">${icon(n, { animation, tile: 'circle', size: 34, trigger: 'hover' })}</a>`).join('')
 
   // highlight the section in view
   const navLinks = [...document.querySelectorAll('.top nav a[href^="#"]')]
@@ -673,8 +685,43 @@
   // old builder links (#lv…) now live in the docs
   if (/^#lv[\w-]{4,}$/.test(location.hash)) location.replace('docs/' + location.hash)
 
-  // hero: one of each character
-  names.forEach((n, i) => mount(box($('hero')), styles[n], { seed: 'nuhmanpk', mood: i % 3 === 1 ? 'happy' : 'neutral', alive: { intensity: 1.2 } }))
+  // site kit sections (built with the same pieces as livatar/components)
+  const kit = async () => {
+    if (!window.livatarKit) await new Promise((r) => document.addEventListener('livatar:kit', r, { once: true }))
+    const K = window.livatarKit
+    $('whyCards').replaceWith(K.cards([
+      { title: '37 characters', text: 'People, animals, robots, food, planets, gadgets and more. Every one has its own options.', seed: 'cards-1', style: 'animal', href: 'characters/' },
+      { title: 'Alive', text: 'Eyes follow the cursor, bodies breathe, faces react to typing and passwords.', seed: 'cards-2', style: 'bot', href: 'docs/' },
+      { title: 'Tiny', text: 'About 9 KB gzipped with zero dependencies. Offscreen avatars sleep and cost nothing.', seed: 'cards-3', style: 'ghost', href: 'docs/#why' },
+      { title: 'Ready-made UI', text: 'Footer, breadcrumbs, carousel, accordion, username check and 40 more components.', seed: 'cards-4', style: 'emoji', href: 'components/' },
+    ]))
+    $('whyCarousel').replaceWith(K.carousel([
+      { quote: 'The login form that covers its eyes on the password field sold my team in a minute.', by: 'Ada, frontend lead', seed: 'ada', style: 'buddy' },
+      { quote: 'One seed, one face, same on the server and in the browser. No avatar uploads to moderate.', by: 'Bo, platform engineer', seed: 'bo', style: 'animal' },
+      { quote: 'Our empty states finally have a personality, and it cost 9 KB.', by: 'Cy, product designer', seed: 'cy', style: 'bot' },
+    ], { autoplay: 7000 }))
+    $('whyTable').replaceWith(K.table(['Feature', 'livatar', 'Static identicons', 'Lottie'], [
+      Object.assign(['ada', 'Follows the cursor', 'Yes', 'No', 'Manual'], { style: 'buddy' }),
+      Object.assign(['bo', 'Moods', '10', 'None', 'Per file'], { style: 'animal' }),
+      Object.assign(['cy', 'Same seed, same face', 'Yes', 'Yes', 'No'], { style: 'bot' }),
+      Object.assign(['di', 'Runtime cost', '~9 KB', '~1 KB', '~60 KB+'], { style: 'ghost' }),
+    ]))
+    $('whyList').replaceWith(K.list([
+      { title: 'React and Next.js', text: 'livatar/react, with use client included', seed: 'react', style: 'bot' },
+      { title: 'Vue and Svelte', text: 'livatar/vue, livatar/svelte', seed: 'vue', style: 'plant' },
+      { title: 'Any framework', text: 'the <live-avatar> web component', seed: 'wc', style: 'emoji' },
+      { title: 'Server rendering', text: 'static SVG that matches on the client', seed: 'ssr', style: 'ghost' },
+    ]))
+    $('whyFaq').replaceWith(K.accordion([
+      { q: 'Is the same seed always the same avatar?', a: 'Yes. Rendering is a pure function of style, seed and options.', style: 'buddy' },
+      { q: 'Does it slow my page down?', a: 'Avatars outside the viewport are frozen at rest and the shared loop stops when none are visible. Only on-screen avatars track the mouse.', style: 'bot' },
+      { q: 'Can I make my own character?', a: 'Yes, write a style with defineStyle. Try the live editor on the characters page.', style: 'animal' },
+    ]))
+  }
+  kit()
+
+  // hero: one of each character (without 'ai', so the grid fills 3 even rows of 9)
+  names.filter((n) => n !== 'ai').forEach((n, i) => mount(box($('hero')), styles[n], { seed: 'nuhmanpk', mood: i % 3 === 1 ? 'happy' : 'neutral', alive: { intensity: 1.2 } }))
 
   // character grid with a "mixed" tab
   // the first avatar of each style uses the exact seed; the rest add a suffix

@@ -35,8 +35,10 @@ test('every component server-renders a static avatar', () => {
   assert.match(ai, /data-state="idle"/) // state changes start after mount
   assert.equal(svgs(ai), 1)
 
-  // the pet's stats load from storage in an effect, so SSR shows just the avatar
-  assert.equal(svgs(renderToString(h(LivatarPet, { variant: animal, seed: 'mochi' }))), 1)
+  // the pet's stats load from storage in an effect, so SSR shows just the yard: the avatar plus its legs
+  const petHtml = renderToString(h(LivatarPet, { variant: animal, seed: 'mochi' }))
+  assert.equal(svgs(petHtml), 2)
+  assert.ok(petHtml.includes('<line'))
 
   const stack = renderToString(h(LivatarStack, { users: ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((id) => ({ id, status: 'online' })), max: 4 }))
   assert.equal(svgs(stack), 4)
@@ -122,4 +124,76 @@ test('character loaders render every kind', async () => {
     assert.equal(svgs(html), n, kind)
     assert.match(html, /role="status"[^>]*aria-busy="true"/)
   }
+})
+
+test('site-kit components server-render with living faces', async () => {
+  const K = await import('../dist/components.js')
+  const out = [
+    h(K.LivatarFooter, { brand: 'Acme', columns: [{ title: 'Company', links: [{ label: 'Terms', href: '/t' }] }] }),
+    h(K.LivatarBreadcrumbs, { items: [{ label: 'Home', href: '/' }, { label: 'Docs' }] }),
+    h(K.LivatarCard, { title: 'Hi' }, 'x'),
+    h(K.LivatarCarousel, { slides: ['a', 'b'] }),
+    h(K.LivatarList, { items: [{ id: 'ada', title: 'Ada' }] }),
+    h(K.LivatarAccordion, { items: [{ id: 'q', summary: 'Q', content: 'A' }] }),
+    h(K.LivatarTable, { columns: [{ key: 'n', header: 'N' }], rows: [{ id: 'ada', n: 'Ada' }] }),
+    h(K.LivatarUsername, { value: 'admin', syncHash: false }),
+  ].map((e) => renderToString(e))
+  for (const html of out) assert.ok(svgs(html) >= 1)
+  assert.match(out[1], /aria-current="page"/)
+  assert.match(out[7], /reserved/)
+})
+
+test('checkUsername explains every failure', async () => {
+  const { checkUsername } = await import('../dist/index.js')
+  const why = (n) => checkUsername(n).reason
+  assert.equal(why(''), 'empty'); assert.equal(why('ab'), 'too-short'); assert.equal(why('a'.repeat(21)), 'too-long')
+  assert.equal(why('my name'), 'invalid-chars'); assert.equal(why('-abc'), 'bad-edge'); assert.equal(why('a..b'), 'repeated')
+  assert.equal(why('12345'), 'numeric'); assert.equal(why('admin'), 'reserved'); assert.equal(why('@Ada'), 'taken')
+  assert.equal(why('zxq-91'), 'available')
+  assert.ok(checkUsername('ada').suggestions.length > 0)
+  assert.equal(checkUsername('x1y', { taken: (n) => n === 'x1y' }).reason, 'taken')
+})
+
+test('skeleton renders every kind, face slots can be hidden', async () => {
+  const { LivatarSkeleton, LivatarInput } = await import('../dist/components.js')
+  for (const kind of ['text', 'list', 'card', 'image', 'video', 'profile', 'table', 'chat', 'feed', 'grid']) {
+    const html = renderToString(h(LivatarSkeleton, { kind }))
+    assert.ok(html.includes('aria-busy') && html.includes('lv-sk'), kind)
+  }
+  assert.ok(svgs(renderToString(h(LivatarSkeleton, { kind: 'image' }))) >= 1)
+  assert.equal(svgs(renderToString(h(LivatarSkeleton, { kind: 'image', avatar: false }))), 0)
+  // follow seeds the face from the typed text; cycle makes the face a button
+  const a = renderToString(h(LivatarInput, { follow: true, cycle: true, defaultValue: 'ada' }))
+  const b = renderToString(h(LivatarInput, { follow: true, cycle: true, defaultValue: 'bob' }))
+  assert.ok(a.includes('Change character') && a !== b)
+})
+
+test('marquee, confetti and presence render; presence draws cursors for children', async () => {
+  const { LivatarMarquee, LivatarConfetti, LivatarPresence } = await import('../dist/components.js')
+  const mq = renderToString(h(LivatarMarquee, { users: ['a', 'b', 'c'], rows: 2 }))
+  assert.ok(mq.includes('lv-mq') && mq.includes('prefers-reduced-motion') && svgs(mq) >= 6)
+  assert.ok(renderToString(h(LivatarConfetti, { fire: 1 }, h('button', null, 'go'))).includes('<button'))
+  const users = [{ id: 'ada', name: 'Ada', cursor: { x: 10, y: 20 } }, { id: 'bob', typing: true }, { id: 'cy' }, { id: 'dee' }]
+  const p = renderToString(h(LivatarPresence, { users, max: 2 }, h('div', null, 'canvas')))
+  assert.ok(p.includes('+2') && p.includes('Ada') && p.includes('typing') && p.includes('canvas'))
+  assert.ok(!renderToString(h(LivatarPresence, { users, max: 5 })).includes('left:10%'))
+})
+
+test('every keyframes block in the components has a reduced-motion guard', () => {
+  const src = readFileSync('src/components.ts', 'utf8')
+  const lits = [...src.matchAll(/'((?:[^'\\\n]|\\.)*@keyframes(?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*@keyframes(?:[^`\\]|\\.)*)`/g)].map((m) => m[1] ?? m[2])
+  assert.ok(lits.length >= 4)
+  for (const l of lits) assert.ok(l.includes('prefers-reduced-motion'), l.slice(0, 80))
+})
+
+test('LivatarPhoto shows the photo, or the seeded livatar when there is none', async () => {
+  const { LivatarPhoto } = await import('../dist/components.js')
+  const withPhoto = renderToString(h(LivatarPhoto, { src: '/me.jpg', seed: 'ada', alt: 'Ada' }))
+  assert.ok(withPhoto.includes('<img') && withPhoto.includes('/me.jpg') && svgs(withPhoto) === 0)
+  for (const src of [undefined, null, '']) {
+    const fb = renderToString(h(LivatarPhoto, { src, seed: 'ada', alt: 'Ada', size: 48 }))
+    assert.ok(!fb.includes('<img') && svgs(fb) === 1 && fb.includes('aria-label="Ada"'), String(src))
+  }
+  // same seed, same fallback face
+  assert.equal(renderToString(h(LivatarPhoto, { seed: 'bo' })), renderToString(h(LivatarPhoto, { seed: 'bo' })))
 })

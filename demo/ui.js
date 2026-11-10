@@ -33,13 +33,24 @@ const css = `
   header .lv-menu .page{display:block!important}
   header .lv-menu .sep{display:block!important;width:auto!important;height:1px!important;margin:4px 6px!important}
 }
+/* the same compact header whenever the links do not fit, whatever the width (see the overflow check below) */
+  html.lv-compact .lv-burger{display:grid}
+  html.lv-compact header .nav-icons{margin-left:auto!important;border-left:0!important;padding-left:0!important}
+  html.lv-compact header .nav-icons a{width:32px!important;height:32px!important}
+  html.lv-compact header .lv-menu{position:fixed!important;left:12px;right:12px;top:62px;margin:0!important;display:grid!important;gap:2px!important;padding:8px!important;background:var(--card,#fff);border:1px solid var(--line,#ece6dc);border-radius:16px;box-shadow:0 18px 40px rgba(20,10,40,.18);transform-origin:top right;transform:scale(.9) translateY(-8px);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.4,1.5,.4,1),opacity .2s;z-index:50;overflow:visible!important}
+  html.lv-compact header .lv-menu.open{transform:none;opacity:1;pointer-events:auto}
+  html.lv-compact header .lv-menu a{display:block!important;padding:10px 12px!important;font-size:15px!important}
+  html.lv-compact header .lv-menu .page{display:block!important}
+  html.lv-compact header .lv-menu .sep{display:block!important;width:auto!important;height:1px!important;margin:4px 6px!important}
 button,.lv-tap{position:relative;transition:transform .18s cubic-bezier(.4,1.8,.5,1)}
 button:active,.lv-tap:active{transform:scale(.94)}
 .lv-ripple{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.22;transform:scale(0);animation:lv-ripple .55s ease-out forwards}
 @keyframes lv-ripple{to{transform:scale(1);opacity:0}}
 .lv-pop{animation:lv-pop .45s cubic-bezier(.4,1.8,.5,1)}
 @keyframes lv-pop{0%{transform:scale(.6) rotate(-12deg)}100%{transform:none}}
-@media (prefers-reduced-motion:reduce){.lv-theme *,.lv-burger span,button{transition:none!important}.lv-ripple{display:none}}
+.lv-roll{display:inline-block;animation:lv-roll .7s cubic-bezier(.3,.9,.4,1)}
+@keyframes lv-roll{0%{transform:translateY(0) rotate(0) scale(1)}25%{transform:translateY(-14px) rotate(200deg) scale(1.25)}55%{transform:translateY(0) rotate(430deg) scale(.9)}75%{transform:translateY(-5px) rotate(620deg) scale(1.08)}100%{transform:translateY(0) rotate(720deg) scale(1)}}
+@media (prefers-reduced-motion:reduce){.lv-roll{animation:none}.lv-theme *,.lv-burger span,button{transition:none!important}.lv-ripple{display:none}}
 `
 document.head.append(Object.assign(document.createElement('style'), { textContent: css }))
 
@@ -102,6 +113,14 @@ if (nav) {
   document.addEventListener('keydown', (e) => e.key === 'Escape' && set(false))
   document.addEventListener('click', (e) => !nav.contains(e.target) && !burger.contains(e.target) && set(false))
   ;(document.querySelector('#theme') ?? nav).after(burger)
+  // switch to the burger menu as soon as the links would overflow (more header buttons, long labels, zoom…)
+  const fit = () => {
+    const root = document.documentElement
+    root.classList.remove('lv-compact')
+    if (innerWidth > 760 && nav.scrollWidth > nav.clientWidth + 1) root.classList.add('lv-compact')
+    else set(false)
+  }
+  addEventListener('resize', fit); new ResizeObserver(fit).observe(nav.closest('header') ?? nav); fit()
 }
 
 /* ---------- press ripple + copy pop ---------- */
@@ -239,4 +258,73 @@ Task: ${task}`
     const b = e.target.closest('[data-agent-copy]'); if (!b) return
     window.livatarAgentCopy(b.dataset.agentTask || '')
   })
+})()
+
+// site kit: footer, breadcrumbs, scroll progress, username reserve (see kit.js)
+import('./kit.js').catch((e) => console.warn('kit', e))
+
+// 🎲 → livatar cube: every dice emoji inside a button becomes an inline cube that tumbles on click
+const CUBE = '<svg class="lv-cube" viewBox="0 0 24 24" width="1.25em" height="1.25em" aria-hidden="true" style="vertical-align:-.22em"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#8b6cf0" stroke="#4b2fb0" stroke-width="1.4" stroke-linejoin="round"/><path d="M3.5 7.3L12 12.1l8.5-4.8" fill="none" stroke="#4b2fb0" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 12.1v9.4" stroke="#4b2fb0" stroke-width="1.4"/><path d="M12 2.5l8.5 4.8L12 12.1 3.5 7.3z" fill="#b9a4ff"/><path d="M3.5 7.3L12 12.1v9.4l-8.5-4.8z" fill="#7556e0"/><circle cx="12" cy="7.3" r="1.1" fill="#fff"/><circle cx="7.6" cy="14.6" r="1" fill="#fff"/><circle cx="16.4" cy="14.6" r="1" fill="#fff"/><circle cx="14.6" cy="16" r="1" fill="#fff" opacity="0"/></svg>'
+const cubify = (root) => {
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => n.nodeValue.includes('🎲') && n.parentElement?.closest('button') ? 1 : 3 })
+  const hits = []; while (w.nextNode()) hits.push(w.currentNode)
+  for (const n of hits) {
+    const parts = n.nodeValue.split('🎲'); const f = document.createDocumentFragment()
+    parts.forEach((t, k) => { if (k) { const sp = document.createElement('span'); sp.className = 'lv-roll-wrap'; sp.style.display = 'inline-block'; sp.innerHTML = CUBE; f.append(sp) } if (t) f.append(t) })
+    n.replaceWith(f)
+  }
+}
+cubify(document.body)
+new MutationObserver((ms) => { for (const m of ms) for (const a of m.addedNodes) if (a.nodeType === 1) cubify(a); else if (a.nodeType === 3 && a.parentElement) cubify(a.parentElement) }).observe(document.body, { subtree: true, childList: true })
+document.addEventListener('click', (e) => {
+  const b = e.target.closest?.('button'); const c = b?.querySelector('.lv-roll-wrap')
+  if (!c || c.dataset.rolling) return
+  c.dataset.rolling = '1'; c.classList.remove('lv-roll'); void c.offsetWidth; c.classList.add('lv-roll')
+  setTimeout(() => { c.classList.remove('lv-roll'); delete c.dataset.rolling }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 750)
+}, true)
+
+/* ---------- roaming animals: full-body pets, OFF by default.
+   One 🐾 button in the header cycles: off → pets (muted) → pets with sound → off. ---------- */
+;(async () => {
+  const theme = document.querySelector('#theme')
+  const KEY = 'livatar:roam'          // 'on' | 'sound' | absent
+  const read = () => { try { return localStorage.getItem(KEY) } catch { return null } }
+  const save = (v) => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY) } catch {} }
+  const st = document.createElement('style')
+  st.textContent = `#paw{position:relative;width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:50%;background:var(--card,#fff);color:var(--fg,#1f1a2e);border:1px solid var(--line,#ece6dc);flex:none;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+#paw svg{width:18px;height:18px}#paw:hover{transform:translateY(-1px)}
+#paw[data-mode=on],#paw[data-mode=sound]{background:var(--brand,#7f5af0);border-color:var(--brand,#7f5af0);color:#fff}
+#paw .snd{position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-radius:50%;background:var(--card,#fff);color:var(--brand,#7f5af0);display:none;place-items:center;box-shadow:0 0 0 1.5px var(--brand,#7f5af0)}
+#paw .snd svg{width:10px;height:10px}#paw[data-mode=sound] .snd{display:grid}
+#paw.float{position:fixed;left:14px;bottom:14px;z-index:60}
+@media (max-width:640px){#paw{width:32px;height:32px}}`
+  document.head.append(st)
+  const btn = document.createElement('button')
+  btn.id = 'paw'; btn.type = 'button'
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="6.5" cy="10" rx="2.1" ry="2.8"/><ellipse cx="10.3" cy="5.8" rx="2.1" ry="2.8"/><ellipse cx="15.2" cy="5.8" rx="2.1" ry="2.8"/><ellipse cx="19" cy="10" rx="2.1" ry="2.8"/><path d="M12.7 11c-3 0-5.6 3.2-5.6 5.8 0 2 1.6 2.7 3.1 2.4 1-.2 1.6-.5 2.5-.5s1.5.3 2.5.5c1.5.3 3.1-.4 3.1-2.4 0-2.6-2.6-5.8-5.6-5.8z"/></svg><span class="snd" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a5 5 0 010 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></span>'
+  let zoo = null, mod = null, mode = 'off'
+  const LABEL = { off: 'Let animals roam this site', on: 'Animals are roaming (muted). Click for sounds', sound: 'Animals with sounds. Click to hide them' }
+  const draw = () => { btn.dataset.mode = mode; btn.setAttribute('aria-label', LABEL[mode]); btn.title = LABEL[mode]; btn.setAttribute('aria-pressed', String(mode !== 'off')) }
+  const load = async () => {
+    if (mod) return mod
+    for (const p of ['./dist/roam.js', '../dist/roam.js', '../../dist/roam.js']) {
+      try { return (mod = await import(new URL(p, import.meta.url).href)) } catch {}
+    }
+  }
+  const set = async (m, fromClick) => {
+    if (m === 'off') { zoo?.destroy(); zoo = null }
+    else {
+      if (!zoo) { const lib = await load(); if (!lib) return; zoo = lib.roam({ count: innerWidth < 640 ? 2 : 3, sound: false }) }
+      // audio needs a gesture: from a click it starts now, after a reload it waits for the first tap
+      if (m === 'sound') { if (fromClick) zoo.sound = true; else addEventListener('pointerdown', () => { if (zoo && mode === 'sound') zoo.sound = true }, { once: true }) }
+      else zoo.sound = false
+    }
+    mode = m; draw()
+  }
+  btn.onclick = () => { const next = mode === 'off' ? 'on' : mode === 'on' ? 'sound' : 'off'; save(next === 'off' ? null : next); set(next, true) }
+  if (theme) theme.before(btn); else { btn.classList.add('float'); document.body.append(btn) }
+  dispatchEvent(new Event('resize'))
+  draw()
+  const saved = read()
+  if (saved === 'on' || saved === 'sound') set(saved, false) // only if the visitor switched it on before; never by default
 })()

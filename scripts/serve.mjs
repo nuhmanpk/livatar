@@ -2,6 +2,8 @@
 //   node scripts/serve.mjs [port] [--watch]
 // --watch: rebuilds the library on source changes (tsup --watch) and
 // live-reloads open pages whenever dist/ or demo/ change.
+// Also serves the agent files the way the built site does (at the site root and under /demo/):
+//   /llms.txt, /llms-full.txt, /SKILL.md (or /skills.md), /AGENTS.md
 import { spawn } from 'node:child_process'
 import { watch } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
@@ -25,6 +27,8 @@ const types = {
   '.png': 'image/png',
   '.ico': 'image/x-icon',
   '.map': 'application/json; charset=utf-8',
+  '.md': 'text/markdown; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
 }
 
 const clients = new Set()
@@ -43,7 +47,10 @@ createServer(async (req, res) => {
     res.writeHead(302, { location: '/demo/' }).end()
     return
   }
-  let file = normalize(join(root, decodeURIComponent(url.pathname)))
+  // agent files: the site build copies these next to the pages; mirror that locally
+  const AGENT = { 'skill.md': 'skills/livatar/SKILL.md', 'skills.md': 'skills/livatar/SKILL.md', 'llms.txt': 'llms.txt', 'llms-full.txt': 'llms-full.txt', 'agents.md': 'AGENTS.md' }
+  const alias = AGENT[url.pathname.replace(/^\/(demo\/)?/, '').toLowerCase()]
+  let file = normalize(join(root, alias || decodeURIComponent(url.pathname)))
   if (file !== root && !file.startsWith(root + sep)) {
     res.writeHead(403).end('Forbidden')
     return

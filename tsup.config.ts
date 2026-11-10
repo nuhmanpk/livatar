@@ -11,6 +11,7 @@ export default defineConfig([
       icons: 'src/icons.ts',
       server: 'src/server.ts',
       life: 'src/life.ts',
+      roam: 'src/roam.ts',
       'components': 'src/components.ts',
     },
     format: ['esm', 'cjs'],

@@ -5,6 +5,9 @@
 //   npx livatar ada --style buddy --opt hair=afro --encode     # print a code
 //   npx livatar --random --style animal                       # random avatar
 //   npx livatar --list                                        # styles, options, moods, palettes
+//   npx livatar api [port]                                    # run your own avatar API (http://localhost:8787/animal/ada.svg)
+//   npx livatar components                                    # list the React components
+//   npx livatar add skeleton [dir]                            # scaffold an editable wrapper (default components/livatar)
 //   npx livatar skill [dir]                                   # install the AI agent skill (default .claude/skills/livatar)
 import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -19,6 +22,47 @@ if (argv[0] === 'skill') {
   mkdirSync(dir, { recursive: true })
   copyFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'skills', 'livatar', 'SKILL.md'), join(dir, 'SKILL.md'))
   console.log(`livatar skill → ${join(dir, 'SKILL.md')}\nYour coding agent now knows livatar. Docs for any agent: https://nuhmanpk.github.io/livatar/llms-full.txt`)
+  process.exit(0)
+}
+
+// `livatar api [port]`: a zero-config avatar API on Node (same URLs as livatar/server)
+if (argv[0] === 'api') {
+  const { avatarHandler } = await import('../dist/server.js')
+  const { createServer } = await import('node:http')
+  const port = Number(argv[1] ?? process.env.PORT ?? 8787)
+  const handle = avatarHandler()
+  createServer(async (req, res) => {
+    const r = handle(new Request(`http://localhost:${port}${req.url}`, { method: req.method }))
+    res.writeHead(r.status, Object.fromEntries(r.headers))
+    res.end(Buffer.from(await r.arrayBuffer()))
+  }).listen(port, () => console.log(`livatar api → http://localhost:${port}/animal/ada.svg?mood=happy&size=128\n  /<style>/<seed>.svg?mood=&size=&palette=&<option>=   or   /<livatar code>.svg\n  Deploy anywhere with: export default { fetch: avatarHandler() }  (livatar/server)`))
+  await new Promise(() => {})
+}
+
+// `livatar components` / `livatar add <name> [dir]`: shadcn-style scaffolding for the React components
+if (argv[0] === 'components' || argv[0] === 'add') {
+  const C = await import('../dist/components.js')
+  const names = Object.keys(C).filter((k) => /^Livatar[A-Z]/.test(k))
+  const short = (n) => n.replace(/^Livatar/, '').toLowerCase()
+  if (argv[0] === 'components') { console.log(names.map((n) => `${short(n).padEnd(18)} ${n}`).join('\n')); process.exit(0) }
+  const want = (argv[1] ?? '').toLowerCase().replace(/^livatar/, '').replace(/[-_ ]/g, '')
+  const name = names.find((n) => short(n) === want)
+  if (!name) { console.error(`livatar add: unknown component "${argv[1] ?? ''}". Run: npx livatar components`); process.exit(1) }
+  const dir = argv[2] ?? join('components', 'livatar')
+  mkdirSync(dir, { recursive: true })
+  const file = join(dir, `${short(name)}.tsx`)
+  writeFileSync(file, `'use client'
+// Scaffolded by \`npx livatar add ${short(name)}\`. This file is yours: set project defaults here.
+import { ${name} as Base } from 'livatar/components'
+import type { ComponentProps } from 'react'
+
+export type ${name.replace('Livatar', '')}Props = ComponentProps<typeof Base>
+
+export function ${name.replace('Livatar', '')}(props: ${name.replace('Livatar', '')}Props) {
+  return <Base {...props} />
+}
+`)
+  console.log(`livatar add → ${file}\nImport it from your own components. Docs: https://nuhmanpk.github.io/livatar/components/#${short(name)}`)
   process.exit(0)
 }
 const flags = {}
@@ -55,7 +99,10 @@ if (flags.help) {
   -o, --out <file>       write to a file instead of stdout
       --list             list styles, their options, moods, and palettes
 
-livatar skill [dir]      install the AI coding agent skill (default .claude/skills/livatar)`)
+livatar skill [dir]      install the AI coding agent skill (default .claude/skills/livatar)
+livatar api [port]       run your own avatar API (default 8787)
+livatar components       list the React components
+livatar add <name> [dir] scaffold an editable wrapper (default components/livatar)`)
   process.exit(0)
 }
 

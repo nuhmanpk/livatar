@@ -14,6 +14,7 @@ const NOUN: Record<string, string> = {
   ghost: 'ghost', emoji: 'smiley', initials: 'initials avatar', food: 'food character', plant: 'potted plant',
   dino: 'dinosaur', alien: 'alien', planet: 'planet', clay: 'clay character', memoji: 'cartoon person',
   ui: 'UI icon', device: 'gadget', fruit: 'fruit', drink: 'drink', vehicle: 'vehicle', tech: 'tech gadget', money: 'money character', home: 'home object', office: 'office supply', dev: 'developer', human: 'person',
+  weather: 'weather character', sport: 'sports ball', music: 'musical instrument', sea: 'sea creature', bug: 'bug', magic: 'magic item', party: 'party character', season: 'seasonal character', tool: 'tool',
 }
 
 /**

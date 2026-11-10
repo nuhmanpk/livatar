@@ -31,7 +31,7 @@
 
 Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes when you type a password, and show ten moods.
 
-- **27 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options.
+- **37 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
 - **10 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
 - **One code per avatar.** Every look packs into a short, URL-safe string such as `lvAQQBAG51aG1hbnBr`. Store it with the user and render it anywhere.
 - **Light.** One style plus the engine is about 9 KB gzipped. Styles are tree-shakable, so you only ship the ones you import.
@@ -120,6 +120,10 @@ and https://nuhmanpk.github.io/livatar/SKILL.md first, then: <what you want, e.g
 - **One-click prompt:** hit **✨ Copy for AI agents** on the [site](https://nuhmanpk.github.io/livatar/), [docs](https://nuhmanpk.github.io/livatar/docs/) or [icons](https://nuhmanpk.github.io/livatar/icons/) page (every icon has its own).
 - **Claude Code skill:** `npx livatar skill` installs it to `.claude/skills/livatar/`.
 - **For any agent:** [`llms.txt`](https://nuhmanpk.github.io/livatar/llms.txt), [`llms-full.txt`](https://nuhmanpk.github.io/livatar/llms-full.txt), and [`AGENTS.md`](AGENTS.md) (shipped in the package at `node_modules/livatar/AGENTS.md`).
+
+<p align="center">
+  <a href="https://nuhmanpk.github.io/livatar/"><img src="assets/wordmark.svg" alt="livatar, written in a mosaic of hundreds of tiny livatar faces" width="100%"></a>
+</p>
 
 ## Install
 
@@ -445,6 +449,16 @@ export default { fetch: avatarHandler() }                      // Cloudflare / B
 
 `describe({ style: 'animal', mood: 'happy', options: { species: 'owl' } })` returns `"A happy owl"`. The server uses it for every avatar's accessible name.
 
+## Avatar API, Figma, CLI
+
+- **Your own avatar API.** `npx livatar api` serves `http://localhost:8787/animal/ada.svg?mood=happy&size=128` (same URLs as `livatar/server`). To host it, deploy [`examples/avatar-api`](examples/avatar-api) to Cloudflare Workers, or use `avatarHandler()` on Bun, Deno, Vercel or Netlify. Responses are deterministic and cached for a year.
+- **Figma / FigJam plugin.** [`figma-plugin/`](figma-plugin): pick a style, mood and shape, shuffle, and insert editable vector avatars. Run `npm run figma` to rebuild the UI (the library is inlined, the plugin makes no network requests), then in Figma choose *Plugins → Development → Import plugin from manifest*.
+- **Own the components.** `npx livatar components` lists them. `npx livatar add skeleton` scaffolds an editable wrapper in `components/livatar/`.
+- **Presence.** `LivatarPresence` shows who is here (presence dots, typing, `+N`) and multiplayer cursors with faces. Feed it from Liveblocks, Yjs, PartyKit, Supabase Realtime or your own socket.
+- **Photo with fallback.** `<LivatarPhoto src={user.avatarUrl} seed={user.id} />` shows the photo, or the user's livatar when there is none, the URL 404s or they are offline. Without React: `photoFallback(document.querySelectorAll('img[data-seed]'))`.
+- **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Full-body animals (head, body, legs, tail) wander along the bottom of the page, each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
+- **Social proof and delight.** `LivatarMarquee` (endless face scroller), `LivatarConfetti` (faces burst out), `LivatarSkeleton` (ten loading placeholders). Every animation respects `prefers-reduced-motion`, and a test keeps it that way.
+
 ## Develop
 
 ```bash
@@ -457,6 +471,9 @@ npm run site    # assemble the GitHub Pages site into _site/
 npm run art     # regenerate the animated README images in assets/
 ```
 
+The dev server also serves the agent files the same way the built site does, so pages that link them work locally: `/llms.txt`, `/llms-full.txt`, `/SKILL.md` (alias `/skills.md`) and `/AGENTS.md`, at the root or under `/demo/` (for example `http://localhost:5173/demo/SKILL.md`). Restart it after pulling changes to `scripts/serve.mjs`.
+
+
 ### Demo on GitHub Pages
 
 `.github/workflows/pages.yml` builds, tests, and deploys the demo on every push to `main`.
@@ -466,6 +483,8 @@ The demo is then live at `https://<user>.github.io/livatar/`.
 ## Credits
 
 Inspired by [DiceBear](https://www.dicebear.com) (MIT) by Florian Körner and contributors — the reference for seeded avatar styles, including the idea behind our `initials` style and avatar HTTP API. Also by [boring-avatars](https://github.com/boringdesigners/boring-avatars), [avataaars](https://getavataaars.com), [RoboHash](https://robohash.org), and [minidenticons](https://github.com/laurentpayot/minidenticons). Brand icons come from [Simple Icons](https://simpleicons.org) (CC0).
+
+The wordmark art uses letter outlines from [Inter](https://rsms.me/inter/) ExtraBold by Rasmus Andersson (SIL Open Font License 1.1).
 
 ## Contributing
 

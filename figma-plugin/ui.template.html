@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8" />
+<style>
+  :root { color-scheme: light dark }
+  body { font: 12px system-ui, sans-serif; margin: 0; padding: 12px; color: var(--figma-color-text, #222); background: var(--figma-color-bg, #fff) }
+  label { display: grid; gap: 4px; margin-bottom: 8px; font-weight: 600 }
+  select, input, button { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--figma-color-border, #ccc); background: var(--figma-color-bg, #fff); color: inherit }
+  .row { display: flex; gap: 8px } .row > * { flex: 1 }
+  button.primary { background: #7f5af0; color: #fff; border: 0; padding: 9px; font-weight: 700; cursor: pointer }
+  #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0 }
+  #grid div { aspect-ratio: 1; border-radius: 10px; overflow: hidden } #grid svg { width: 100%; height: 100% }
+</style>
+<label>Style <select id="style"></select></label>
+<div class="row"><label>Mood <select id="mood"></select></label><label>Shape <select id="shape"><option>circle</option><option>rounded</option><option>square</option></select></label></div>
+<div class="row"><label>Seed <input id="seed" value="ada" /></label><label>Count <input id="count" type="number" min="1" max="24" value="8" /></label></div>
+<div id="grid"></div>
+<div class="row"><button id="shuffle">Shuffle</button><button class="primary" id="insert">Insert into Figma</button></div>
+<script>/*LIVATAR*/</script>
+<script>
+  const L = window.Livatar
+  const $ = (id) => document.getElementById(id)
+  for (const s of Object.keys(L.styles)) $('style').add(new Option(s, s))
+  for (const m of L.MOODS) $('mood').add(new Option(m, m))
+  $('style').value = 'buddy'; $('mood').value = 'happy'
+  let salt = ''
+  const items = () => Array.from({ length: Math.max(1, Math.min(24, +$('count').value || 1)) }, (_, i) => {
+    const seed = $('seed').value + (i ? '-' + salt + i : '')
+    return { name: $('style').value + '-' + seed, svg: L.render({ style: $('style').value, seed, mood: $('mood').value, shape: $('shape').value, size: 256 }) }
+  })
+  const draw = () => { $('grid').innerHTML = items().map((x) => '<div>' + x.svg + '</div>').join('') }
+  for (const id of ['style', 'mood', 'shape', 'seed', 'count']) $(id).addEventListener('input', draw)
+  $('shuffle').onclick = () => { salt = Math.random().toString(36).slice(2, 5); draw() }
+  $('insert').onclick = () => parent.postMessage({ pluginMessage: { type: 'insert', items: items(), size: 128, gap: 24 } }, '*')
+  draw()
+</script>

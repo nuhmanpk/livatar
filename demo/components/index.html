@@ -60,7 +60,8 @@
   .stage .bar { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); align-items: center }
   .stage .bar .sp { flex: 1 }
   .stage .pv.zoom > * { zoom: 1.45 }
-  @media (max-width: 700px) { .stage .pv.zoom > * { zoom: 1.1 } }
+  .stage .pv.zoom .vt { zoom: .69 }
+  @media (max-width: 700px) { .stage .pv.zoom > * { zoom: 1.1 } .stage .pv.zoom .vt { zoom: .91 } }
   .stage .pv { min-height: 380px; display: grid; place-items: center; padding: 32px 16px; background: radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0) 0 0 / 18px 18px }
   .stage pre { margin: 0; border-radius: 0; max-height: 560px }
   table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px }
@@ -70,7 +71,37 @@
   .pv button:not([style]) { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer }
   .pv input:not([style]) { font: inherit; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg) }
   .note { font-size: 13px; color: var(--muted) }
-  @media (max-width: 860px) { .layout { grid-template-columns: 1fr } .side { position: static; max-height: none; padding: 12px 0 0 } .side nav { display: flex; flex-wrap: wrap; gap: 4px } .side h4 { width: 100%; margin: 10px 0 2px } }
+  .site { position: relative; width: min(100%, 520px); height: 320px; border-radius: 16px; border: 1px solid var(--line); background: var(--card); overflow: hidden; text-align: left; box-shadow: 0 14px 40px rgba(31,26,46,.08) }
+  .site .chrome { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; background: var(--soft); border-bottom: 1px solid var(--line) }
+  .site .chrome i { width: 9px; height: 9px; border-radius: 50%; background: var(--line) }
+  .site .chrome b { flex: 1; margin-left: 8px; height: 16px; border-radius: 8px; background: var(--card); font: 500 10px/16px system-ui; color: var(--muted); padding: 0 10px }
+  .site .body { padding: 16px; display: grid; gap: 10px }
+  .site .body span { display: block; height: 10px; border-radius: 6px; background: var(--soft) }
+  .site .body span.h { width: 45%; height: 16px; background: var(--line) }
+  .site .body .blk { height: 70px; border-radius: 12px }
+  .site .layer { position: absolute; inset: 30px 0 0; pointer-events: none }
+  .site .layer > * { pointer-events: auto }
+  .pop-up { animation: popUp .45s cubic-bezier(.2,1.2,.4,1) both }
+  .pop-in { animation: popIn .4s cubic-bezier(.2,1.2,.4,1) both }
+  .pop-out { animation: popOut .25s ease-in both }
+  @keyframes popUp { from { transform: translateY(120%); opacity: 0 } to { transform: none; opacity: 1 } }
+  @keyframes popIn { from { transform: translateX(110%); opacity: 0 } to { transform: none; opacity: 1 } }
+  @keyframes popOut { to { transform: translateX(110%); opacity: 0 } }
+  @media (prefers-reduced-motion: reduce) { .pop-up, .pop-in, .pop-out { animation: none } }
+  /* phones: the stage becomes a phone frame and popups use their mobile forms (sheet, top banner) */
+  .site.phone { width: min(100%, 300px); height: 460px; border-radius: 34px; border: 6px solid var(--fg); box-shadow: 0 18px 40px rgba(31,26,46,.18) }
+  .site.phone .chrome { height: 34px; justify-content: center; background: var(--card); border-bottom: 0 }
+  .site.phone .chrome i, .site.phone .chrome b { display: none }
+  .site.phone .chrome::before { content: ''; width: 70px; height: 16px; border-radius: 10px; background: var(--fg); opacity: .85 }
+  .site.phone .layer { inset: 34px 0 0 }
+  .site.phone .layer [role=dialog] { flex-wrap: wrap; justify-content: center; text-align: center }
+  .site.phone .layer [role=dialog] > div { min-width: 0 }
+  .pop-down { animation: popDown .4s cubic-bezier(.2,1.2,.4,1) both }
+  @keyframes popDown { from { transform: translateY(-120%); opacity: 0 } to { transform: none; opacity: 1 } }
+  .pop-up-out { animation: popUpOut .25s ease-in both }
+  @keyframes popUpOut { to { transform: translateY(-120%); opacity: 0 } }
+  @media (prefers-reduced-motion: reduce) { .pop-down, .pop-up-out { animation: none } }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr } .side { order: 2; position: static; max-height: none; padding: 12px 0 0 } .side nav { display: flex; flex-wrap: wrap; gap: 4px } .side h4 { width: 100%; margin: 10px 0 2px } }
 </style>
 </head>
 <body data-wait>
@@ -99,7 +130,9 @@
 <script type="module">
   import { createElement as h, useState, useEffect, useRef, Fragment } from 'react'
   import { createRoot } from 'react-dom/client'
-  import { buddy, bot, human, animal, memoji, dev, ghost, planet, clay, monster, emoji, money, tech, device, office, ui, alien, food, plant, vehicle, home } from '../../dist/index.js'
+  import { buddy, bot, human, animal, memoji, dev, ghost, planet, clay, monster, emoji, money, tech, device, office, ui, alien, food, plant, vehicle, home, fruit } from '../../dist/index.js'
+  import { Livatar } from '../../dist/react.js'
+  import makeVariants from './variants.js'
   import * as C from '../../dist/components.js'
 
   const wait = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -218,16 +251,57 @@
   function TestimonialDemo() {
     return h(C.LivatarTestimonial, { variant: clay, seed: 'ada', quote: 'Our signup page finally smiles back. Users love it.', name: 'Ada Park', title: 'Founder, Inkwell', style: { maxWidth: 340 } })
   }
+  /* a mock web page; children are popups layered over it */
+  function useMobile() {
+    const q = '(max-width: 700px)'
+    const [m, setM] = useState(() => matchMedia(q).matches)
+    useEffect(() => { const mq = matchMedia(q), f = () => setM(mq.matches); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f) }, [])
+    return m
+  }
+  function Site({ children, url = 'your-app.com', after, phone }) {
+    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', width: '100%' } },
+      h('div', { className: 'site' + (phone ? ' phone' : '') },
+        h('div', { className: 'chrome' }, h('i'), h('i'), h('i'), h('b', null, url)),
+        h('div', { className: 'body' }, h('span', { className: 'h' }), h('span'), h('span', { style: { width: '80%' } }), h('span', { className: 'blk' }), h('span'), h('span', { style: { width: '60%' } })),
+        h('div', { className: 'layer' }, children)),
+      after)
+  }
   function ToastDemo() {
-    const [t, setT] = useState(null)
-    const show = (type, title, description) => { setT(null); setTimeout(() => setT({ type, title, description, k: Date.now() }), 30) }
-    useEffect(() => show('success', 'Payment received', '$24.00 from Ada'), [])
-    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' } },
-      t && h(C.LivatarToast, { key: t.k, variant: ui, seed: 'bell', options: { kind: 'bell', badge: true }, type: t.type, title: t.title, description: t.description, duration: 0, onClose: () => setT(null) }),
-      h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' } },
+    const [list, setList] = useState([])
+    const [n, setN] = useState(0)
+    const m = useMobile()
+    const dismiss = (id) => { setList((l) => l.map((t) => (t.id === id ? { ...t, out: true } : t))); setTimeout(() => setList((l) => l.filter((t) => t.id !== id)), 250) }
+    const show = (type, title, description) => { const id = Date.now() + Math.random(); setN((x) => x + 1); setList((l) => [...l.slice(-2), { id, type, title, description }]) }
+    useEffect(() => { show('success', 'Payment received', '$24.00 from Ada') }, [])
+    return h(Site, { phone: m, url: 'your-app.com/dashboard',
+      after: h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' } },
         h('button', { onClick: () => show('success', 'Saved', 'Your changes are live') }, 'Success'),
         h('button', { onClick: () => show('error', 'Card declined', 'Try another card') }, 'Error'),
-        h('button', { onClick: () => show('info', 'New message', 'Bob: lunch?') }, 'Info')))
+        h('button', { onClick: () => show('info', 'New message', 'Bob: lunch?') }, 'Info')) },
+      h('div', { style: { position: 'absolute', top: 10, ...(m ? { left: 10, right: 10 } : { right: 12, width: 300 }), display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 'calc(100% - 20px)' } },
+        list.map((t) => h('div', { key: t.id, className: t.out ? (m ? 'pop-up-out' : 'pop-out') : (m ? 'pop-down' : 'pop-in') },
+          h(C.LivatarToast, { variant: ui, seed: 'bell', options: { kind: 'bell', badge: true }, type: t.type, title: t.title, description: t.description, duration: 4200, onClose: () => dismiss(t.id) })))))
+  }
+  function SkeletonDemo() { return h('div', { style: { width: 340 } }, h(C.LivatarSkeleton, { kind: 'text' })) }
+  const NAMES = ['ada', 'bob', 'cy', 'dee', 'eli', 'fay', 'gus', 'hal', 'ivy', 'jo', 'kai', 'lee']
+  function MarqueeDemo({ small }) { return h(C.LivatarMarquee, { users: NAMES, rows: small ? 1 : 2, size: 44, duration: 24, avatar: { variant: memoji }, style: { width: small ? 300 : 460 } }) }
+  function ConfettiDemo() {
+    const [n, setN] = useState(0)
+    return h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 } },
+      h(C.LivatarConfetti, { fire: n, avatar: { variant: emoji }, seeds: NAMES }, h('button', { onClick: () => setN(n + 1), style: { padding: '12px 22px', fontWeight: 700, fontSize: 15, borderRadius: 14, border: 0, background: '#7f5af0', color: '#fff', cursor: 'pointer' } }, 'Ship it 🚀')),
+      h('span', { className: 'note' }, 'Faces burst out of whatever you wrap'))
+  }
+  function PresenceDemo() {
+    const [t, setT] = useState(0)
+    loop(() => setT((x) => x + 1), 900)
+    const pos = (i, k) => ({ x: 18 + 55 * Math.abs(Math.sin((t + i * 3) * 0.5 + k)), y: 20 + 55 * Math.abs(Math.cos((t + i * 2) * 0.45 + k)) })
+    const users = [{ id: 'ada', name: 'Ada', cursor: pos(0, 1) }, { id: 'bob', name: 'Bob', typing: t % 4 < 2, status: 'away', cursor: pos(1, 2) }, { id: 'cy', name: 'Cy', status: 'busy' }, { id: 'dee', name: 'Dee' }, { id: 'eli', name: 'Eli' }, { id: 'fay', name: 'Fay' }, { id: 'gus', name: 'Gus', status: 'offline' }]
+    return h(C.LivatarPresence, { users, max: 4, avatar: { variant: memoji }, style: { width: 360 } },
+      h('div', { style: { height: 170, borderRadius: 16, border: '1px dashed var(--line)', background: 'var(--card)', display: 'grid', placeItems: 'center', color: 'var(--muted)', fontSize: 13 } }, 'Shared canvas · watch the cursors'))
+  }
+  function PhotoDemo() {
+    const people = [{ n: 'Ada', src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="#ffb38a"/><stop offset="1" stop-color="#7f5af0"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/><circle cx="5" cy="4" r="2" fill="#fff" opacity=".85"/><ellipse cx="5" cy="9.6" rx="3.6" ry="2.6" fill="#fff" opacity=".85"/></svg>'), note: 'has a photo' }, { n: 'Bo', src: '/broken-photo-404.jpg', note: 'broken URL' }, { n: 'Cy', src: null, note: 'no photo' }, { n: 'Dee', src: '', note: 'empty' }]
+    return h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center' } }, people.map((p) => h('div', { key: p.n, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 } }, h(C.LivatarPhoto, { src: p.src, seed: p.n, alt: p.n, size: 64, variant: memoji }), h('b', { style: { fontSize: 13 } }, p.n), h('span', { className: 'note' }, p.note))))
   }
   function EmptyDemo() { return h(C.LivatarEmptyState, { variant: office, seed: 'inbox', options: { kind: 'folder' }, title: 'No files yet', description: 'Drop something in to get started.', action: h('button', null, 'Upload') }) }
   function NotFoundDemo() { return h(C.LivatarNotFound, { variant: ghost, seed: 'lost', options: { accessory: 'none' }, action: h('a', { href: '#' }, 'Take me home') }) }
@@ -256,7 +330,7 @@
     return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, width: 320 } },
       h(C.LivatarInput, { type: 'email', name: 'email', placeholder: 'you@example.com', required: true }),
       h(C.LivatarInput, { type: 'password', name: 'pw', placeholder: 'Password (8+)', minLength: 8, required: true, avatar: { variant: ui, options: { kind: 'lock', badge: false } } }),
-      h(C.LivatarInput, { name: 'user', placeholder: 'Username', avatar: { variant: memoji, seed: 'me' }, validate: (v) => /^[a-z0-9_]{3,}$/.test(v), end: h('span', { style: { fontSize: 12, color: 'var(--muted)', paddingRight: 6 } }, 'a-z, 0-9') }))
+      h(C.LivatarInput, { name: 'user', placeholder: 'Username', avatar: { variant: memoji }, follow: true, cycle: true, validate: (v) => /^[a-z0-9_]{3,}$/.test(v), end: h('span', { style: { fontSize: 12, color: 'var(--muted)', paddingRight: 6 } }, 'a-z, 0-9') }))
   }
   const FRUITS = ['apple', 'apricot', 'avocado', 'banana', 'blueberry', 'cherry', 'grape', 'kiwi', 'lemon', 'mango', 'orange', 'peach', 'pear', 'pineapple', 'strawberry']
   function SearchDemo() {
@@ -271,7 +345,16 @@
       h('span', { className: 'note' }, 'The right code is 424242'))
   }
   function NewsletterDemo() { return h(C.LivatarNewsletter, { onSubscribe: async () => { await wait(800); return true }, style: { width: 400 } }) }
-  function CookieDemo() { const [k, setK] = useState(0); return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' } }, h(C.LivatarCookieConsent, { key: k, onAccept: () => setTimeout(() => setK(k + 1), 1200), onDecline: () => setTimeout(() => setK(k + 1), 1200) })) }
+  function CookieDemo() {
+    const [shown, setShown] = useState(true); const [k, setK] = useState(0); const [said, setSaid] = useState(''); const m = useMobile()
+    const done = (v) => { setSaid(v); setShown(false) }
+    return h(Site, { phone: m, url: 'your-app.com',
+      after: h('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } },
+        h('button', { onClick: () => { setSaid(''); setK(k + 1); setShown(true) } }, 'Show banner again'),
+        said && h('span', { className: 'note' }, said)) },
+      shown && h('div', { key: k, className: 'pop-up', style: { position: 'absolute', left: m ? 8 : 12, right: m ? 8 : 12, bottom: m ? 8 : 12 } },
+        h(C.LivatarCookieConsent, { onAccept: () => done('You accepted'), onDecline: () => done('You declined (the donut is sad)') })))
+  }
   function ProgressDemo() {
     const [v, setV] = useState(0)
     loop(() => setV((x) => (x >= 100 ? 0 : Math.min(100, x + 7 + Math.random() * 12))), 600)
@@ -300,8 +383,8 @@
     return h(C.LivatarCountdown, { to, label: 'Launching in' })
   }
   function HelpDemo() {
-    return h('div', { style: { position: 'relative', width: 340, height: 300, borderRadius: 18, border: '1px dashed var(--line)', overflow: 'hidden' } },
-      h('div', { style: { padding: 14, color: 'var(--muted)', fontSize: 13 } }, 'Your app. The helper sits in the corner.'),
+    const m = useMobile()
+    return h(Site, { phone: m, url: 'your-app.com/help' },
       h(C.LivatarHelpLauncher, { position: 'absolute', title: 'Hi! Need a hand?' }, h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14 } }, h('a', { href: '#' }, 'Read the docs'), h('a', { href: '#' }, 'Chat with us'), h('a', { href: '#' }, 'Report a bug'))))
   }
 
@@ -370,10 +453,20 @@
 
   /* ---------- registry ---------- */
   const imp = (names, extra = "import { bot } from 'livatar'") => `${extra ? extra + '\n' : ''}import { ${names} } from 'livatar/components'`
+  function UsernameDemo() { return h(C.LivatarUsername, { syncHash: false, style: { width: 360 } }) }
+  function FooterDemo() { return h(C.LivatarFooter, { brand: 'Timolio', tagline: 'Effortless time tracking, perfectly synced with Linear', faces: ['t', 'i', 'm'], columns: [{ title: 'Company', links: [{ label: 'Terms of Service', href: '#' }, { label: 'Privacy Policy', href: '#' }] }], style: { width: '100%', background: '#000', color: '#fff', '--lv-ring': '#000', '--lv-muted': '#9a9aa3', borderRadius: 16 } }) }
+  function CrumbsDemo() { return h(C.LivatarBreadcrumbs, { items: [{ label: 'Home', href: '#' }, { label: 'Components', href: '#' }, { label: 'Breadcrumbs' }] }) }
+  function CardDemo() { return h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap' } }, [['Alive', 'bot'], ['Tiny', 'ghost']].map(([t, s]) => h(C.LivatarCard, { key: t, seed: s, title: t, style: { width: 220 } }, 'Hover me and the face smiles.'))) }
+  function CarouselDemo() { return h(C.LivatarCarousel, { autoplay: 6000, style: { width: 420, maxWidth: '100%' }, slides: ['One seed, one face.', 'Swipe or use the arrows.', 'The face nods on every slide.'].map((t) => h('div', { style: { padding: 28, border: '1px solid var(--line)', borderRadius: 18, minHeight: 90, display: 'grid', placeItems: 'center', textAlign: 'center' } }, t)) }) }
+  function ScrollDemo() { return h('p', { className: 'note' }, 'This page already uses it: look at the bar on top and the back-to-top face bottom right after you scroll.') }
+  function MenuDemo() { return h('div', { style: { minHeight: 210, display: 'flex', justifyContent: 'flex-end', width: 240 } }, h(C.LivatarMenu, { items: [{ label: 'Characters', href: '../characters/' }, { label: 'Docs', href: '../docs/' }, { label: 'Icons', href: '../icons/' }] })) }
+  function ListDemo() { return h(C.LivatarList, { style: { width: 360, maxWidth: '100%' }, items: [{ id: 'ada', title: 'Ada', description: 'Online' }, { id: 'bo', title: 'Bo', description: 'Away' }, { id: 'cy', title: 'Cy', description: 'Busy' }] }) }
+  function AccordionDemo() { return h(C.LivatarAccordion, { style: { width: 400, maxWidth: '100%' }, items: [{ id: 'q1', summary: 'Is the same seed the same face?', content: 'Yes, always.' }, { id: 'q2', summary: 'Does it work with SSR?', content: 'Yes, static SVG on the server.' }] }) }
+  function TableDemo() { return h(C.LivatarTable, { style: { width: 420, maxWidth: '100%' }, columns: [{ key: 'name', header: 'Name' }, { key: 'role', header: 'Role' }], rows: [{ id: 'ada', name: 'Ada', role: 'Engineer' }, { id: 'bo', name: 'Bo', role: 'Designer' }, { id: 'cy', name: 'Cy', role: 'PM' }] }) }
   const COMPONENTS = [
-    { id: 'input', name: 'Inline input', cat: 'Forms & input', char: 'emoji · lock · memoji', desc: 'The face lives inside the field on a transparent background: it watches the caret, covers its eyes on passwords and smiles once the value is valid.', demo: InputDemo,
-      code: `${imp('LivatarInput', "import { ui, memoji } from 'livatar'")}\n\n<LivatarInput type="email" placeholder="you@example.com" required />\n<LivatarInput type="password" minLength={8} avatar={{ variant: ui, options: { kind: 'lock' } }} />\n<LivatarInput name="user" avatar={{ variant: memoji, seed: user.id }}\n  validate={(v) => /^[a-z0-9_]{3,}$/.test(v)} end={<button>Check</button>} />`,
-      props: [['…input attributes', 'type, name, placeholder, required, pattern, value, onChange…'], ['avatar', 'Avatar props (background is transparent)'], ['validate', '(value) => boolean. Default: browser validity'], ['end', 'Content on the right, like a button'], ['face', 'Avatar size (34)']] },
+    { id: 'input', name: 'Inline input', cat: 'Forms & input', char: 'emoji · lock · memoji', desc: 'The face lives inside the field on a transparent background: it watches the caret, covers its eyes on passwords and smiles once the value is valid. Add follow to give every typed name its own face, and cycle so a click swaps the character type.', demo: InputDemo,
+      code: `${imp('LivatarInput', "import { ui, memoji } from 'livatar'")}\n\n<LivatarInput type="email" placeholder="you@example.com" required />\n<LivatarInput type="password" minLength={8} avatar={{ variant: ui, options: { kind: 'lock' } }} />\n<LivatarInput name="user" follow cycle avatar={{ variant: memoji }}\n  validate={(v) => /^[a-z0-9_]{3,}$/.test(v)} end={<button>Check</button>} />`,
+      props: [['…input attributes', 'type, name, placeholder, required, pattern, value, onChange…'], ['avatar', 'Avatar props (background is transparent)'], ['validate', '(value) => boolean. Default: browser validity'], ['end', 'Content on the right, like a button'], ['face', 'Avatar size (34)'], ['follow', 'Seed the face from the typed text: every name gets its own face'], ['cycle', 'Click the face to switch character type. true, or an array of styles']] },
     { id: 'search', name: 'Search', cat: 'Forms & input', char: 'animal · owl', desc: 'An owl inside the field: chews while searching, beams at results, droops when nothing turns up.', demo: SearchDemo,
       code: `${imp('LivatarSearch', '')}\n\n<LivatarSearch onSearch={async (q) => (await fetch('/api/search?q=' + q)).json()} />`,
       props: [['onSearch', '(query) => results[] | count. 0 shows "nothing found"'], ['placeholder', ''], ['debounce', 'ms (300)'], ['avatar', '']] },
@@ -383,6 +476,36 @@
     { id: 'newsletter', name: 'Newsletter pill', cat: 'Forms & input', char: 'plant · sprout → sunflower', desc: 'An inline signup with a sprout inside. Subscribe and it blooms.', demo: NewsletterDemo,
       code: `${imp('LivatarNewsletter', '')}\n\n<LivatarNewsletter onSubscribe={(email) => subscribe(email)} />`,
       props: [['onSubscribe', '(email) => result. false or throw = error'], ['placeholder', ''], ['button', "Button text ('Subscribe')"], ['avatar', '']] },
+    { id: 'username', name: 'Username reserve', cat: 'Forms & input', char: 'buddy · happy / sad', desc: 'Checks a username as you type, says exactly why it is or is not available, suggests alternatives and mirrors the name into the URL hash (#@ada). Try: ada, admin, a, my name.', demo: UsernameDemo,
+      code: `${imp('LivatarUsername', '')}\n\n<LivatarUsername onChange={(name, ok) => setCanSubmit(ok)} />\n\n// or the pure check\nimport { checkUsername } from 'livatar'\ncheckUsername('admin') // { available: false, reason: 'reserved', message: '@admin is reserved for the system' }`,
+      props: [['value', 'Initial name'], ['onChange', '(name, available) => void'], ['syncHash', 'Keep #@name in the URL (true)'], ['min / max', 'Length limits (3 / 20)'], ['reserved', 'Extra blocked names'], ['taken', 'string[] or (name) => boolean: your real lookup'], ['avatar', '']] },
+    { id: 'footer', name: 'Footer', cat: 'Layout & content', char: 'any · living faces', desc: 'Brand, tagline, link columns, a row of living faces and a giant faded wordmark.', demo: FooterDemo,
+      code: `${imp('LivatarFooter', '')}\n\n<LivatarFooter brand="Acme" tagline="Ship faster" columns={[{ title: 'Company', links: [{ label: 'Terms', href: '/terms' }] }]} />`,
+      props: [['brand', 'Name (also seeds its face)'], ['tagline', ''], ['columns', '[{ title, links: [{ label, href }] }]'], ['wordmark', 'Big faded text (brand)'], ['faces', 'Seeds for the face row']] },
+    { id: 'breadcrumbs', name: 'Breadcrumbs', cat: 'Layout & content', char: 'buddy', desc: 'A trail with a living face at the start. The last item is the current page.', demo: CrumbsDemo,
+      code: `${imp('LivatarBreadcrumbs', '')}\n\n<LivatarBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Docs' }]} />`,
+      props: [['items', '[{ label, href? }]']] },
+    { id: 'card', name: 'Card', cat: 'Layout & content', char: 'any', desc: 'A content card whose face smiles when you hover it. Pass href to make it a link.', demo: CardDemo,
+      code: `${imp('LivatarCard', '')}\n\n<LivatarCard seed="ada" title="Alive">Eyes follow the cursor.</LivatarCard>`,
+      props: [['title', ''], ['href', 'Render as a link'], ['…avatar props', 'seed, variant, mood…']] },
+    { id: 'carousel', name: 'Carousel', cat: 'Layout & content', char: 'buddy', desc: 'Scroll-snap carousel with arrows and dots. A face nods on every change.', demo: CarouselDemo,
+      code: `${imp('LivatarCarousel', '')}\n\n<LivatarCarousel autoplay={6000} slides={[<Slide1 />, <Slide2 />]} />`,
+      props: [['slides', 'ReactNode[]'], ['autoplay', 'ms, 0 = off']] },
+    { id: 'scroll', name: 'Scroll progress', cat: 'Layout & content', char: 'buddy · happy', desc: 'A reading-progress bar on top and a back-to-top face that shows up after you scroll.', demo: ScrollDemo,
+      code: `${imp('LivatarScrollProgress', '')}\n\n<LivatarScrollProgress />`,
+      props: [['avatar', 'Face for the back-to-top button']] },
+    { id: 'menu', name: 'Hamburger menu', cat: 'Layout & content', char: 'buddy', desc: 'A hamburger that morphs into an X and opens a link list. Escape closes it.', demo: MenuDemo,
+      code: `${imp('LivatarMenu', '')}\n\n<LivatarMenu items={[{ label: 'Docs', href: '/docs' }]} />`,
+      props: [['items', '[{ label, href }]'], ['label', 'aria-label (Menu)']] },
+    { id: 'list', name: 'List', cat: 'Layout & content', char: 'any', desc: 'Every row gets its own face, seeded from its id.', demo: ListDemo,
+      code: `${imp('LivatarList', '')}\n\n<LivatarList items={[{ id: 'ada', title: 'Ada', description: 'Online' }]} />`,
+      props: [['items', '[{ id, title, description?, end?, avatar? }]'], ['size', '40']] },
+    { id: 'accordion', name: 'Accordion', cat: 'Layout & content', char: 'any', desc: 'Native details/summary. The face next to a question looks happy while it is open.', demo: AccordionDemo,
+      code: `${imp('LivatarAccordion', '')}\n\n<LivatarAccordion items={[{ id: 'q1', summary: 'Question?', content: 'Answer.' }]} />`,
+      props: [['items', '[{ id, summary, content }]'], ['exclusive', 'One open at a time (true)']] },
+    { id: 'table', name: 'Table', cat: 'Layout & content', char: 'any', desc: 'A table where every row starts with its own face.', demo: TableDemo,
+      code: `${imp('LivatarTable', '')}\n\n<LivatarTable columns={[{ key: 'name', header: 'Name' }]} rows={[{ id: 'ada', name: 'Ada' }]} />`,
+      props: [['columns', '[{ key, header, render?, align? }]'], ['rows', 'Objects with an id'], ['idKey', 'Field that seeds the face (id)']] },
     { id: 'pricing', name: 'Pricing', cat: 'Payments & commerce', char: 'money · coin, piggy, gem', desc: 'A money character per tier. They light up on hover; the popular plan is already in love.', demo: PricingDemo,
       code: `${imp('LivatarPricing', '')}\n\n<LivatarPricing tiers={[\n  { name: 'Hobby', price: '$0', period: 'mo', features: ['3 avatars'] },\n  { name: 'Pro', price: '$12', period: 'mo', popular: true, features: ['Unlimited'], onSelect: upgrade },\n  { name: 'Team', price: '$49', period: 'mo', features: ['SSO'] },\n]} />`,
       props: [['tiers', '[{ name, price, period, features, cta, popular, avatar, onSelect }]']] },
@@ -428,6 +551,21 @@
     { id: 'loader', name: 'Loader', cat: 'Loaders & states', char: 'tech · server', desc: 'Puzzled and glancing around while loading, a nod on success, a shake on failure.', demo: LoaderDemo,
       code: `${imp('LivatarLoader', "import { tech } from 'livatar'")}\n\n<LivatarLoader\n  variant={tech} options={{ kind: 'server' }}\n  status={isPending ? 'loading' : error ? 'error' : 'success'}\n  label={isPending ? 'Deploying…' : error ? 'Build failed' : 'Deployed!'}\n/>`,
       props: [['status', "'idle' | 'loading' | 'success' | 'error'"], ['label', 'Text under the avatar'], ['…avatar props', 'variant, seed, size, options…']] },
+    { id: 'photo', name: 'Photo with fallback', cat: 'Social & people', char: 'memoji', desc: 'The user’s photo, or their living livatar when there is none, the URL is broken or they are offline. Same seed, same face, same box: no grey blobs, no layout shift.', demo: PhotoDemo,
+      code: `${imp('LivatarPhoto', "import { buddy } from 'livatar'")}\n\n<LivatarPhoto src={user.avatarUrl} seed={user.id} alt={user.name} variant={buddy} size={40} />\n\n// no React? one line for any <img>:\nimport { photoFallback } from 'livatar'\nphotoFallback(document.querySelectorAll('img[data-seed]'))`,
+      props: [['src', 'Photo URL (missing, empty or failing → livatar)'], ['seed', 'Who the fallback face is'], ['alt', 'Alt text'], ['size', 'px (40)'], ['shape', "'circle' | 'rounded' | 'square'"], ['variant / options / mood', 'Any avatar props for the fallback']] },
+    { id: 'skeleton', name: 'Skeleton', cat: 'Loaders & states', char: 'emoji · sleepy', desc: 'Loading placeholders in the shape of what is coming: text, list, card, image, video, profile, table, chat, feed and grid. Image slots hold a sleepy face.', demo: SkeletonDemo,
+      code: `${imp('LivatarSkeleton', '')}\n\n{loading ? <LivatarSkeleton kind="video" /> : <Video {...data} />}\n<LivatarSkeleton kind="list" count={5} />\n<LivatarSkeleton kind="grid" avatar={false} shimmer={false} />`,
+      props: [['kind', "'text' | 'list' | 'card' | 'image' | 'video' | 'profile' | 'table' | 'chat' | 'feed' | 'grid'"], ['count', 'Lines, rows or items (sensible default per kind)'], ['shimmer', 'Sweep animation (true). Off with reduced motion'], ['avatar', 'Props for the face in image slots, or false to hide it']] },
+    { id: 'marquee', name: 'Face marquee', cat: 'Social & people', char: 'memoji', desc: 'An endless seamless scroller of faces for social proof and community walls. Pauses on hover, stops with reduced motion.', demo: MarqueeDemo,
+      code: `${imp('LivatarMarquee', "import { memoji } from 'livatar'")}\n\n<LivatarMarquee users={members.map((m) => m.id)} rows={2} avatar={{ variant: memoji }} />`,
+      props: [['users', 'Seeds (names or ids)'], ['rows', 'Rows moving opposite ways (1)'], ['duration', 'Seconds per loop (30)'], ['reverse', 'Scroll the other way'], ['pauseOnHover', 'true'], ['size', 'Face px (48)']] },
+    { id: 'confetti', name: 'Face confetti', cat: 'Fun', char: 'emoji', desc: 'Faces burst out of any element when you bump fire. Perfect for success, upgrades and first-time wins.', demo: ConfettiDemo,
+      code: `${imp('LivatarConfetti', '')}\n\nconst [n, setN] = useState(0)\n<LivatarConfetti fire={n}>\n  <button onClick={() => { save(); setN(n + 1) }}>Ship it</button>\n</LivatarConfetti>`,
+      props: [['fire', 'Change it (counter or timestamp) to burst'], ['count', 'Faces per burst (18)'], ['spread', 'Pixels travelled (140)'], ['seeds', 'Seeds to use'], ['size', 'Face px (28)']] },
+    { id: 'presence', name: 'Presence & cursors', cat: 'Social & people', char: 'memoji', desc: 'Who is here: avatar stack with presence dots, typing dots and +N, plus multiplayer cursors with faces. Feed it from Liveblocks, Yjs, PartyKit, Supabase Realtime or your own socket.', demo: PresenceDemo,
+      code: `${imp('LivatarPresence', '')}\n\n<LivatarPresence\n  users={others.map((o) => ({ id: o.id, name: o.name, typing: o.typing, cursor: o.cursor /* {x,y} in % */ }))}\n>\n  <Canvas />\n</LivatarPresence>`,
+      props: [['users', '[{ id, name?, typing?, status?, cursor? }]'], ['max', 'Faces before +N (5)'], ['children', 'The shared surface. Users with a cursor get a labelled pointer'], ['size', 'Face px (36)']] },
     { id: 'empty-state', name: 'Empty state', cat: 'Loaders & states', char: 'office · folder', desc: 'Dozes off when nothing is there, wakes up surprised when you hover.', demo: EmptyDemo,
       code: `${imp('LivatarEmptyState', "import { office } from 'livatar'")}\n\n<LivatarEmptyState\n  variant={office} options={{ kind: 'folder' }}\n  title="No files yet"\n  description="Drop something in to get started."\n  action={<button>Upload</button>}\n/>`,
       props: [['title', 'Heading'], ['description', 'Sub text'], ['action', 'Button or link'], ['…avatar props', '']] },
@@ -500,14 +638,30 @@
     { id: 'reaction', name: 'Comment reaction', cat: 'Feedback', char: 'emoji', desc: 'Reads the mood of what you type. No AI call.', demo: ReactionDemo,
       code: `${imp('LivatarReaction', "import { emoji } from 'livatar'")}\n\n<LivatarReaction variant={emoji} text={draft} hold />`,
       props: [['text', 'Text to react to'], ['hold', 'Keep the mood instead of flashing it']] },
-    { id: 'pet', name: 'Virtual pet', cat: 'Fun', char: 'animal · bunny', desc: 'Hunger, energy and happiness drift in real time. It levels up and grows.', demo: PetDemo,
+    { id: 'pet', name: 'Virtual pet', cat: 'Fun', char: 'animal · bunny', desc: 'It lives in a little yard: walks on legs, turns the way it goes, eats, plays, sleeps and shows how it feels. Hunger, energy and happiness drift in real time. It levels up and grows.', demo: PetDemo,
       code: `${imp('LivatarPet', "import { animal } from 'livatar'")}\n\n<LivatarPet variant={animal} seed="mochi" options={{ species: 'bunny' }} />\n\n// or your own UI\n<LivatarPet variant={animal} seed="mochi">{(pet, s) => <Bars stats={s} onFeed={() => pet.feed()} />}</LivatarPet>`,
-      props: [['pet', 'Pet options: key, store, decay…'], ['controls', 'Show bars and buttons (true)'], ['children', '(pet, stats) => your UI']] },
+      props: [['pet', 'Pet options: key, store, decay…'], ['controls', 'Show bars and buttons (true)'], ['children', '(pet, stats) => your UI'], ['walk', 'Walks around its yard on legs (true; still with reduced motion)'], ['yard', 'Yard height px (170)']] },
     { id: 'theme-toggle', name: 'Theme toggle', cat: 'Fun', char: 'planet · sun/moon', desc: 'A sun that becomes a sleepy moon.', demo: ThemeDemo,
       code: `${imp('LivatarThemeToggle', '')}\n\n<LivatarThemeToggle dark={theme === 'dark'} onChange={(d) => setTheme(d ? 'dark' : 'light')} />`,
       props: [['dark', 'Current theme'], ['onChange', '(dark) => void'], ['size', 'px (40)']] },
   ]
-  const ORDER = ['Examples', 'Backgrounds', 'Forms & input', 'Payments & commerce', 'AI & chat', 'Loaders & states', 'Social & people', 'Feedback', 'Fun']
+  /* ---------- creative variants: tabs in the detail view, the default on the tile ---------- */
+  function VariantDemo({ list, small }) {
+    const [i, setI] = useState(0)
+    const cur = list[i] || list[0]
+    if (small) return h(list[0].Demo, { small })
+    return h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, width: '100%' } },
+      h('div', { role: 'tablist', className: 'vt', 'aria-label': 'Variants', style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' } },
+        list.map((v, k) => h('button', { key: v.name, role: 'tab', 'aria-selected': k === i, onClick: () => setI(k), style: { font: 'inherit', fontSize: 13, fontWeight: 600, padding: '6px 12px', borderRadius: 99, cursor: 'pointer', border: '1px solid ' + (k === i ? 'var(--brand,#7f5af0)' : 'var(--line)'), background: k === i ? 'var(--brand,#7f5af0)' : 'var(--card)', color: k === i ? '#fff' : 'var(--fg)' } }, v.name))),
+      h('div', { key: cur.name, style: { minHeight: 130, display: 'grid', placeItems: 'center', width: '100%' } }, h(cur.Demo)),
+      h('small', { className: 'note vt' }, cur.note, ' · ', list.length, ' variants'))
+  }
+  {
+    const base = Object.fromEntries(COMPONENTS.map((c) => [c.id, c.demo]))
+    const V = makeVariants({ h, useState, useEffect, useRef, Livatar, C, S: { buddy, bot, human, animal, memoji, ghost, planet, clay, monster, emoji, ui, alien, food, vehicle, office, plant, home, tech, device, fruit } }).wrap(base)
+    for (const c of COMPONENTS) if (V[c.id]) { const list = V[c.id]; c.variants = list.length; c.demo = (props) => h(VariantDemo, { list, small: props && props.small }) }
+  }
+  const ORDER = ['Examples', 'Backgrounds', 'Forms & input', 'Layout & content', 'Payments & commerce', 'AI & chat', 'Loaders & states', 'Social & people', 'Feedback', 'Fun']
   const CATS = ORDER.filter((c) => COMPONENTS.some((x) => x.cat === c))
   COMPONENTS.sort((a, b) => ORDER.indexOf(a.cat) - ORDER.indexOf(b.cat))
 

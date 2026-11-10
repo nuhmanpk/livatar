@@ -209,6 +209,7 @@ let bound = false
 let reduced = false
 let io: IntersectionObserver | null = null
 const now = () => performance.now()
+const anyVisible = () => { for (const i of instances) if (i.visible) return true; return false }
 
 function isTextField(el: Element | null): el is HTMLElement {
   if (!el) return false
@@ -269,15 +270,39 @@ function bind() {
   })
 
   if (typeof IntersectionObserver !== 'undefined') {
+    // a small margin wakes avatars just before they scroll in; offscreen ones are frozen at rest
     io = new IntersectionObserver((entries) => {
-      for (const e of entries) for (const i of instances) if (i.target === e.target) i.visible = e.isIntersecting
+      for (const e of entries) {
+        const i = byTarget.get(e.target)
+        if (i) setVisible(i, e.isIntersecting)
+      }
       schedule()
-    })
+    }, { rootMargin: '80px' })
+  }
+}
+
+const byTarget = new WeakMap<Element, Instance>()
+
+/** In view: animate and track the pointer. Out of view: reset to a constant rest pose and free the GPU layers. */
+function setVisible(i: Instance, v: boolean) {
+  if (i.visible === v) return
+  i.visible = v
+  for (const p of i.parts) {
+    if (!v) {
+      p.el.style.willChange = 'auto'
+      if (p.last) p.el.style.transform = p.last = ''
+    } else p.el.style.willChange = 'transform'
+  }
+  if (!v) {
+    const s = i.s
+    s.x = s.y = s.closed = s.mouth = 0
+    i.rect = null
   }
 }
 
 function schedule() {
-  if (!raf && instances.size && !document.hidden) {
+  // nothing in view: no frames at all, the loop restarts when an avatar scrolls in
+  if (!raf && !document.hidden && anyVisible()) {
     last = now()
     raf = requestAnimationFrame(frame)
   }
@@ -589,6 +614,7 @@ export function alive(target: Element | null | undefined, options: AliveOptions 
       clearTimeout(inst.moodTimer)
       instances.delete(inst)
       io?.unobserve(target)
+      byTarget.delete(target)
       target.removeEventListener('pointerdown', inst.onDown)
       for (const p of parts) {
         p.el.style.transform = ''
@@ -600,6 +626,7 @@ export function alive(target: Element | null | undefined, options: AliveOptions 
 
   target.addEventListener('pointerdown', inst.onDown)
   instances.add(inst)
+  byTarget.set(target, inst)
   io?.observe(target)
   schedule()
   return handle

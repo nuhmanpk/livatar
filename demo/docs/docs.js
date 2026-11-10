@@ -151,6 +151,15 @@ const ABOUT = {
   plant: 'Potted cacti, succulents, monstera, sunflowers, tulips, bonsai and mushrooms. Leaves cover the eyes on password fields.',
   initials: 'Initials from a name (or the seed) with a tiny face that blinks and follows the cursor. Set options.name.',
 }
+// The gallery must show every kind at least once: pick the option that defines "what it is" and cover all its values.
+const mainKey = (st) => {
+  const v = st.variants || {}
+  const plain = (l) => l.every((x) => !(typeof x === 'string' && /^#/.test(x)))
+  const pref = ['kind', 'species', 'age', 'type', 'shape', 'head'].find((k) => v[k] && plain(v[k]) && v[k].length > 1)
+  if (pref) return pref
+  const best = Object.entries(v).filter(([, l]) => plain(l) && l.length >= 4).sort((a, b) => b[1].length - a[1].length)[0]
+  return best?.[0]
+}
 const host = $('charSections')
 for (const name of ORDER) {
   const st = styles[name]
@@ -170,7 +179,11 @@ for (const name of ORDER) {
   let hs = []
   const draw = () => {
     hs.forEach((h) => h.destroy()); gal.innerHTML = ''
-    hs = Array.from({ length: 8 }, (_, i) => mount(box(gal), st, { seed: i ? `${seedIn.value}-${i}` : seedIn.value, title: `${name} ${i ? seedIn.value + '-' + i : seedIn.value}` }))
+    const mk = mainKey(st), vals = mk ? st.variants[mk] : []
+    hs = Array.from({ length: Math.max(8, vals.length) }, (_, i) => {
+      const o = mk && i < vals.length ? { [mk]: vals[i] } : undefined
+      return mount(box(gal), st, { seed: i ? `${seedIn.value}-${i}` : seedIn.value, options: o, title: `${name} ${o ? vals[i] : i ? seedIn.value + '-' + i : seedIn.value}` })
+    })
   }
   seedIn.addEventListener('input', draw)
   lazy(gal, draw)

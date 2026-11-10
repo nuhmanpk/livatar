@@ -25,6 +25,7 @@ for (const p of ['skill.md', 'skills.md', 'SKILL.md', 'SKILLS.md', 'skills/livat
 }
 for (const p of ['agents.md', 'AGENTS.md']) await cp(r('AGENTS.md'), `${out}/${p}`)
 await cp(r('demo/ui.js'), `${out}/ui.js`)
+await cp(r('demo/kit.js'), `${out}/kit.js`)
 await cp(r('demo/loader.js'), `${out}/loader.js`)
 
 // pages live one level higher on the site than in demo/: drop one '../' from links to dist/ and llms.txt
@@ -41,6 +42,8 @@ await page('demo/docs/index.html', 'docs')
 await page('demo/icons/index.html', 'icons')
 await page('demo/life/index.html', 'life')
 await page('demo/components/index.html', 'components')
+await page('demo/characters/index.html', 'characters')
+await writeFile(`${out}/characters/characters.js`, shift(await readFile(r('demo/characters/characters.js'), 'utf8')))
 await page('demo/readme/index.html', 'readme')
 await writeFile(`${out}/readme/engine.js`, shift(await readFile(r('demo/readme/engine.js'), 'utf8')))
 for (const extra of ['docs/docs.css', 'docs/docs.js']) if (existsSync(r(`demo/${extra}`))) await writeFile(`${out}/${extra}`, shift(await readFile(r(`demo/${extra}`), 'utf8')))

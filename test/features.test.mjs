@@ -77,3 +77,18 @@ test('action + form helpers are SSR safe', () => {
 test('toImage refuses politely without a browser', async () => {
   await assert.rejects(() => toImage('<svg/>'), /needs a browser/)
 })
+
+test('roam: every species has a body, a persona, and sound is off by default', async () => {
+  const { roam } = await import('../dist/roam.js')
+  // outside a browser it is a harmless no-op
+  const zoo = roam({ count: 2 })
+  assert.equal(zoo.sound, false)
+  assert.deepEqual([...zoo.roamers], [])
+  assert.equal(zoo.spawn('cat'), null)
+  zoo.destroy()
+  const src = (await import('node:fs')).readFileSync('src/roam.ts', 'utf8')
+  for (const sp of ['cat', 'dog', 'bear', 'bunny', 'fox', 'panda', 'frog', 'mouse', 'shark', 'penguin', 'owl', 'chick', 'parrot', 'pig', 'koala', 'lion']) {
+    assert.ok(new RegExp(`\\b${sp}: \\{ move:`).test(src), `persona for ${sp}`)
+  }
+  assert.ok(/sound\?: boolean/.test(src) && /!!opts\.sound/.test(src))
+})

@@ -21,6 +21,7 @@ Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.
 - monster: eyes(1|2|3), horns, teeth, spots · ghost: accessory, blush · emoji: tone, eyes, mouth, blush
 - memoji: hair, beard, glasses, skin, hairColor, shirt · clay: hair, skin, hairColor, outfit · planet: kind (earth saturn mars moon sun gas comet star heart cloud), satellite, stars · dino: kind, spots, hat · alien: eyes, antenna, head, helmet · food: kind, topping, outline · plant: kind, pot, flower · initials: name, chars, face, weight
 - bot: eyes, antenna, glow · blob: eyes, mouth, blush, spots · pixel: density · ui: kind (toggle bell folder trash lock gear cart chat), badge · device: kind (phone laptop watch camera headphones tv tablet gamepad), screen · fruit: kind (apple banana cherry lemon peach grape orange pear pineapple kiwi), leaf · drink: kind (coffee tea juicebox soda milk bottle smoothie cocoa), steam · vehicle: kind (car bus rocket plane scooter van train boat), color · tech: kind (server database cloud chip terminal plug router drive), leds · money: kind (coin wallet piggy card receipt gem bag bill), sparkle · home: kind (house lamp sofa door key mug clock bed), smoke · office: kind (clipboard calendar note paperclip folder stapler pencil briefcase), lines
+- weather: kind (raincloud snowflake lightning rainbow umbrella tornado snowman droplet), sparkles · sport: kind (soccer basketball tennis baseball football bowling trophy volleyball), motion · music: kind (guitar drum note mic trumpet vinyl piano maraca), notes · sea: kind (fish octopus crab whale jellyfish starfish puffer turtle), bubbles · bug: kind (bee ladybug butterfly snail caterpillar ant spider firefly), flower · magic: kind (crystalball potion hat spellbook wand crystal cauldron scroll), sparkles · party: kind (balloon gift cake partyhat popper candle pinata disco), confetti · season: kind (pumpkin acorn leaf pinecone chestnut mitten sandcastle snowglobe), falling · tool: kind (hammer wrench screwdriver saw drill toolbox roller tape), finish (classic candy)
 - human (realistic portrait): age (baby toddler kid teen adult senior), gender (boy girl neutral), skin, hair (short long curly coily bun braids ponytail bob bald buzz hijab turban wavy), hairColor, eyes, facialHair, glasses (none round square sun), accessory, clothes, clothesColor, freckles, pacifier
 - dev (developer at work): activity (coding thinking debugging solved coffee reviewing shipping stuck), hair (short long curly bun buzz beanie), skin, hairColor, hoodie, glasses, headphones
 - Moods: neutral happy sad angry surprised sleepy love wink silly confused
@@ -38,7 +39,9 @@ All take any handle (from `mount`, `mountCode`, a React ref, `<live-avatar>.hand
 - `assistant(handle, { sentiment, perToken, onState }) → { state, listen(), think(), stream(tokens), speak(audioElOrMediaStream) → stop, done(mood?), error(), set(state), destroy() }`. States: idle listening thinking speaking done error. `await ai.stream(asyncIterable)` talks per token and ends with a mood guessed from the reply; `ai.stream('chunk')` for push-style streams.
 - `pet(handle, { key, store, decay, onChange, onLevelUp, tick }) → { stats, feed(), play(), pat(), sleep(), wake(), reward(xp), mood(), reset(), destroy() }`. Stats: hunger energy happiness (0…100) xp level stage(baby kid teen adult) asleep. Drifts in real time, also while the page is closed; saved to localStorage by default, or any `{ get, set }` store. Poking = petting.
 - `group({ idleAfter, empathy }) → { members, join(id, handle), leave(id), speaking(id, on?), message(id, text), active(id), all(fn), destroy() }`: avatars look at whoever speaks, greet joiners, react to message mood, notice @mentions, doze when idle. Transport-agnostic: call from your socket events.
-- React/Next.js components (`livatar/components`, 'use client'; gallery with live previews: https://nuhmanpk.github.io/livatar/components/): `<LivatarLoader status label />` (idle loading success error), `<LivatarMeet participants={[{ id, name, speaking, muted, avatar }]} message={{ id, from, text }} avatar size />`, `<LivatarForm onSubmit={(data) => ok} avatar moods placement>` (false/throw → error face), `<LivatarAssistant status text showState />` (status also accepts Vercel AI SDK submitted/streaming/ready), `<LivatarPet pet controls>{(pet, stats) => …}</LivatarPet>`, `<LivatarStack users={[{ id, status: online|away|busy|offline }]} max size />`, `<LivatarEmptyState title description action />`, `<LivatarReaction text hold />`, `<LivatarBackground variants children />` (avatar wall following the cursor), `<LivatarChat messages={[{ id, from, text, me }]} typing people />`, `<LivatarToast open type title description onClose duration />`, `<LivatarNotFound title description action code />`, `<LivatarTyping name />`, `<LivatarProfileCard name role status action />`, `<LivatarTestimonial quote name title />`, `<LivatarCheckout amount onPay={(card) => ok} />` (money card character; covers eyes on CVC), `<LivatarCartButton count onClick />` (ui cart), `<LivatarUpload onFiles accept multiple />` (office folder), `<LivatarThemeToggle dark onChange />` (planet sun/moon), `<LivatarPasswordStrength value score />` (ui lock), `<LivatarRating value onChange max />` (emoji), `<LivatarConnection online />` (tech cloud), `<LivatarInput avatar validate end face …inputAttrs />` (face inside the field, transparent; happy when valid, covers eyes on password), `<LivatarSearch onSearch={(q) => results} debounce />` (owl), `<LivatarOTP length onComplete={(code) => ok} />` (key), `<LivatarNewsletter onSubscribe button />` (sprout → sunflower), `<LivatarCookieConsent onAccept onDecline />` (donut), `<LivatarProgress value label />` (car), `<LivatarStepper steps current />` (rocket), `<LivatarPricing tiers={[{ name, price, period, features, popular, onSelect }]} />` (coin/piggy/gem), `<LivatarBell count onClick />`, `<LivatarLike liked onChange count />` (heart planet), `<LivatarCountdown to onDone label />` (clock), `<LivatarHelpLauncher title position>{panel}</LivatarHelpLauncher>` (bot). All take <Livatar> props (variant, seed, size, …). Hooks: `usePersonality(ref, input)`, `useAssistant(ref) → [ai, state]`, `usePet(ref, opts) → [pet, stats]`, `useContextAware(ref, opts)`.
+- Photo fallback: `<LivatarPhoto src seed alt size shape variant />` (livatar/components) or vanilla `photoFallback(imgOrList, { style, seed })` from 'livatar' (seed from data-seed/alt). Use it for every user avatar that may have no photo.
+- Roaming pets (`livatar/roam`): `const zoo = roam({ count, species, size, ground, sound })` → `zoo.spawn('fox')`, `zoo.sound = true` (call from a click), `zoo.destroy()`. Full-body animals with per-species habits (koala sleeps, pig naughty, birds fly, cat scratches). Decorative (aria-hidden), no-op with reduced motion or on the server.
+- React/Next.js components (`livatar/components`, 'use client'; gallery with live previews: https://nuhmanpk.github.io/livatar/components/): `<LivatarLoader status label />` (idle loading success error), `<LivatarMeet participants={[{ id, name, speaking, muted, avatar }]} message={{ id, from, text }} avatar size />`, `<LivatarForm onSubmit={(data) => ok} avatar moods placement>` (false/throw → error face), `<LivatarAssistant status text showState />` (status also accepts Vercel AI SDK submitted/streaming/ready), `<LivatarPet pet controls>{(pet, stats) => …}</LivatarPet>`, `<LivatarStack users={[{ id, status: online|away|busy|offline }]} max size />`, `<LivatarEmptyState title description action />`, `<LivatarReaction text hold />`, `<LivatarBackground variants children />` (avatar wall following the cursor), `<LivatarChat messages={[{ id, from, text, me }]} typing people />`, `<LivatarToast open type title description onClose duration />`, `<LivatarNotFound title description action code />`, `<LivatarTyping name />`, `<LivatarProfileCard name role status action />`, `<LivatarTestimonial quote name title />`, `<LivatarCheckout amount onPay={(card) => ok} />` (money card character; covers eyes on CVC), `<LivatarCartButton count onClick />` (ui cart), `<LivatarUpload onFiles accept multiple />` (office folder), `<LivatarThemeToggle dark onChange />` (planet sun/moon), `<LivatarPasswordStrength value score />` (ui lock), `<LivatarRating value onChange max />` (emoji), `<LivatarConnection online />` (tech cloud), `<LivatarMarquee users rows />, <LivatarConfetti fire>…</LivatarConfetti>, <LivatarPresence users max>{shared surface}</LivatarPresence> (presence dots, typing, multiplayer cursors; feed from Liveblocks/Yjs/PartyKit), <LivatarSkeleton kind='text|list|card|image|video|profile|table|chat|feed|grid' count shimmer avatar />, <LivatarInput avatar validate end face follow cycle …inputAttrs /> (follow = seed the face from the typed text; cycle = click the face to change character type)` (face inside the field, transparent; happy when valid, covers eyes on password), `<LivatarSearch onSearch={(q) => results} debounce />` (owl), `<LivatarOTP length onComplete={(code) => ok} />` (key), `<LivatarNewsletter onSubscribe button />` (sprout → sunflower), `<LivatarCookieConsent onAccept onDecline />` (donut), `<LivatarProgress value label />` (car), `<LivatarStepper steps current />` (rocket), `<LivatarPricing tiers={[{ name, price, period, features, popular, onSelect }]} />` (coin/piggy/gem), `<LivatarBell count onClick />`, `<LivatarLike liked onChange count />` (heart planet), `<LivatarCountdown to onDone label />` (clock), `<LivatarHelpLauncher title position>{panel}</LivatarHelpLauncher>` (bot). All take <Livatar> props (variant, seed, size, …). Hooks: `usePersonality(ref, input)`, `useAssistant(ref) → [ai, state]`, `usePet(ref, opts) → [pet, stats]`, `useContextAware(ref, opts)`.
 
 ## Framework entry points
 - React/Next.js: `import { Livatar, LivatarCode } from 'livatar/react'` (`'use client'` included) — `<Livatar variant={buddy} seed="ada" mood="happy" size={48} ref={ref} />`, `<LivatarCode code="lv…" />`
@@ -224,6 +227,42 @@ Palettes: pastel, vivid, candy, ocean, forest, sunset, mono, neon, retro, earth
 - kind: gemini, claude, grok, chatgpt
 - glow: true, false
 
+### weather
+- kind: raincloud, snowflake, lightning, rainbow, umbrella, tornado, snowman, droplet
+- sparkles: true, false
+
+### sport
+- kind: soccer, basketball, tennis, baseball, football, bowling, trophy, volleyball
+- motion: true, false
+
+### music
+- kind: guitar, drum, note, mic, trumpet, vinyl, piano, maraca
+- notes: true, false
+
+### sea
+- kind: fish, octopus, crab, whale, jellyfish, starfish, puffer, turtle
+- bubbles: true, false
+
+### bug
+- kind: bee, ladybug, butterfly, snail, caterpillar, ant, spider, firefly
+- flower: true, false
+
+### magic
+- kind: crystalball, potion, hat, spellbook, wand, crystal, cauldron, scroll
+- sparkles: true, false
+
+### party
+- kind: balloon, gift, cake, partyhat, popper, candle, pinata, disco
+- confetti: true, false
+
+### season
+- kind: pumpkin, acorn, leaf, pinecone, chestnut, mitten, sandcastle, snowglobe
+- falling: true, false
+
+### tool
+- kind: hammer, wrench, screwdriver, saw, drill, toolbox, roller, tape
+- finish: classic, candy
+
 ## README
 
 
@@ -259,7 +298,7 @@ Animated preview. Open the live demo to play with the real thing.
 
 Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes when you type a password, and show ten moods.
 
-- **27 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options.
+- **37 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
 - **10 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
 - **One code per avatar.** Every look packs into a short, URL-safe string such as `lvAQQBAG51aG1hbnBr`. Store it with the user and render it anywhere.
 - **Light.** One style plus the engine is about 9 KB gzipped. Styles are tree-shakable, so you only ship the ones you import.
@@ -348,6 +387,10 @@ and https://nuhmanpk.github.io/livatar/SKILL.md first, then: <what you want, e.g
 - **One-click prompt:** hit **✨ Copy for AI agents** on the [site](https://nuhmanpk.github.io/livatar/), [docs](https://nuhmanpk.github.io/livatar/docs/) or [icons](https://nuhmanpk.github.io/livatar/icons/) page (every icon has its own).
 - **Claude Code skill:** `npx livatar skill` installs it to `.claude/skills/livatar/`.
 - **For any agent:** [`llms.txt`](https://nuhmanpk.github.io/livatar/llms.txt), [`llms-full.txt`](https://nuhmanpk.github.io/livatar/llms-full.txt), and [`AGENTS.md`](AGENTS.md) (shipped in the package at `node_modules/livatar/AGENTS.md`).
+
+
+  
+
 
 ## Install
 
@@ -673,6 +716,16 @@ export default { fetch: avatarHandler() }                      // Cloudflare / B
 
 `describe({ style: 'animal', mood: 'happy', options: { species: 'owl' } })` returns `"A happy owl"`. The server uses it for every avatar's accessible name.
 
+## Avatar API, Figma, CLI
+
+- **Your own avatar API.** `npx livatar api` serves `http://localhost:8787/animal/ada.svg?mood=happy&size=128` (same URLs as `livatar/server`). To host it, deploy [`examples/avatar-api`](examples/avatar-api) to Cloudflare Workers, or use `avatarHandler()` on Bun, Deno, Vercel or Netlify. Responses are deterministic and cached for a year.
+- **Figma / FigJam plugin.** [`figma-plugin/`](figma-plugin): pick a style, mood and shape, shuffle, and insert editable vector avatars. Run `npm run figma` to rebuild the UI (the library is inlined, the plugin makes no network requests), then in Figma choose *Plugins → Development → Import plugin from manifest*.
+- **Own the components.** `npx livatar components` lists them. `npx livatar add skeleton` scaffolds an editable wrapper in `components/livatar/`.
+- **Presence.** `LivatarPresence` shows who is here (presence dots, typing, `+N`) and multiplayer cursors with faces. Feed it from Liveblocks, Yjs, PartyKit, Supabase Realtime or your own socket.
+- **Photo with fallback.** `<LivatarPhoto src={user.avatarUrl} seed={user.id} />` shows the photo, or the user's livatar when there is none, the URL 404s or they are offline. Without React: `photoFallback(document.querySelectorAll('img[data-seed]'))`.
+- **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Full-body animals (head, body, legs, tail) wander along the bottom of the page, each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
+- **Social proof and delight.** `LivatarMarquee` (endless face scroller), `LivatarConfetti` (faces burst out), `LivatarSkeleton` (ten loading placeholders). Every animation respects `prefers-reduced-motion`, and a test keeps it that way.
+
 ## Develop
 
 ```bash
@@ -685,6 +738,9 @@ npm run site    # assemble the GitHub Pages site into _site/
 npm run art     # regenerate the animated README images in assets/
 ```
 
+The dev server also serves the agent files the same way the built site does, so pages that link them work locally: `/llms.txt`, `/llms-full.txt`, `/SKILL.md` (alias `/skills.md`) and `/AGENTS.md`, at the root or under `/demo/` (for example `http://localhost:5173/demo/SKILL.md`). Restart it after pulling changes to `scripts/serve.mjs`.
+
+
 ### Demo on GitHub Pages
 
 `.github/workflows/pages.yml` builds, tests, and deploys the demo on every push to `main`.
@@ -694,6 +750,8 @@ The demo is then live at `https://<user>.github.io/livatar/`.
 ## Credits
 
 Inspired by [DiceBear](https://www.dicebear.com) (MIT) by Florian Körner and contributors — the reference for seeded avatar styles, including the idea behind our `initials` style and avatar HTTP API. Also by [boring-avatars](https://github.com/boringdesigners/boring-avatars), [avataaars](https://getavataaars.com), [RoboHash](https://robohash.org), and [minidenticons](https://github.com/laurentpayot/minidenticons). Brand icons come from [Simple Icons](https://simpleicons.org) (CC0).
+
+The wordmark art uses letter outlines from [Inter](https://rsms.me/inter/) ExtraBold by Rasmus Andersson (SIL Open Font License 1.1).
 
 ## Contributing
 
@@ -722,3 +780,8 @@ These icons are livatar's own animated icons. Grab any of the 540+ for your READ
 ## License
 
 [MIT](LICENSE) © Nuhman PK
+
+
+
+  
+

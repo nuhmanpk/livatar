@@ -1,6 +1,6 @@
 import { createAvatar, type AvatarOptions, type AvatarStyle } from './core'
 import { alive, type AliveHandle, type AliveOptions } from './alive'
-import { resolve, type LivatarConfig } from './code'
+import { render, resolve, type LivatarConfig } from './code'
 import { blob } from './styles/blob'
 import { buddy } from './styles/buddy'
 import { bot } from './styles/bot'
@@ -26,6 +26,15 @@ import { tech } from './styles/tech'
 import { money } from './styles/money'
 import { home } from './styles/home'
 import { office } from './styles/office'
+import { weather } from './styles/weather'
+import { sport } from './styles/sport'
+import { music } from './styles/music'
+import { sea } from './styles/sea'
+import { bug } from './styles/bug'
+import { magic } from './styles/magic'
+import { party } from './styles/party'
+import { season } from './styles/season'
+import { tool } from './styles/tool'
 import { dev } from './styles/dev'
 import { human } from './styles/human'
 import { ai } from './styles/ai'
@@ -39,7 +48,7 @@ export { doodle, type DoodleOptions } from './doodle'
 export { faceEyes, faceBrows, faceMouth, faceExtras, heart, type FaceSpec } from './face'
 export { palettes, type PaletteName } from './palettes'
 export { styles } from './registry'
-export { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai }
+export { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai, weather, sport, music, sea, bug, magic, party, season, tool }
 export { describe } from './describe'
 export type { BlobOptions } from './styles/blob'
 export type { BuddyOptions } from './styles/buddy'
@@ -66,6 +75,15 @@ export type { TechOptions } from './styles/tech'
 export type { MoneyOptions } from './styles/money'
 export type { HomeOptions } from './styles/home'
 export type { OfficeOptions } from './styles/office'
+export type { WeatherOptions } from './styles/weather'
+export type { SportOptions } from './styles/sport'
+export type { MusicOptions } from './styles/music'
+export type { SeaOptions } from './styles/sea'
+export type { BugOptions } from './styles/bug'
+export type { MagicOptions } from './styles/magic'
+export type { PartyOptions } from './styles/party'
+export type { SeasonOptions } from './styles/season'
+export type { ToolOptions } from './styles/tool'
 export type { DevOptions } from './styles/dev'
 export type { HumanOptions } from './styles/human'
 export type { AiOptions } from './styles/ai'
@@ -106,4 +124,32 @@ export function mountCode(el: Element, code: string | LivatarConfig, opts: Mount
 /** Render to a `data:` URI — for <img src>, CSS backgrounds, emails, OG images (static). */
 export function toDataUri<O>(style: AvatarStyle<O>, opts: AvatarOptions<O> = {}): string {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(createAvatar(style, opts))
+}
+export { checkUsername, RESERVED_NAMES, type UsernameResult, type UsernameOptions, type UsernameReason } from './username'
+
+/**
+ * Show a user's photo, and fall back to their livatar when there is no photo or it fails to load
+ * (404, blocked, offline). Same seed, same face, so the fallback is stable across sessions.
+ *
+ *   photoFallback(img, { style: 'buddy', seed: user.id })            // <img src={user.photoUrl}>
+ *   photoFallback(document.querySelectorAll('img[data-seed]'))        // seed from data-seed, style from data-style
+ *
+ * Returns a cleanup function.
+ */
+export function photoFallback(target: HTMLImageElement | Iterable<HTMLImageElement>, cfg: Partial<LivatarConfig> = {}): () => void {
+  const imgs = (typeof (target as HTMLImageElement).tagName === 'string' ? [target as HTMLImageElement] : [...(target as Iterable<HTMLImageElement>)])
+  const offs: (() => void)[] = []
+  for (const img of imgs) {
+    const swap = () => {
+      if (img.dataset.lvFallback) return
+      img.dataset.lvFallback = '1'
+      const seed = cfg.seed ?? img.dataset.seed ?? img.alt ?? 'user'
+      const style = cfg.style ?? img.dataset.style ?? 'buddy'
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(render({ ...cfg, style, seed } as LivatarConfig))
+    }
+    if (!img.getAttribute('src') || (img.complete && img.naturalWidth === 0)) swap()
+    img.addEventListener('error', swap)
+    offs.push(() => img.removeEventListener('error', swap))
+  }
+  return () => offs.forEach((f) => f())
 }

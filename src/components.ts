@@ -7,7 +7,7 @@
  * ------------------------------------------------------------------ */
 import { createElement as h, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, type CSSProperties, type FormEvent, type FormHTMLAttributes, type ForwardRefExoticComponent, type ReactElement, type RefAttributes, type ReactNode, type RefObject, type KeyboardEvent as RKeyboardEvent, type DragEvent as RDragEvent, type ChangeEvent as RChangeEvent, type FocusEvent as RFocusEvent, type InputHTMLAttributes } from 'react'
 import type { AliveHandle } from './alive'
-import type { Mood } from './core'
+import type { AvatarStyle, Mood } from './core'
 import { bindForm, type FormBinding, type FormMoods } from './form'
 import { Livatar, type LivatarProps } from './react'
 import { money } from './styles/money'
@@ -22,12 +22,21 @@ import { plant } from './styles/plant'
 import { food } from './styles/food'
 import { vehicle } from './styles/vehicle'
 import { bot } from './styles/bot'
+import { buddy } from './styles/buddy'
+import { memoji } from './styles/memoji'
+import { human } from './styles/human'
+import { clay } from './styles/clay'
+import { ghost } from './styles/ghost'
+import { monster } from './styles/monster'
+import { alien } from './styles/alien'
+import { dino } from './styles/dino'
 import { personality, type Personality, type PersonalityInput } from './life/personality'
 import { assistant, type Assistant, type AssistantState } from './life/assistant'
 import { pet, type Pet, type PetOptions, type PetStats } from './life/pet'
 import { group, type Group } from './life/group'
 import { context, react, type ContextOptions, type LifeEvent } from './life/react'
 import { feel } from './life/feel'
+import { checkUsername, type UsernameOptions } from './username'
 
 export type AvatarProps = Omit<LivatarProps, 'ref'>
 type HandleRef = RefObject<AliveHandle | null>
@@ -307,33 +316,105 @@ export interface PetProps extends AvatarProps {
   pet?: Omit<PetOptions, 'onChange'>
   /** Show stat bars and Feed / Play / Sleep buttons. Default true. */
   controls?: boolean
+  /** The pet walks around its yard on little legs. Default true (stays put with prefers-reduced-motion). */
+  walk?: boolean
+  /** Yard height in px. Default 170. */
+  yard?: number
   /** Render your own UI instead of the default controls. */
   children?: (pet: Pet, stats: PetStats) => ReactNode
 }
 
+const PET_CSS = '@keyframes lv-pw{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}@keyframes lv-pl{from{transform:rotate(26deg)}to{transform:rotate(-26deg)}}@keyframes lv-pj{0%,100%{transform:translateY(0) scale(1)}35%{transform:translateY(-26px) scale(.94,1.08)}60%{transform:translateY(0) scale(1.08,.9)}}@keyframes lv-pc{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(3px) scale(1.06,.92)}}@keyframes lv-pb{0%{transform:translateY(8px) scale(.5);opacity:0}25%{opacity:1}100%{transform:translateY(-12px) scale(1);opacity:1}}@keyframes lv-pf{0%{transform:translateY(-70px);opacity:0}55%{transform:translateY(0);opacity:1}100%{transform:translateY(0);opacity:1}}@keyframes lv-pball{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,-34px)}}@keyframes lv-ph{0%{transform:translateY(0) scale(.5);opacity:1}100%{transform:translateY(-46px) scale(1.2);opacity:0}}@media (prefers-reduced-motion:reduce){.lv-pet *{animation:none!important;transition:none!important}}'
+
 /**
- * A virtual pet with stat bars and buttons, saved in the browser by default.
+ * A virtual pet that lives in a little yard: it walks around on legs, turns to face where it is
+ * going, eats, plays, sleeps and shows how it feels (hungry, tired, loved). Stats drift in real
+ * time and are saved in the browser. Poke it to pat it.
  *
  *   <LivatarPet variant={animal} seed="mochi" />
  *   <LivatarPet variant={animal} seed="mochi">{(pet, s) => <MyPetUI pet={pet} stats={s} />}</LivatarPet>
  */
-export function LivatarPet({ pet: petOpts, controls = true, children, className, style, ...av }: PetProps): ReactElement {
+export function LivatarPet({ pet: petOpts, controls = true, walk = true, yard = 170, children, className, style, ...av }: PetProps): ReactElement {
   const ref = useRef<AliveHandle | null>(null)
   const [p, s] = usePet(ref, petOpts)
+  const stage = useRef<HTMLDivElement>(null)
+  const xr = useRef<number | null>(null)
+  const busy = useRef(0)
+  const [x, setX] = useState<number | null>(null)
+  const [dir, setDir] = useState(1)
+  const [dur, setDur] = useState(0)
+  const [act, setAct] = useState<'idle' | 'walk' | 'eat' | 'play' | 'pat'>('idle')
+  const [bubble, setBubble] = useState<string | null>(null)
+  const grow = s ? { baby: 0.82, kid: 0.92, teen: 1, adult: 1.1 }[s.stage] : 1
+  const size = Math.round((Number(av.size) || 92) * grow)
+  const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // how it feels, from its stats
+  const mood: Mood = !s ? 'neutral' : s.asleep ? 'sleepy' : s.hunger < 25 ? 'sad' : s.energy < 20 ? 'sleepy' : s.happiness > 80 && s.hunger > 50 ? 'love' : s.happiness > 55 ? 'happy' : s.happiness < 30 ? 'sad' : 'neutral'
+  useEffect(() => { ref.current?.emote(act === 'eat' ? 'love' : act === 'play' ? 'surprised' : mood) }, [mood, act])
+  const need = !s ? null : s.asleep ? 'z z z' : s.hunger < 25 ? '🍖' : s.energy < 20 ? '💤' : s.happiness < 30 ? '💔' : null
+  useEffect(() => {
+    if (!s || s.asleep || need || act !== 'idle' || mood !== 'love' && mood !== 'happy') return setBubble(null)
+    const id = setInterval(() => { setBubble('❤️'); setTimeout(() => setBubble(null), 1500) }, 6000)
+    return () => clearInterval(id)
+  }, [mood, act, need, s?.asleep])
+
+  // wander around the yard
+  useEffect(() => {
+    if (!walk || calm || !s || s.asleep) return
+    const W = () => Math.max(0, (stage.current?.clientWidth ?? 300) - size)
+    if (xr.current == null) { xr.current = W() / 2; setX(xr.current) }
+    let t: ReturnType<typeof setTimeout>
+    const step = () => {
+      if (busy.current > Date.now()) { t = setTimeout(step, 500); return }
+      const nx = Math.random() * W()
+      const speed = s.energy < 25 || s.hunger < 25 ? 26 : 48
+      const d = Math.max(0.7, Math.abs(nx - (xr.current ?? 0)) / speed)
+      setDir(nx >= (xr.current ?? 0) ? 1 : -1); setDur(d); setX(nx); xr.current = nx; setAct('walk')
+      t = setTimeout(() => { setAct((a) => (a === 'walk' ? 'idle' : a)); t = setTimeout(step, 1200 + Math.random() * 2600) }, d * 1000)
+    }
+    t = setTimeout(step, 600)
+    return () => clearTimeout(t)
+  }, [walk, calm, s?.asleep, size])
+
+  const doing = (a: 'eat' | 'play' | 'pat', ms: number, fn?: () => void) => {
+    if (!p) return
+    busy.current = Date.now() + ms
+    setAct(a); setDur(0); fn?.()
+    setTimeout(() => setAct('idle'), ms)
+  }
   const bar = (k: string, v: number) =>
     h('div', { key: k, style: { display: 'grid', gridTemplateColumns: '80px 1fr 28px', gap: 8, alignItems: 'center', fontSize: 13 } },
       h('span', null, k),
       h('div', { role: 'meter', 'aria-label': k, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(v), style: { height: 8, borderRadius: 8, background: 'rgba(127,90,240,.15)', overflow: 'hidden' } },
-        h('div', { style: { width: `${v}%`, height: '100%', background: '#7f5af0', transition: 'width .3s' } })),
+        h('div', { style: { width: `${v}%`, height: '100%', background: v < 25 ? '#ef476f' : '#7f5af0', transition: 'width .3s' } })),
       h('span', null, Math.round(v)))
   const btn = (label: string, fn: () => void) => h('button', { key: label, type: 'button', onClick: fn }, label)
-  return h('div', { className, style: box({ alignItems: 'stretch', minWidth: 240, ...style }) },
-    h('div', { style: { textAlign: 'center', lineHeight: 0 } }, h(Livatar, { size: 112, ...av, ref })),
+  const walking = act === 'walk' && !calm
+  const asleep = !!s?.asleep
+  const left = x == null ? `calc(50% - ${size / 2}px)` : x + 'px'
+  const leg = (side: number) => h('g', { style: { transformOrigin: `${side}px 0px`, animation: walking ? `lv-pl .42s ease-in-out ${side < 0 ? 0 : 0.21}s infinite alternate` : 'none', transform: walking ? undefined : `rotate(${side < 0 ? 4 : -4}deg)` } },
+    h('line', { x1: side, y1: 0, x2: side, y2: 15, stroke: '#4b3f72', strokeWidth: 5, strokeLinecap: 'round' }),
+    h('ellipse', { cx: side + (dir > 0 ? 3 : -3) * 0 + 2, cy: 17, rx: 6.5, ry: 3.6, fill: '#4b3f72' }))
+  const pet = h('div', { ref: stage, className: 'lv-pet', role: 'img', 'aria-label': s ? `${s.stage} pet, ${asleep ? 'asleep' : mood}` : 'pet', style: { position: 'relative', height: yard, borderRadius: 20, overflow: 'hidden', background: 'linear-gradient(#cfeeff 0%, #eaf8ff 62%, #b9ecb0 62%, #9bdc92 100%)', cursor: 'pointer' }, onClick: () => doing('pat', 900, () => (p?.pat(), setBubble('❤️'), setTimeout(() => setBubble(null), 1300))) },
+    h('style', null, PET_CSS),
+    h('div', { style: { position: 'absolute', left, bottom: yard * 0.38 - size * 0.12, width: size, transition: walking ? `left ${dur}s linear` : 'none' } },
+      h('div', { style: { position: 'absolute', left: '8%', right: '8%', bottom: -size * 0.16, height: size * 0.14, borderRadius: '50%', background: 'rgba(0,0,0,.16)', filter: 'blur(2px)' } }),
+      h('div', { style: { transform: `scaleX(${dir})`, transformOrigin: '50% 100%' } },
+        h('div', { style: { position: 'relative', animation: act === 'play' ? 'lv-pj .55s ease-in-out 2' : act === 'eat' ? 'lv-pc .35s ease-in-out 4' : walking ? 'lv-pw .42s ease-in-out infinite' : 'none', transform: asleep ? `translateY(${size * 0.1}px) scale(1.05,.92)` : undefined, transition: 'transform .4s' } },
+          !asleep && h('svg', { width: size * 0.7, height: 22, viewBox: '-22 -2 44 24', style: { position: 'absolute', left: '50%', bottom: -16, marginLeft: -size * 0.35, overflow: 'visible' }, 'aria-hidden': true }, leg(-9), leg(9)),
+          h('div', { style: { position: 'relative', lineHeight: 0 } }, h(Livatar, { size, ...av, ref })))),
+      (bubble ?? (act === 'idle' || asleep ? need : null)) && h('span', { style: { position: 'absolute', left: '50%', top: -size * 0.28, marginLeft: -16, minWidth: 32, textAlign: 'center', padding: '2px 8px', borderRadius: 14, background: '#fff', color: '#1f1a2e', fontSize: 14, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,.15)', animation: 'lv-pb .5s ease-out both' } }, bubble ?? need),
+      act === 'eat' && h('span', { style: { position: 'absolute', left: dir > 0 ? size * 0.95 : -size * 0.4, bottom: 0, fontSize: 26, animation: 'lv-pf .6s ease-in both' } }, '🍖'),
+      act === 'play' && h('span', { style: { position: 'absolute', left: dir > 0 ? size * 0.9 : -size * 0.35, bottom: 0, fontSize: 24, animation: 'lv-pball .55s ease-in-out 2' } }, '⚽'),
+      act === 'pat' && [0, 1, 2].map((n) => h('span', { key: n, style: { position: 'absolute', left: size * (0.15 + n * 0.3), top: 0, fontSize: 16, animation: `lv-ph ${0.9 + n * 0.2}s ease-out both` } }, '❤️'))))
+  return h('div', { className, style: box({ alignItems: 'stretch', minWidth: 260, ...style }) },
+    pet,
     p && s && (children ? children(p, s) : controls && [
-      h('div', { key: 'stage', style: { ...muted, textAlign: 'center', fontSize: 12, fontWeight: 700, textTransform: 'uppercase' } }, `${s.asleep ? 'asleep · ' : ''}${s.stage} · level ${s.level}`),
-      bar('hunger', s.hunger), bar('energy', s.energy), bar('happiness', s.happiness),
+      h('div', { key: 'stage', style: { ...muted, textAlign: 'center', fontSize: 12, fontWeight: 700, textTransform: 'uppercase' } }, `${s.asleep ? 'asleep · ' : ''}${s.stage} · level ${s.level} · ${s.xp} xp`),
+      bar('fed', s.hunger), bar('energy', s.energy), bar('happiness', s.happiness),
       h('div', { key: 'btns', style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
-        btn('Feed', () => p.feed()), btn('Play', () => p.play()), s.asleep ? btn('Wake', () => p.wake()) : btn('Sleep', () => p.sleep())),
+        btn('Feed', () => doing('eat', 1500, () => p.feed())), btn('Play', () => doing('play', 1200, () => p.play())), s.asleep ? btn('Wake', () => p.wake()) : btn('Sleep', () => p.sleep())),
     ]))
 }
 
@@ -917,7 +998,13 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   end?: ReactNode
   /** Avatar size in px. Default 34. */
   face?: number
+  /** Seed the face from what is typed, so every name gets its own face (great for usernames). Default false. */
+  follow?: boolean
+  /** Click the face to switch to the next character type. `true` uses a built-in set, or pass your own styles. Default false. */
+  cycle?: boolean | AvatarStyle<any>[]
 }
+
+const CYCLE: AvatarStyle<any>[] = [memoji, buddy, animal, bot, human, clay, ghost, monster, alien, dino, emoji]
 
 /**
  * A text field with a face inside it: it watches the caret, covers its eyes on
@@ -925,10 +1012,14 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
  *
  *   <LivatarInput type="email" placeholder="you@example.com" required />
  */
-export const LivatarInput: WithRef<InputProps> = forwardRef<AliveHandle | null, InputProps>(function LivatarInput({ avatar, validate, end, face = 34, className, style, onFocus, onBlur, onInput, ...input }, outer) {
+export const LivatarInput: WithRef<InputProps> = forwardRef<AliveHandle | null, InputProps>(function LivatarInput({ avatar, validate, end, face = 34, follow = false, cycle = false, className, style, onFocus, onBlur, onInput, ...input }, outer) {
   const ref = useRef<AliveHandle | null>(null)
   useImperativeHandle(outer, () => ref.current as AliveHandle, [])
   const [focus, setFocus] = useState(false)
+  const [typed, setTyped] = useState(String(input.value ?? input.defaultValue ?? ''))
+  const [pick, setPick] = useState(0)
+  const base = Array.isArray(cycle) ? cycle : CYCLE
+  const list = avatar?.variant ? [avatar.variant, ...base.filter((x) => x !== avatar.variant)] : base
   const last = useRef<boolean | null>(null)
   const check = (el: HTMLInputElement, final: boolean) => {
     if (!el.value) return (last.current = null), ref.current?.emote('neutral')
@@ -939,11 +1030,14 @@ export const LivatarInput: WithRef<InputProps> = forwardRef<AliveHandle | null, 
     last.current = ok
   }
   return h('label', { className, style: shell(focus, { cursor: 'text', ...style }) },
-    h(Livatar, { seed: 'field-' + (input.name ?? input.type ?? 'x'), variant: emoji, size: face, background: false, ...avatar, ref }),
+    cycle
+      ? h('button', { type: 'button', 'aria-label': 'Change character', title: 'Click to change character', onClick: (e: { preventDefault(): void }) => { e.preventDefault(); setPick((n) => (n + 1) % list.length); ref.current?.emote('surprised', 700) }, style: { all: 'unset', cursor: 'pointer', lineHeight: 0, flex: 'none' } },
+        h(Livatar, { seed: follow ? typed || 'name' : 'field-' + (input.name ?? input.type ?? 'x'), size: face, background: false, ...avatar, variant: list[pick], ref }))
+      : h(Livatar, { seed: follow ? typed || 'name' : 'field-' + (input.name ?? input.type ?? 'x'), variant: emoji, size: face, background: false, ...avatar, ref }),
     h('input', { ...input, style: bare,
       onFocus: (e: RFocusEvent<HTMLInputElement>) => (setFocus(true), onFocus?.(e)),
       onBlur: (e: RFocusEvent<HTMLInputElement>) => (setFocus(false), check(e.currentTarget, true), onBlur?.(e)),
-      onInput: (e: FormEvent<HTMLInputElement>) => (check(e.currentTarget, false), onInput?.(e as Parameters<NonNullable<typeof onInput>>[0])) }),
+      onInput: (e: FormEvent<HTMLInputElement>) => (setTyped(e.currentTarget.value), check(e.currentTarget, false), onInput?.(e as Parameters<NonNullable<typeof onInput>>[0])) }),
     end)
 })
 
@@ -1741,3 +1835,427 @@ export function LivatarChainLoader({ kind = 'chain', count, variants, avatar, si
 
 export { feel }
 export type { Personality, PersonalityInput, Assistant, AssistantState, Pet, PetStats, PetOptions, LifeEvent }
+
+/* ======================= site kit: layout & content ======================= */
+
+const kitMuted: CSSProperties = { color: 'var(--lv-muted, #6b6478)' }
+const kitLine = '1px solid var(--lv-line, rgba(127,127,127,.2))'
+
+export interface FooterColumn { title: string; links: { label: string; href: string }[] }
+export interface FooterProps {
+  brand?: ReactNode
+  tagline?: ReactNode
+  columns?: FooterColumn[]
+  /** Big faded wordmark along the bottom. Defaults to the brand text. */
+  wordmark?: string
+  /** Seeds for the little living faces in the footer. */
+  faces?: string[]
+  avatar?: AvatarProps
+  className?: string
+  style?: CSSProperties
+}
+
+/**
+ * Footer with a brand, tagline, link columns, living faces and a giant faded wordmark.
+ *
+ *   <LivatarFooter brand="Acme" tagline="Ship faster" columns={[{ title: 'Company', links: [{ label: 'Terms', href: '/terms' }] }]} />
+ */
+export function LivatarFooter({ brand = 'livatar', tagline, columns = [], wordmark, faces = ['a', 'b', 'c', 'd'], avatar, className, style }: FooterProps): ReactElement {
+  return h('footer', { className, style: { position: 'relative', overflow: 'hidden', padding: '48px 24px 0', background: 'var(--lv-footer-bg, transparent)', borderTop: kitLine, ...style } },
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', maxWidth: 1200, margin: '0 auto' } },
+      h('div', { style: { maxWidth: 320 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 } }, h(Livatar, { seed: String(brand), size: 28, ...avatar }), brand),
+        tagline != null && h('p', { style: { ...kitMuted, margin: '14px 0 0' } }, tagline),
+        h('div', { style: { display: 'flex', marginTop: 16 } }, faces.map((f, i) => h('span', { key: f, style: { marginLeft: i ? -8 : 0, lineHeight: 0, borderRadius: '50%', boxShadow: '0 0 0 2px var(--lv-ring, #fff)' } }, h(Livatar, { seed: f, size: 32, ...avatar }))))),
+      h('div', { style: { display: 'flex', gap: 48, flexWrap: 'wrap' } }, columns.map((c) =>
+        h('nav', { key: c.title, 'aria-label': c.title },
+          h('strong', { style: { fontSize: 14 } }, c.title),
+          h('ul', { style: { listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'grid', gap: 10 } }, c.links.map((l) => h('li', { key: l.href }, h('a', { href: l.href, style: { ...kitMuted, textDecoration: 'none', fontSize: 14 } }, l.label)))))))),
+    h('div', { 'aria-hidden': true, style: { fontSize: 'clamp(80px, 22vw, 280px)', fontWeight: 800, lineHeight: 0.8, letterSpacing: '-0.05em', textAlign: 'center', opacity: 0.07, marginTop: 36, whiteSpace: 'nowrap', userSelect: 'none', maxHeight: '0.62em', overflow: 'hidden' } }, wordmark ?? String(brand)))
+}
+
+export interface Crumb { label: ReactNode; href?: string }
+export interface BreadcrumbsProps { items: Crumb[]; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** Breadcrumb trail; the last item is the current page and a living face sits at the start. */
+export function LivatarBreadcrumbs({ items, avatar, className, style }: BreadcrumbsProps): ReactElement {
+  return h('nav', { 'aria-label': 'Breadcrumb', className, style },
+    h('ol', { style: { display: 'flex', alignItems: 'center', gap: 8, listStyle: 'none', padding: 0, margin: 0, fontSize: 14, flexWrap: 'wrap', ...kitMuted } },
+      h('li', { style: { lineHeight: 0 } }, h(Livatar, { seed: 'crumb', size: 22, ...avatar })),
+      items.flatMap((c, i) => {
+        const last = i === items.length - 1
+        return [h('li', { key: 's' + i, 'aria-hidden': true }, '/'),
+          h('li', { key: i, ...(last ? { 'aria-current': 'page' } : {}) }, c.href && !last ? h('a', { href: c.href, style: { color: 'inherit' } }, c.label) : h('span', { style: last ? { color: 'var(--lv-fg, inherit)', fontWeight: 600 } : undefined }, c.label))]
+      })))
+}
+
+export interface CardProps extends Omit<AvatarProps, 'title'> {
+  title: ReactNode
+  children?: ReactNode
+  href?: string
+  className?: string
+  style?: CSSProperties
+}
+
+/** Content card with a living face that reacts when you hover it. */
+export function LivatarCard({ title, children, href, className, style, ...av }: CardProps): ReactElement {
+  const ref = useRef<AliveHandle | null>(null)
+  return h(href ? 'a' : 'div', { href, className, onPointerEnter: () => ref.current?.emote('happy', 1200), style: { display: 'block', color: 'inherit', textDecoration: 'none', padding: 20, borderRadius: 20, border: kitLine, background: 'var(--lv-card, transparent)', ...style } },
+    h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 } }, h(Livatar, { size: 44, ...av, ref }), h('strong', {}, title)),
+    h('div', { style: { ...kitMuted, fontSize: 14 } }, children))
+}
+
+export interface CarouselProps { slides: ReactNode[]; autoplay?: number; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** Swipeable carousel (scroll-snap) with dots and arrows. A face nods on every change. */
+export function LivatarCarousel({ slides, autoplay = 0, avatar, className, style }: CarouselProps): ReactElement {
+  const track = useRef<HTMLDivElement>(null)
+  const face = useRef<AliveHandle | null>(null)
+  const [i, setI] = useState(0)
+  const go = (n: number) => {
+    const t = track.current
+    if (!t) return
+    const k = (n + slides.length) % slides.length
+    t.scrollTo({ left: k * t.clientWidth, behavior: 'smooth' })
+    setI(k); face.current?.nod()
+  }
+  const live = useLatest({ i, go })
+  useEffect(() => {
+    if (!autoplay) return
+    const id = setInterval(() => live.current.go(live.current.i + 1), autoplay)
+    return () => clearInterval(id)
+  }, [autoplay])
+  const arrow = (d: number, label: string) => h('button', { type: 'button', 'aria-label': label, onClick: () => go(i + d), style: { width: 34, height: 34, borderRadius: '50%', border: kitLine, background: 'transparent', color: 'inherit', cursor: 'pointer' } }, d < 0 ? '‹' : '›')
+  return h('section', { className, 'aria-roledescription': 'carousel', style },
+    h('div', { ref: track, style: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }, onScroll: (e) => { const t = e.currentTarget; setI(Math.round(t.scrollLeft / t.clientWidth)) } },
+      slides.map((s, k) => h('div', { key: k, role: 'group', 'aria-label': `${k + 1} of ${slides.length}`, style: { flex: '0 0 100%', scrollSnapAlign: 'center', boxSizing: 'border-box', padding: '0 4px' } }, s))),
+    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 12 } },
+      arrow(-1, 'Previous'), h(Livatar, { seed: 'carousel', size: 32, ...avatar, ref: face }),
+      slides.map((_, k) => h('button', { key: k, type: 'button', 'aria-label': `Slide ${k + 1}`, 'aria-current': k === i, onClick: () => go(k), style: { width: k === i ? 22 : 8, height: 8, padding: 0, borderRadius: 8, border: 0, background: 'currentColor', opacity: k === i ? 0.9 : 0.25, cursor: 'pointer', transition: 'width .2s' } })),
+      arrow(1, 'Next')))
+}
+
+export interface ScrollProgressProps { avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** Reading-progress bar across the top, plus a back-to-top face that appears after you scroll. */
+export function LivatarScrollProgress({ avatar, className, style }: ScrollProgressProps): ReactElement {
+  const [p, setP] = useState(0)
+  useEffect(() => {
+    const on = () => { const d = document.documentElement; setP(d.scrollHeight > d.clientHeight ? d.scrollTop / (d.scrollHeight - d.clientHeight) : 0) }
+    on(); addEventListener('scroll', on, { passive: true })
+    return () => removeEventListener('scroll', on)
+  }, [])
+  return h('div', { className },
+    h('div', { role: 'progressbar', 'aria-label': 'Reading progress', 'aria-valuenow': Math.round(p * 100), style: { position: 'fixed', top: 0, left: 0, height: 3, width: `${p * 100}%`, background: 'var(--lv-accent, #7f5af0)', zIndex: 50 } }),
+    h('button', { type: 'button', 'aria-label': 'Back to top', hidden: p < 0.05, onClick: () => scrollTo({ top: 0, behavior: 'smooth' }), style: { position: 'fixed', right: 16, bottom: 16, width: 48, height: 48, padding: 0, borderRadius: '50%', border: kitLine, background: 'var(--lv-card, #fff)', cursor: 'pointer', zIndex: 50, ...style } }, h(Livatar, { seed: 'top', size: 40, mood: 'happy', ...avatar })))
+}
+
+export interface MenuItem { label: ReactNode; href: string }
+export interface MenuProps { items: MenuItem[]; label?: string; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** Hamburger that morphs into an X and opens a link list. Closes on Escape. */
+export function LivatarMenu({ items, label = 'Menu', avatar, className, style }: MenuProps): ReactElement {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    addEventListener('keydown', k)
+    return () => removeEventListener('keydown', k)
+  }, [open])
+  const bar = (t: string, o = 1) => h('span', { style: { display: 'block', width: 18, height: 2, margin: '4px 0', borderRadius: 2, background: 'currentColor', transition: 'transform .3s, opacity .2s', transform: t, opacity: o } })
+  return h('div', { className, style: { position: 'relative', display: 'inline-block', ...style } },
+    h('button', { type: 'button', 'aria-label': label, 'aria-expanded': open, onClick: () => setOpen(!open), style: { width: 40, height: 40, borderRadius: 12, border: kitLine, background: 'transparent', color: 'inherit', cursor: 'pointer', display: 'grid', placeItems: 'center' } },
+      h('i', { style: { display: 'block' } }, bar(open ? 'translateY(6px) rotate(45deg)' : 'none'), bar('none', open ? 0 : 1), bar(open ? 'translateY(-6px) rotate(-45deg)' : 'none'))),
+    open && h('ul', { style: { position: 'absolute', right: 0, top: 48, margin: 0, padding: 8, listStyle: 'none', minWidth: 190, borderRadius: 16, border: kitLine, background: 'var(--lv-card, #fff)', boxShadow: '0 18px 40px rgba(20,10,40,.18)', zIndex: 40 } },
+      h('li', { style: { padding: '4px 8px', lineHeight: 0 } }, h(Livatar, { seed: 'menu', size: 30, mood: 'happy', ...avatar })),
+      items.map((m) => h('li', { key: m.href }, h('a', { href: m.href, onClick: () => setOpen(false), style: { display: 'block', padding: '9px 12px', borderRadius: 10, color: 'inherit', textDecoration: 'none' } }, m.label)))))
+}
+
+export interface ListItem { id: string; title: ReactNode; description?: ReactNode; end?: ReactNode; avatar?: AvatarProps }
+export interface ListProps { items: ListItem[]; size?: number; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** A list where every row has its own living face (seeded from the id). */
+export function LivatarList({ items, size = 40, avatar, className, style }: ListProps): ReactElement {
+  return h('ul', { className, style: { listStyle: 'none', margin: 0, padding: 0, ...style } }, items.map((it) =>
+    h('li', { key: it.id, style: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: kitLine } },
+      h(Livatar, { seed: it.id, size, ...avatar, ...it.avatar }),
+      h('div', { style: { flex: 1, minWidth: 0 } }, h('strong', { style: { display: 'block' } }, it.title), it.description != null && h('span', { style: { ...kitMuted, fontSize: 14 } }, it.description)),
+      it.end)))
+}
+
+export interface AccordionItem { id: string; summary: ReactNode; content: ReactNode }
+export interface AccordionProps { items: AccordionItem[]; /** Only one open at a time (native `name` grouping). */ exclusive?: boolean; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** Native <details>/<summary> accordion; the face beside each question looks happy while it is open. */
+export function LivatarAccordion({ items, exclusive = true, avatar, className, style }: AccordionProps): ReactElement {
+  const [open, setOpen] = useState<Record<string, boolean>>({})
+  return h('div', { className, style }, items.map((it) =>
+    h('details', { key: it.id, name: exclusive ? 'lv-acc' : undefined, onToggle: (e: { currentTarget: HTMLDetailsElement }) => { const o = e.currentTarget.open; setOpen((cur) => (cur[it.id] === o ? cur : { ...cur, [it.id]: o })) }, style: { borderBottom: kitLine, padding: '6px 0' } } as Record<string, unknown>,
+      h('summary', { style: { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontWeight: 600, padding: '6px 0' } }, h(Livatar, { seed: it.id, size: 28, mood: open[it.id] ? 'happy' : 'neutral', alive: { idle: false }, ...avatar }), it.summary),
+      h('div', { style: { ...kitMuted, padding: '4px 0 10px 38px' } }, it.content))))
+}
+
+export interface TableColumn<T> { key: string; header: ReactNode; render?: (row: T) => ReactNode; align?: 'left' | 'right' | 'center' }
+export interface TableProps<T> { columns: TableColumn<T>[]; rows: T[]; /** Field whose value seeds each row's face. Default 'id'. */ idKey?: string; size?: number; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+
+/** Table where each row starts with its own living face. */
+export function LivatarTable<T extends Record<string, unknown>>({ columns, rows, idKey = 'id', size = 32, avatar, className, style }: TableProps<T>): ReactElement {
+  const cell: CSSProperties = { padding: '10px 12px', borderBottom: kitLine, textAlign: 'left' }
+  return h('div', { className, style: { overflowX: 'auto', border: kitLine, borderRadius: 14, ...style } },
+    h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 14 } },
+      h('thead', {}, h('tr', {}, h('th', { style: { ...cell, width: size + 24 }, 'aria-label': 'Avatar' }), columns.map((c) => h('th', { key: c.key, scope: 'col', style: { ...cell, textAlign: c.align } }, c.header)))),
+      h('tbody', {}, rows.map((r, i) => h('tr', { key: String(r[idKey] ?? i) }, h('td', { style: { ...cell, lineHeight: 0 } }, h(Livatar, { seed: String(r[idKey] ?? i), size, ...avatar })), columns.map((c) => h('td', { key: c.key, style: { ...cell, textAlign: c.align } }, c.render ? c.render(r) : (r[c.key] as ReactNode))))))))
+}
+
+export interface UsernameProps extends UsernameOptions {
+  value?: string
+  onChange?: (value: string, available: boolean) => void
+  /** Keep `location.hash` in sync as `#@name`, and read it on load. Default true. */
+  syncHash?: boolean
+  avatar?: AvatarProps
+  className?: string
+  style?: CSSProperties
+}
+
+/**
+ * Username reservation field. Checks the name as you type, says why it is (not) available,
+ * suggests alternatives, and mirrors the name into the URL hash (#@ada). The face goes happy or sad.
+ */
+export function LivatarUsername({ value = '', onChange, syncHash = true, avatar, className, style, ...opts }: UsernameProps): ReactElement {
+  const ref = useRef<AliveHandle | null>(null)
+  const [name, setName] = useState(value)
+  useEffect(() => {
+    if (!syncHash) return
+    const read = () => { const m = /^#@(.*)$/.exec(decodeURIComponent(location.hash)); if (m) setName(m[1]) }
+    read(); addEventListener('hashchange', read)
+    return () => removeEventListener('hashchange', read)
+  }, [syncHash])
+  const r = useMemo(() => checkUsername(name, opts), [name, opts.min, opts.max, opts.reserved, opts.taken])
+  useEffect(() => {
+    ref.current?.emote(r.reason === 'empty' ? 'neutral' : r.available ? 'happy' : 'sad')
+    if (syncHash && r.name) history.replaceState(null, '', '#@' + r.name)
+    onChange?.(r.name, r.available)
+  }, [r.name, r.available])
+  const colour = r.reason === 'empty' ? 'inherit' : r.available ? '#16a34a' : '#dc2626'
+  return h('div', { className, style },
+    h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+      h(Livatar, { seed: r.name || 'name', size: 40, ...avatar, ref }),
+      h('input', { value: name, placeholder: '@username', 'aria-label': 'Username', 'aria-invalid': !r.available && r.reason !== 'empty', 'aria-describedby': 'lv-un-msg', autoComplete: 'off', spellCheck: false, onChange: (e: RChangeEvent<HTMLInputElement>) => setName(e.target.value), style: { flex: 1, minWidth: 0, padding: '9px 12px', borderRadius: 12, border: `1px solid ${r.reason === 'empty' ? 'rgba(127,127,127,.3)' : colour}`, background: 'transparent', color: 'inherit', font: 'inherit' } })),
+    h('p', { id: 'lv-un-msg', role: 'status', style: { margin: '6px 0 0', fontSize: 13, color: colour } }, r.message),
+    r.suggestions.length > 0 && h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 } }, r.suggestions.map((s) => h('button', { key: s, type: 'button', onClick: () => setName(s), style: { padding: '3px 10px', borderRadius: 99, border: kitLine, background: 'transparent', color: 'inherit', cursor: 'pointer', fontSize: 13 } }, '@' + s))))
+}
+
+export type SkeletonKind = 'text' | 'list' | 'card' | 'image' | 'video' | 'profile' | 'table' | 'chat' | 'feed' | 'grid'
+
+export interface SkeletonProps {
+  /** Which placeholder to draw. Default 'text'. */
+  kind?: SkeletonKind
+  /** Lines for text, rows for list/table/chat, items for feed/grid. Sensible default per kind. */
+  count?: number
+  /** Shimmer sweep. Default true. Off with prefers-reduced-motion. */
+  shimmer?: boolean
+  /** The little face that sits in image and avatar slots. Pass `false` to hide it. */
+  avatar?: AvatarProps | false
+  className?: string
+  style?: CSSProperties
+}
+
+const SKEL_CSS = '.lv-sk{--sk:var(--lv-skel,rgba(127,127,127,.16));--sk2:var(--lv-skel-hi,rgba(127,127,127,.28))}.lv-sk i{display:block;background:var(--sk);border-radius:8px;position:relative;overflow:hidden}.lv-sk.on i:after,.lv-sk.on .lv-skf:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--sk2),transparent);transform:translateX(-100%);animation:lv-sk 1.4s infinite}.lv-skf{position:relative;overflow:hidden;background:var(--sk);display:grid;place-items:center}@keyframes lv-sk{to{transform:translateX(100%)}}@media (prefers-reduced-motion:reduce){.lv-sk i:after,.lv-skf:after{animation:none!important}}'
+
+/**
+ * Loading placeholders that match the shape of what is coming: text, list, card, image, video,
+ * profile, table, chat, feed and grid. Image, video and avatar slots hold a sleepy face.
+ *
+ *   <LivatarSkeleton kind="video" />   <LivatarSkeleton kind="list" count={4} />
+ */
+export function LivatarSkeleton({ kind = 'text', count, shimmer = true, avatar, className, style }: SkeletonProps): ReactElement {
+  const bar = (w: number | string, hgt = 12, r = 8, k?: number | string): ReactElement => h('i', { key: k, style: { width: w, height: hgt, borderRadius: r } })
+  const slot = (w: number | string, hgt: number | string, round = false, face = 36, mood: Mood = 'sleepy', k?: number | string): ReactElement =>
+    h('span', { key: k, className: 'lv-skf', style: { width: w, height: hgt, borderRadius: round ? '50%' : 12, flex: 'none' } },
+      avatar !== false && h(Livatar, { seed: 'skeleton', variant: emoji, size: face, mood, background: false, alive: { intensity: 0.6 }, style: { opacity: 0.55 }, ...avatar }))
+  const n = (d: number) => count ?? d
+  const range = (m: number) => Array.from({ length: m }, (_, i) => i)
+  const col = (gap: number, kids: ReactNode, key?: string): ReactElement => h('div', { key, style: { display: 'flex', flexDirection: 'column', gap } }, ...(Array.isArray(kids) ? kids : [kids]))
+  const rowOf = (gap: number, kids: ReactNode, { key, ...st }: CSSProperties & { key?: number | string } = {}): ReactElement => h('div', { key, style: { display: 'flex', alignItems: 'center', gap, ...st } }, ...(Array.isArray(kids) ? kids : [kids]))
+  let body: ReactNode
+  switch (kind) {
+    case 'list': body = col(14, range(n(4)).map((i) => rowOf(12, [slot(44, 44, true, 26, 'sleepy', 'a'), col(8, [bar(i % 2 ? '70%' : '85%', 12, 6, 'x'), bar('45%', 10, 6, 'y')], 'c')], { key: i }))); break
+    case 'card': body = h('div', { style: { borderRadius: 18, border: '1px solid var(--lv-line, rgba(127,127,127,.2))', overflow: 'hidden' } }, slot('100%', 140, false, 44), h('div', { style: { padding: 14, display: 'flex', flexDirection: 'column', gap: 10 } }, bar('70%', 16), bar('95%', 11), bar('60%', 11), rowOf(8, [bar(70, 28, 14), bar(70, 28, 14)]))); break
+    case 'image': body = slot('100%', 200, false, 64, 'surprised'); break
+    case 'video': body = h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } }, h('div', { style: { position: 'relative' } }, slot('100%', 190, false, 64, 'surprised'), h('div', { style: { position: 'absolute', left: 12, right: 12, bottom: 12, display: 'flex', alignItems: 'center', gap: 10 } }, bar(18, 18, 9), h('i', { style: { flex: 1, height: 5, borderRadius: 3, background: 'var(--sk2)' } }), bar(34, 10, 5))), rowOf(10, [slot(36, 36, true, 20, 'sleepy', 's'), col(7, [bar('75%', 12, 8, 'a'), bar('40%', 10, 8, 'b')], 'c')])); break
+    case 'profile': body = rowOf(14, [slot(72, 72, true, 48, 'sleepy', 's'), col(9, [bar(140, 16, 8, 'a'), bar(100, 11, 8, 'b'), rowOf(8, [bar(64, 26, 13, 'x'), bar(64, 26, 13, 'y')], { key: 'c' })], 'c')]); break
+    case 'table': body = col(10, [bar('100%', 14, 6, 'h'), ...range(n(4)).map((i) => rowOf(12, [slot(28, 28, true, 16, 'sleepy', 'f'), bar('28%', 11, 6, 'a'), bar('22%', 11, 6, 'b'), bar('16%', 11, 6, 'c')], { key: i }))]); break
+    case 'chat': body = col(14, range(n(4)).map((i) => rowOf(10, [i % 2 ? null : slot(34, 34, true, 20, 'sleepy', 'a'), bar(i % 2 ? '55%' : '65%', i % 3 === 0 ? 46 : 32, 16, 'b')], { key: i, justifyContent: i % 2 ? 'flex-end' : 'flex-start' }))); break
+    case 'feed': body = col(18, range(n(2)).map((i) => col(10, [rowOf(10, [slot(40, 40, true, 24, 'sleepy', 'a'), col(6, [bar(120, 12, 6, 'x'), bar(70, 9, 6, 'y')], 'c')]), bar('100%', 11), bar('88%', 11), slot('100%', 120, false, 44, 'surprised', 'img')]))); break
+    case 'grid': body = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(96px,1fr))', gap: 10 } }, range(n(6)).map((i) => slot('100%', 96, false, 34, i % 2 ? 'sleepy' : 'surprised', i))); break
+    default: body = col(10, range(n(4)).map((i) => bar(i === n(4) - 1 ? '55%' : '100%', 12, 6, i)))
+  }
+  return h('div', { className: 'lv-sk' + (shimmer ? ' on' : '') + (className ? ' ' + className : ''), role: 'status', 'aria-busy': true, 'aria-label': 'Loading', style }, h('style', null, SKEL_CSS), body)
+}
+
+/* ------------------------------------------------------------------ *
+ *  Marquee, confetti, presence
+ * ------------------------------------------------------------------ */
+export interface MarqueeProps {
+  /** Seeds (names, ids). Each becomes a face. */
+  users: string[]
+  /** Face size in px. Default 48. */
+  size?: number
+  /** Seconds for one full loop. Default 30. */
+  duration?: number
+  /** Scroll right instead of left. */
+  reverse?: boolean
+  /** Pause while hovered. Default true. */
+  pauseOnHover?: boolean
+  /** Rows, each moving the opposite way. Default 1. */
+  rows?: number
+  avatar?: AvatarProps
+  className?: string
+  style?: CSSProperties
+}
+
+/**
+ * An endless, seamless scroller of faces: social proof, "built by" strips, community walls.
+ * Pauses on hover, stops with prefers-reduced-motion.
+ *
+ *   <LivatarMarquee users={members.map((m) => m.id)} rows={2} />
+ */
+export function LivatarMarquee({ users, size = 48, duration = 30, reverse = false, pauseOnHover = true, rows = 1, avatar, className, style }: MarqueeProps): ReactElement {
+  const lane = (r: number): ReactElement => {
+    const mine = users.filter((_, i) => i % rows === r % rows)
+    const dir = (r % 2 === 0) !== reverse ? 'normal' : 'reverse'
+    const strip = (k: string) => h('div', { key: k, 'aria-hidden': k === 'b' || undefined, style: { display: 'flex', gap: 12, paddingRight: 12, flex: 'none' } }, mine.map((u, i) => h(Livatar, { key: u + i, seed: u, size, ...avatar, alive: { intensity: 0.6 } })))
+    return h('div', { key: r, className: 'lv-mq-lane', style: { display: 'flex', width: 'max-content', animation: `lv-mq ${duration}s linear infinite ${dir}` } }, strip('a'), strip('b'))
+  }
+  return h('div', { className: 'lv-mq' + (pauseOnHover ? ' lv-mq-p' : '') + (className ? ' ' + className : ''), role: 'list', 'aria-label': `${users.length} people`, style: { overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, WebkitMaskImage: 'linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)', maskImage: 'linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)', ...style } },
+    h('style', null, '@keyframes lv-mq{to{transform:translateX(-50%)}}.lv-mq-p:hover .lv-mq-lane{animation-play-state:paused!important}@media (prefers-reduced-motion:reduce){.lv-mq-lane{animation:none!important}}'),
+    Array.from({ length: Math.max(1, rows) }, (_, r) => lane(r)))
+}
+
+export interface ConfettiProps {
+  /** Change this value (a counter, a timestamp) to fire a burst. Falsy does nothing. */
+  fire?: number | string | boolean
+  /** Faces per burst. Default 18. */
+  count?: number
+  /** Pixels the faces travel. Default 140. */
+  spread?: number
+  /** Face size in px. Default 28. */
+  size?: number
+  /** Seeds to pick from. Default: random-looking set. */
+  seeds?: string[]
+  avatar?: AvatarProps
+  className?: string
+  style?: CSSProperties
+}
+
+/**
+ * Faces burst out like confetti. Wrap whatever should celebrate, then bump `fire`.
+ *
+ *   const [n, setN] = useState(0)
+ *   <LivatarConfetti fire={n}><button onClick={() => setN(n + 1)}>Ship it</button></LivatarConfetti>
+ */
+export function LivatarConfetti({ fire, count = 18, spread = 140, size = 28, seeds, avatar, className, style, children }: ConfettiProps & { children?: ReactNode }): ReactElement {
+  const [burst, setBurst] = useState<{ id: number; items: { s: string; x: number; y: number; r: number; d: number }[] } | null>(null)
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) { first.current = false; return }
+    if (!fire) return
+    const id = Date.now()
+    const items = Array.from({ length: count }, (_, i) => {
+      const a = (i / count) * Math.PI * 2 + Math.random() * 0.5
+      const d = spread * (0.55 + Math.random() * 0.6)
+      return { s: seeds?.length ? seeds[i % seeds.length]! : 'confetti-' + i + '-' + (id % 97), x: Math.cos(a) * d, y: Math.sin(a) * d - spread * 0.25, r: (Math.random() - 0.5) * 540, d: Math.random() * 0.12 }
+    })
+    setBurst({ id, items })
+    const t = setTimeout(() => setBurst((b) => (b && b.id === id ? null : b)), 1500)
+    return () => clearTimeout(t)
+  }, [fire])
+  return h('span', { className, style: { position: 'relative', display: 'inline-block', ...style } },
+    children,
+    burst && h('span', { key: burst.id, 'aria-hidden': true, style: { position: 'absolute', left: '50%', top: '50%', width: 0, height: 0, pointerEvents: 'none', zIndex: 20 } },
+      h('style', null, '@keyframes lv-cf{0%{transform:translate(0,0) scale(.3) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--x),calc(var(--y) + 50px)) scale(1) rotate(var(--r));opacity:0}}@media (prefers-reduced-motion:reduce){.lv-cf{display:none}}'),
+      burst.items.map((it, i) => h('span', { key: i, className: 'lv-cf', style: { position: 'absolute', left: -size / 2, top: -size / 2, lineHeight: 0, '--x': it.x + 'px', '--y': it.y + 'px', '--r': it.r + 'deg', animation: `lv-cf 1.2s cubic-bezier(.2,.8,.3,1) ${it.d}s both` } as CSSProperties },
+        h(Livatar, { seed: it.s, size, alive: false, ...avatar })))))
+}
+
+export interface PresenceUser {
+  id: string
+  name?: string
+  /** Shows bouncing typing dots next to the face. */
+  typing?: boolean
+  /** Presence dot colour: online (default), away, busy, offline. */
+  status?: 'online' | 'away' | 'busy' | 'offline'
+  /** Live cursor position as a percentage of the container (0–100). Renders a labelled pointer when `children` is set. */
+  cursor?: { x: number; y: number }
+}
+
+export interface PresenceProps {
+  users: PresenceUser[]
+  /** Faces to show before "+N". Default 5. */
+  max?: number
+  size?: number
+  /** The shared surface. Users with a `cursor` get a labelled face-pointer on top of it. */
+  children?: ReactNode
+  avatar?: AvatarProps
+  className?: string
+  style?: CSSProperties
+}
+
+const PRESENCE_DOT: Record<NonNullable<PresenceUser['status']>, string> = { online: '#22c55e', away: '#f59e0b', busy: '#ef4444', offline: '#9ca3af' }
+
+/**
+ * Who is here: a live avatar stack with presence dots, typing dots and "+N", and (when given
+ * children) multiplayer cursors with each person's face. Feed it from Liveblocks, Yjs, Supabase
+ * Realtime, PartyKit or your own socket. It only renders what you pass.
+ *
+ *   <LivatarPresence users={others.map((o) => ({ id: o.id, name: o.name, cursor: o.cursor }))}><Canvas /></LivatarPresence>
+ */
+export function LivatarPresence({ users, max = 5, size = 36, children, avatar, className, style }: PresenceProps): ReactElement {
+  const shown = users.slice(0, max)
+  const extra = users.length - shown.length
+  const typing = users.filter((u) => u.typing)
+  const stack = h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+    h('div', { role: 'list', 'aria-label': `${users.length} here`, style: { display: 'flex' } },
+      shown.map((u, i) => h('div', { key: u.id, role: 'listitem', title: u.name ?? u.id, style: { position: 'relative', marginLeft: i ? -size * 0.3 : 0, lineHeight: 0, borderRadius: '50%', boxShadow: '0 0 0 2px var(--lv-card, #fff)', animation: 'lv-pr-in .35s cubic-bezier(.3,1.4,.5,1) both' } },
+        h(Livatar, { seed: u.id, size, mood: u.typing ? 'confused' : undefined, ...avatar }),
+        h('i', { 'aria-label': u.status ?? 'online', style: { position: 'absolute', right: 0, bottom: 0, width: size * 0.28, height: size * 0.28, borderRadius: '50%', background: PRESENCE_DOT[u.status ?? 'online'], border: '2px solid var(--lv-card, #fff)' } }))),
+      extra > 0 && h('div', { style: { marginLeft: -size * 0.3, width: size, height: size, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: size * 0.34, fontWeight: 700, background: 'rgba(127,127,127,.18)', boxShadow: '0 0 0 2px var(--lv-card, #fff)' } }, '+' + extra)),
+    typing.length > 0 && h('span', { role: 'status', style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, opacity: 0.7 } },
+      [0, 1, 2].map((i) => h('i', { key: i, style: { width: 5, height: 5, borderRadius: '50%', background: 'currentColor', animation: `lv-pr-dot .9s ${i * 0.15}s infinite` } })),
+      ' ' + (typing.length === 1 ? (typing[0]!.name ?? typing[0]!.id) + ' is typing' : typing.length + ' people typing')))
+  const css = h('style', null, '@keyframes lv-pr-in{from{transform:scale(.4);opacity:0}}@keyframes lv-pr-dot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}@media (prefers-reduced-motion:reduce){[style*="lv-pr"]{animation:none!important}}')
+  if (!children) return h('div', { className, style }, css, stack)
+  return h('div', { className, style: { display: 'flex', flexDirection: 'column', gap: 10, ...style } }, css, stack,
+    h('div', { style: { position: 'relative' } }, children,
+      users.filter((u) => u.cursor).map((u) => h('div', { key: u.id, 'aria-hidden': true, style: { position: 'absolute', left: u.cursor!.x + '%', top: u.cursor!.y + '%', transition: 'left .12s linear, top .12s linear', pointerEvents: 'none', display: 'flex', alignItems: 'flex-start', gap: 2, zIndex: 10 } },
+        h('svg', { width: 16, height: 20, viewBox: '0 0 16 20' }, h('path', { d: 'M1 1l12 8-5 1-3 6z', fill: '#7f5af0', stroke: '#fff', strokeWidth: 1.5, strokeLinejoin: 'round' })),
+        h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px 2px 2px', borderRadius: 99, background: '#7f5af0', color: '#fff', fontSize: 11, fontWeight: 600, marginTop: 10 } }, h(Livatar, { seed: u.id, size: 18, alive: false, ...avatar }), u.name ?? u.id)))))
+}
+
+export interface PhotoProps extends AvatarProps {
+  /** The user's photo URL. Missing, empty or failing to load → their livatar instead. */
+  src?: string | null
+  /** Alt text for the photo. The fallback uses `describe()` or this. */
+  alt?: string
+  /** Pixel size (square). Default 40. */
+  size?: number
+  /** 'circle' (default), 'rounded' or 'square'. */
+  shape?: 'circle' | 'rounded' | 'square'
+  className?: string
+  style?: CSSProperties
+}
+
+/**
+ * The user's photo, with their living livatar as the fallback: no photo, a broken URL, a 404 or
+ * offline all show the same seeded face instead of a grey blob. No layout shift: both are the same box.
+ *
+ *   <LivatarPhoto src={user.avatarUrl} seed={user.id} variant={buddy} alt={user.name} />
+ */
+export function LivatarPhoto({ src, alt = '', size = 40, shape = 'circle', className, style, ...av }: PhotoProps): ReactElement {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [src])
+  const radius = shape === 'circle' ? '50%' : shape === 'rounded' ? '22%' : 0
+  const box: CSSProperties = { width: size, height: size, borderRadius: radius, overflow: 'hidden', display: 'inline-block', flex: 'none', lineHeight: 0, verticalAlign: 'middle', ...style }
+  if (src && !failed) return h('img', { src, alt, width: size, height: size, className, onError: () => setFailed(true), style: { ...box, objectFit: 'cover' } })
+  return h('span', { className, role: 'img', 'aria-label': alt || undefined, style: box }, h(Livatar, { size, shape, ...av }))
+}

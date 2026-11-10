@@ -1,6 +1,6 @@
 {
   "name": "livatar",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Tiny, zero-dependency SVG avatars that are alive: they follow your cursor, blink, breathe, react to typing, and show 10 moods. 8 characters (humans, animals, robots, monsters, ghosts, emoji, pixel, blobs), shareable avatar codes, and it runs everywhere: vanilla, React, Vue, Svelte, Web Components, SSR, CDN.",
   "keywords": [
     "avatar",
@@ -167,6 +167,16 @@
         "default": "./dist/life.cjs"
       }
     },
+    "./roam": {
+      "import": {
+        "types": "./dist/roam.d.ts",
+        "default": "./dist/roam.js"
+      },
+      "require": {
+        "types": "./dist/roam.d.cts",
+        "default": "./dist/roam.cjs"
+      }
+    },
     "./global": "./dist/livatar.global.js",
     "./package.json": "./package.json"
   },
@@ -210,7 +220,9 @@
     "llms-full.txt",
     "skills",
     "AGENTS.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "figma-plugin",
+    "examples"
   ],
   "scripts": {
     "build": "rm -rf dist && tsup && node scripts/use-client.mjs && node scripts/build-llms.mjs",
@@ -223,7 +235,9 @@
     "site": "npm run build && node scripts/build-site.mjs",
     "art": "npm run build && node scripts/readme-art.mjs",
     "demo:static": "npm run build && node scripts/serve.mjs",
-    "icons": "node scripts/build-icons.mjs"
+    "icons": "node scripts/build-icons.mjs",
+    "figma": "npm run build && node scripts/build-figma.mjs",
+    "art:wordmark": "npm run build && node scripts/wordmark-art.mjs"
   },
   "peerDependencies": {
     "react": ">=16.8",
