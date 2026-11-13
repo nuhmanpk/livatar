@@ -6,16 +6,18 @@
  *    zoo.spawn('fox')                     // add one
  *    zoo.destroy()                        // remove them all
  *
- *  Each animal has a head (the livatar `animal` style, so it blinks, looks at the cursor and
- *  reacts), a body, legs and a tail that suit the species. They walk, sit, sleep, jump, greet
- *  each other, and can be petted (click) or picked up and dropped (drag).
+ *  Each animal is a full-body pixel-art sprite with its own pixel face (happy, angry, crying,
+ *  scared, smug, dizzy…), so moods show on the whole character. They walk, sit, sleep, jump, greet
+ *  each other, and can be petted (click) or picked up and dropped (drag). Natural rivals
+ *  (dog → cat, cat → mouse, fox → chick…) chase each other, scuffle in a dust cloud when
+ *  caught, and walk off smug or crying.
  *  Decorative: hidden from assistive tech, and they stay still with prefers-reduced-motion.
  * ------------------------------------------------------------------ */
-import { mount } from './index'
-import { animal } from './styles/animal'
-import type { AliveHandle } from './alive'
+import type { Mood } from './core'
+import { GH, GW, PET_SPECIES, petFace, petSvg, sprite, type PetFace, type PetSpecies } from './roam-sprites'
 
-export type RoamSpecies = 'cat' | 'dog' | 'bear' | 'bunny' | 'fox' | 'panda' | 'frog' | 'mouse' | 'shark' | 'penguin' | 'owl' | 'chick' | 'parrot' | 'pig' | 'koala' | 'lion'
+export type RoamSpecies = PetSpecies
+export type { PetFace } from './roam-sprites'
 
 export interface RoamOptions {
   /** Species to pick from. Default: all of them. */
@@ -38,8 +40,12 @@ export interface RoamOptions {
   zIndex?: number
   /** Animate even if the visitor prefers reduced motion. Default false. */
   ignoreReducedMotion?: boolean
+  /** Natural rivals chase and scuffle now and then (dog → cat, cat → mouse, fox → chick…). Default true. */
+  rivals?: boolean
   /** Called when an animal is clicked. */
   onPat?: (roamer: Roamer) => void
+  /** Called when a chase ends: `winner` caught or escaped from `loser`. */
+  onFight?: (winner: Roamer, loser: Roamer) => void
 }
 
 export interface Roamer {
@@ -49,6 +55,10 @@ export interface Roamer {
   say(text: string, ms?: number): void
   /** Hop. */
   jump(): void
+  /** Show a face for a moment (default 1500 ms): any livatar mood, or a pet face like 'dizzy'. */
+  emote(mood: Mood | PetFace, ms?: number): void
+  /** Chase another animal. It runs away; if caught, they scuffle. */
+  chase(other: Roamer): void
   remove(): void
 }
 
@@ -61,14 +71,13 @@ export interface Roam {
   destroy(): void
 }
 
-const ALL: RoamSpecies[] = ['cat', 'dog', 'bear', 'bunny', 'fox', 'panda', 'frog', 'mouse', 'shark', 'penguin', 'owl', 'chick', 'parrot', 'pig', 'koala', 'lion']
-const FUR: Record<RoamSpecies, string> = { cat: '#f4a259', dog: '#c68b59', bear: '#8b5a3c', bunny: '#f6f1ea', fox: '#f08a3c', panda: '#ffffff', frog: '#7ccf6b', mouse: '#b8b2ae', shark: '#7f9cc0', penguin: '#2f3b52', owl: '#9c6b4a', chick: '#ffd84d', parrot: '#3cb371', pig: '#ffb3c1', koala: '#9aa3ad', lion: '#f4b860' }
-const BELLY: Partial<Record<RoamSpecies, string>> = { penguin: '#f4f1ec', panda: '#2b2b33', shark: '#e8f0f7', owl: '#e7d3b8', fox: '#fbf3e4', cat: '#fbf3e4', dog: '#f3e6d2', bunny: '#ffffff', frog: '#d7f2b8', mouse: '#efe9e4', chick: '#fff1a8', pig: '#ffd1da', lion: '#f9d9a0', koala: '#dfe3e7', bear: '#b98a63', parrot: '#7fe0a6' }
-const LEG: Partial<Record<RoamSpecies, string>> = { panda: '#2b2b33', penguin: '#ffa62b', chick: '#ffa62b', owl: '#c89a62', parrot: '#ffa62b', shark: '#6d8fb5' }
-const BIPED = new Set<RoamSpecies>(['penguin', 'owl', 'chick', 'parrot', 'shark'])
-type Tail = 'long' | 'short' | 'bushy' | 'pom' | 'thin' | 'curl' | 'tuft' | 'feather' | 'none'
-const TAIL: Record<RoamSpecies, Tail> = { cat: 'long', dog: 'short', bear: 'pom', bunny: 'pom', fox: 'bushy', panda: 'pom', frog: 'none', mouse: 'thin', shark: 'none', penguin: 'none', owl: 'none', chick: 'none', parrot: 'feather', pig: 'curl', koala: 'none', lion: 'tuft' }
-type St = 'walk' | 'idle' | 'sit' | 'sleep' | 'fly' | 'scratch' | 'roll' | 'zoom' | 'eat' | 'spin' | 'roar'
+const ALL: RoamSpecies[] = PET_SPECIES
+type St = 'walk' | 'idle' | 'sit' | 'sleep' | 'fly' | 'scratch' | 'roll' | 'zoom' | 'eat' | 'spin' | 'roar' | 'chase' | 'flee' | 'fight' | 'argue'
+/** Who chases whom. */
+const PREY: Partial<Record<RoamSpecies, RoamSpecies[]>> = {
+  dog: ['cat', 'cat', 'bunny', 'pig'], cat: ['mouse', 'mouse', 'chick', 'dog'], fox: ['chick', 'bunny', 'mouse'], lion: ['pig', 'panda', 'bear'],
+  owl: ['mouse'], bear: ['fox'], pig: ['chick'], dino: ['pig', 'chick', 'frog'],
+}
 type Snd = 'meow' | 'woof' | 'oink' | 'tweet' | 'squeak' | 'ribbit' | 'roar' | 'hoot' | 'yip' | 'growl' | 'snore' | 'bloop' | 'peep'
 interface Persona { move: 'walk' | 'hop' | 'waddle'; speed: [number, number]; pick: [St, number][]; says: string[]; snd?: Snd; food?: string }
 /** Every species has its own habits: koalas nap, pigs get naughty, birds fly, cats scratch… */
@@ -81,16 +90,14 @@ const PERSONA: Record<RoamSpecies, Persona> = {
   panda: { move: 'walk', speed: [18, 32], pick: [['eat', 5], ['sit', 3], ['sleep', 3], ['walk', 2]], says: ['🎋', 'zzz', '…'], snd: 'bloop', food: '🎋' },
   frog: { move: 'hop', speed: [40, 70], pick: [['walk', 4], ['idle', 3], ['eat', 2]], says: ['ribbit', '🪰', '…'], snd: 'ribbit', food: '🪰' },
   mouse: { move: 'walk', speed: [60, 100], pick: [['walk', 3], ['zoom', 4], ['idle', 2], ['eat', 2]], says: ['squeak!', '🧀', '…'], snd: 'squeak', food: '🧀' },
-  shark: { move: 'waddle', speed: [26, 44], pick: [['walk', 3], ['idle', 2], ['roll', 3], ['sit', 1]], says: ['🌊', 'dun dun…', '🐟'], snd: 'bloop' },
   penguin: { move: 'waddle', speed: [30, 50], pick: [['walk', 4], ['zoom', 3], ['idle', 2], ['sit', 1]], says: ['🐟', '❄️', '♪'], snd: 'peep' },
   owl: { move: 'walk', speed: [20, 36], pick: [['idle', 3], ['fly', 4], ['sleep', 3], ['sit', 2], ['walk', 1]], says: ['hoo', '🌙', '👀'], snd: 'hoot' },
   chick: { move: 'walk', speed: [50, 84], pick: [['walk', 4], ['fly', 3], ['idle', 2], ['eat', 2]], says: ['peep!', '🌾', '♪'], snd: 'peep', food: '🌾' },
-  parrot: { move: 'walk', speed: [30, 52], pick: [['fly', 5], ['walk', 2], ['idle', 2], ['sit', 1]], says: ['hello!', 'polly!', '🥜', '♪'], snd: 'tweet' },
   pig: { move: 'walk', speed: [40, 62], pick: [['walk', 2], ['zoom', 4], ['roll', 4], ['idle', 1], ['sit', 1], ['sleep', 1]], says: ['oink!', 'snort!', 'hehe', '🐷'], snd: 'oink' },
   koala: { move: 'walk', speed: [10, 20], pick: [['sleep', 8], ['eat', 3], ['sit', 2], ['walk', 1]], says: ['zzz', '🌿', '…'], snd: 'snore', food: '🌿' },
+  dino: { move: 'walk', speed: [28, 46], pick: [['walk', 3], ['roar', 3], ['sit', 2], ['sleep', 2], ['eat', 1]], says: ['RAWR', '🦖', '🌋', '…'], snd: 'roar', food: '🌿' },
   lion: { move: 'walk', speed: [30, 46], pick: [['walk', 3], ['roar', 3], ['sit', 3], ['sleep', 2], ['idle', 2]], says: ['ROAR', '👑', '…'], snd: 'roar' },
 }
-const WINGED = new Set<RoamSpecies>(['owl', 'chick', 'parrot'])
 
 /* tiny synthesized animal noises (Web Audio, no files) */
 type Tone = { t?: number; f0: number; f1: number; dur: number; type: OscillatorType; g?: number }
@@ -132,40 +139,40 @@ const weighted = (l: [St, number][]): St => { let r = Math.random() * l.reduce((
 
 const css = `.lvr{position:fixed;left:0;pointer-events:none;will-change:transform;contain:layout style;transition:opacity .25s}
 .lvr-flip{transform-origin:50% 100%}
-.lvr svg.lvr-body{display:block;overflow:visible}
-.lvr-head{position:absolute;pointer-events:auto;cursor:grab;touch-action:none;line-height:0;transition:transform .2s}
-.lvr-head:active{cursor:grabbing}
-.lvr-leg{transform-box:fill-box;transform-origin:50% 0}
-.lvr[data-s=walk] .lvr-leg{animation:lvr-l .4s ease-in-out infinite alternate}
-.lvr[data-s=walk] .lvr-leg.b{animation-delay:.2s}
-.lvr[data-s=walk] .lvr-bob{animation:lvr-b .4s ease-in-out infinite}
-.lvr-tail{transform-box:fill-box;transform-origin:10% 80%;animation:lvr-t 1.6s ease-in-out infinite alternate}
-.lvr[data-s=walk] .lvr-tail{animation-duration:.5s}
-.lvr[data-s=sit] .lvr-bodywrap{transform:translateY(8%) rotate(-12deg);transform-origin:20% 100%}
-.lvr[data-s=sleep] .lvr-bob{transform:translateY(14%) scale(1.04,.88)}
-.lvr[data-m=hop][data-s=walk] .lvr-leg{animation:none}
-.lvr[data-s=zoom] .lvr-leg{animation:lvr-l .2s ease-in-out infinite alternate}.lvr[data-s=zoom] .lvr-leg.b{animation-delay:.1s}
-.lvr[data-s=zoom] .lvr-bodywrap{transform:rotate(7deg)}.lvr[data-s=zoom] .lvr-tail{animation-duration:.25s}
-.lvr[data-s=scratch] .lvr-bodywrap,.lvr[data-s=eat] .lvr-bodywrap,.lvr[data-s=roar] .lvr-bodywrap{transform:translateY(8%) rotate(-12deg);transform-origin:20% 100%}
-.lvr[data-s=scratch] .lvr-leg.bk{animation:lvr-sc .13s ease-in-out infinite alternate;transform-origin:50% 10%}
-.lvr[data-s=scratch] .lvr-head{animation:lvr-hw .26s ease-in-out infinite alternate}
-.lvr[data-s=eat] .lvr-head{animation:lvr-eat .3s ease-in-out infinite alternate}
-.lvr[data-s=roar] .lvr-head{transform:scale(1.18) translateY(-6px) rotate(-8deg)}
-.lvr[data-s=roll] .lvr-bodywrap{animation:lvr-roll .7s linear infinite;transform-origin:50% 62%}
-.lvr[data-s=spin] .lvr-tail{animation-duration:.18s}
-.lvr[data-s=fly] .lvr-bodywrap{transform:rotate(-8deg)}.lvr[data-s=fly] .lvr-leg{transform:rotate(55deg)}
-.lvr-wing{transform-box:fill-box;transform-origin:15% 85%;transform:rotate(8deg)}
-.lvr[data-s=fly] .lvr-wing{animation:lvr-w .16s ease-in-out infinite alternate}
-.lvr[data-s=fly] .lvr-bob{animation:lvr-b .32s ease-in-out infinite}
-.lvr[data-s=sleep] .lvr-leg{display:none}
-.lvr-bob{transition:transform .35s}
+.lvr svg.lvp{display:block;overflow:visible;image-rendering:pixelated;pointer-events:auto;cursor:grab;touch-action:none}
+.lvr svg.lvp:active{cursor:grabbing}
+.lvr-bodywrap,.lvr-bob{transform-origin:50% 100%}
+.lvp-b{visibility:hidden}
+.lvr[data-s=walk] .lvp-a,.lvr[data-s=zoom] .lvp-a,.lvr[data-s=chase] .lvp-a,.lvr[data-s=flee] .lvp-a,.lvr[data-s=fight] .lvp-a{animation:lvr-fa .36s step-end infinite}
+.lvr[data-s=walk] .lvp-b,.lvr[data-s=zoom] .lvp-b,.lvr[data-s=chase] .lvp-b,.lvr[data-s=flee] .lvp-b,.lvr[data-s=fight] .lvp-b{animation:lvr-fb .36s step-end infinite}
+.lvr[data-s=zoom] .lvp-a,.lvr[data-s=zoom] .lvp-b,.lvr[data-s=chase] .lvp-a,.lvr[data-s=chase] .lvp-b,.lvr[data-s=flee] .lvp-a,.lvr[data-s=flee] .lvp-b{animation-duration:.18s}
+.lvr[data-s=walk] .lvr-bob,.lvr[data-s=zoom] .lvr-bob,.lvr[data-s=chase] .lvr-bob,.lvr[data-s=flee] .lvr-bob{animation:lvr-b .36s steps(2) infinite}
+.lvr[data-s=sit] .lvr-bob,.lvr[data-s=eat] .lvr-bob{transform:translateY(4%) scaleY(.93)}
+.lvr[data-s=sleep] .lvr-bob{transform:translateY(8%) scale(1.04,.86)}
+.lvr[data-s=eat] .lvr-bodywrap{animation:lvr-eat .3s steps(2) infinite}
+.lvr[data-s=scratch] .lvr-bodywrap{animation:lvr-sh .14s steps(2) infinite}
+.lvr[data-s=roar] .lvr-bob{transform:scale(1.1) translateY(-4%)}
+.lvr[data-s=roll] .lvr-bodywrap{animation:lvr-roll .7s steps(8) infinite;transform-origin:50% 60%}
+.lvr[data-s=spin] .lvr-bob{animation:lvr-b .2s steps(2) infinite}
+.lvr[data-s=fly] .lvr-bob{animation:lvr-b .24s steps(2) infinite}
+.lvr[data-s=argue] .lvr-bob{animation:lvr-b .22s steps(2) infinite}
+.lvr[data-s=fight] .lvr-bodywrap{animation:lvr-sh .1s steps(2) infinite}
+.lvp-blink{animation:lvr-blink 3.6s step-end infinite}
+.lvr-dust{position:absolute;left:50%;bottom:0;width:150%;height:110%;transform:translateX(-50%);pointer-events:none;font:700 15px system-ui;text-align:center}
+.lvr-dust i{position:absolute;border-radius:50%;background:#e9e4dc;box-shadow:inset -4px -4px 0 rgba(0,0,0,.08);animation:lvr-d .5s ease-in-out infinite alternate}
+.lvr-dust b{position:absolute;animation:lvr-pop .6s ease-out infinite}
 .lvr-bubble{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:4px;transition:left .15s;padding:2px 8px;border-radius:12px;background:#fff;color:#1f1a2e;font:700 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18);animation:lvr-p .35s cubic-bezier(.3,1.4,.5,1) both}
 .lvr-bubble:empty{display:none}
 .lvr-z{position:absolute;font:700 14px system-ui;color:#7f5af0;animation:lvr-z 2.2s ease-in infinite;opacity:0}
-@keyframes lvr-l{from{transform:rotate(28deg)}to{transform:rotate(-28deg)}}
-@keyframes lvr-b{50%{transform:translateY(-3px)}}
-@keyframes lvr-sc{from{transform:rotate(-70deg)}to{transform:rotate(-28deg)}}@keyframes lvr-hw{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}@keyframes lvr-eat{from{transform:translateY(0)}to{transform:translateY(5px) rotate(5deg)}}@keyframes lvr-roll{to{transform:rotate(360deg)}}@keyframes lvr-w{from{transform:rotate(-70deg)}to{transform:rotate(35deg)}}
-@keyframes lvr-t{from{transform:rotate(-14deg)}to{transform:rotate(18deg)}}
+@keyframes lvr-fa{0%{visibility:visible}50%{visibility:hidden}}
+@keyframes lvr-fb{0%{visibility:hidden}50%{visibility:visible}}
+@keyframes lvr-b{50%{transform:translateY(-4%)}}
+@keyframes lvr-sh{from{transform:translateX(-3%)}to{transform:translateX(3%)}}
+@keyframes lvr-eat{50%{transform:translateY(3%)}}
+@keyframes lvr-roll{to{transform:rotate(360deg)}}
+@keyframes lvr-blink{0%,93%{transform:none}95%{transform:scaleY(.15)}}
+@keyframes lvr-d{from{transform:scale(.85)}to{transform:scale(1.12)}}
+@keyframes lvr-pop{0%{transform:scale(.3);opacity:0}30%{opacity:1}100%{transform:scale(1.3) translateY(-10px);opacity:0}}
 @keyframes lvr-p{from{transform:translateX(-50%) scale(.4);opacity:0}}
 @keyframes lvr-z{0%{transform:translate(0,0) scale(.6);opacity:0}25%{opacity:1}100%{transform:translate(12px,-26px) scale(1.1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.lvr *{animation:none!important}}`
@@ -173,47 +180,27 @@ const css = `.lvr{position:fixed;left:0;pointer-events:none;will-change:transfor
 const rand = (a: number, b: number) => a + Math.random() * (b - a)
 const pick = <T>(l: readonly T[]): T => l[Math.floor(Math.random() * l.length)]!
 
-function bodySvg(sp: RoamSpecies, size: number): string {
-  const W = size * 1.3, H = size * 0.85
-  const fur = FUR[sp], belly = BELLY[sp] ?? fur, leg = LEG[sp] ?? shade(fur, -0.22), dark = shade(fur, -0.28)
-  const biped = BIPED.has(sp)
-  const L = (x: number, cls: string) => `<g class="lvr-leg ${cls}"><rect x="${x - 4.5}" y="38" width="9" height="19" rx="4.5" fill="${leg}"/><ellipse cx="${x + 2}" cy="57" rx="7.5" ry="3.6" fill="${shade(leg, -0.18)}"/></g>`
-  const legs = biped ? L(46, 'a') + L(66, 'b') : L(28, 'b bk') + L(42, 'a') + L(66, 'b') + L(80, 'a')
-  const t = TAIL[sp]
-  const tail = t === 'none' ? '' : `<g class="lvr-tail">${{
-    long: `<path d="M20 30 C4 28 2 12 12 6" stroke="${fur}" stroke-width="7" fill="none" stroke-linecap="round"/>`,
-    short: `<path d="M22 28 C12 24 10 16 14 12" stroke="${fur}" stroke-width="7" fill="none" stroke-linecap="round"/>`,
-    bushy: `<path d="M22 32 C2 36 0 14 14 8 C14 18 22 22 24 26Z" fill="${fur}"/><path d="M4 18 C6 12 10 10 14 8 C12 12 8 16 6 22Z" fill="${belly}"/>`,
-    pom: `<circle cx="16" cy="28" r="7" fill="${belly === fur ? shade(fur, 0.15) : belly}"/>`,
-    thin: `<path d="M22 34 C8 38 4 26 8 20" stroke="${shade(fur, -0.15)}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    curl: `<path d="M22 28 c-8 -2 -8 -10 -2 -10 c5 0 4 6 -1 5" stroke="${dark}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-    tuft: `<path d="M22 30 C10 32 6 22 10 16" stroke="${shade(fur, -0.1)}" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="9" cy="14" r="5" fill="${shade(fur, -0.3)}"/>`,
-    feather: `<path d="M22 34 C6 44 -2 36 -2 26 C8 32 14 30 24 28Z" fill="${shade(fur, -0.1)}"/><path d="M20 36 C8 50 2 46 0 40 C10 42 14 38 22 32Z" fill="#e63946"/>`,
-  }[t]}</g>`
-  const wing = WINGED.has(sp) ? `<g class="lvr-wing"><path d="M40 26 C28 6 6 8 0 20 C12 16 22 22 34 34Z" fill="${shade(fur, -0.12)}"/><path d="M40 26 C32 14 18 12 8 16 C20 16 28 22 36 30Z" fill="${shade(fur, 0.12)}" opacity=".7"/></g>` : ''
-  const body = `<ellipse cx="46" cy="30" rx="${biped ? 22 : 34}" ry="${biped ? 24 : 20}" fill="${fur}"/><ellipse cx="46" cy="${biped ? 34 : 36}" rx="${biped ? 14 : 22}" ry="${biped ? 17 : 11}" fill="${belly}" opacity="${belly === fur ? 0 : 0.95}"/>`
-  return `<svg class="lvr-body" width="${W}" height="${H}" viewBox="-4 0 104 62" aria-hidden="true">${tail}${legs}${body}${wing}</svg>`
-}
-
-/** Lighten (amount > 0) or darken (< 0) a #rrggbb colour. */
-function shade(hex: string, amt: number): string {
-  const n = parseInt(hex.slice(1), 16)
-  const f = (c: number) => Math.max(0, Math.min(255, Math.round(amt >= 0 ? c + (255 - c) * amt : c * (1 + amt))))
-  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => f(c).toString(16).padStart(2, '0')).join('')
-}
-
 let styleEl: HTMLStyleElement | null = null
 const ensureCss = () => {
   if (styleEl || typeof document === 'undefined') return
   styleEl = document.createElement('style'); styleEl.textContent = css; styleEl.setAttribute('data-livatar-roam', ''); document.head.append(styleEl)
 }
 
+/** Livatar moods → the pets' own pixel faces. */
+const FACE: Record<string, PetFace> = {
+  neutral: 'neutral', happy: 'happy', laugh: 'laugh', angry: 'angry', sad: 'sad', cry: 'cry', sleepy: 'sleepy', love: 'love', starstruck: 'love',
+  scared: 'scared', surprised: 'surprised', smug: 'smug', cool: 'smug', silly: 'laugh', wink: 'happy', confused: 'dizzy', dizzy: 'dizzy',
+}
+interface PetHead { emote(mood: Mood | PetFace, ms?: number): void; destroy(): void }
+
 interface Agent {
   api: Roamer
   el: HTMLElement
   flip: HTMLElement
   bubble: HTMLElement
-  head: AliveHandle | null
+  head: PetHead | null
+  /** Head centre as a fraction of the sprite width. */
+  hx: number
   species: RoamSpecies
   persona: Persona
   w: number
@@ -233,6 +220,9 @@ interface Agent {
   hopAt: number
   flipAt: number
   held?: { dx: number }
+  foe?: Agent
+  nextFeud: number
+  dust?: HTMLElement
 }
 
 /** Spawn full-body animals that roam the page. */
@@ -274,49 +264,111 @@ export function roam(opts: RoamOptions = {}): Roam {
     const flip = document.createElement('div'); flip.className = 'lvr-flip'
     const wrap = document.createElement('div'); wrap.className = 'lvr-bodywrap'
     const bob = document.createElement('div'); bob.className = 'lvr-bob'; bob.style.position = 'relative'
-    bob.innerHTML = bodySvg(species_, size)
-    const head = document.createElement('div'); head.className = 'lvr-head'
-    head.style.cssText += `;left:${size * 0.42}px;top:${-size * 0.52}px;width:${size}px;height:${size}px`
-    bob.append(head); wrap.append(bob); flip.append(wrap)
+    bob.innerHTML = petSvg(species_, W, 'happy')
+    const head = bob.firstElementChild as SVGSVGElement
+    const faceEl = head.querySelector('.lvp-face')!
+    wrap.append(bob); flip.append(wrap)
     const bubble = document.createElement('div'); bubble.className = 'lvr-bubble'
-    bubble.style.marginBottom = size * 0.42 + 'px'
+    bubble.style.marginBottom = -((W * GH) / GW) * 0.12 + 'px'
     el.style.bottom = '0px'; el.style.transform = 'translate3d(0,-120vh,0)'
     el.append(flip, bubble); host.append(el)
-    const seed = species_ + '-' + Math.random().toString(36).slice(2, 7)
-    const handle = mount(head, animal, { seed, options: { species: species_, fur: FUR[species_], pattern: 'none', outline: true }, size, background: false, mood: 'happy', alive: { intensity: 1 } })
+    // the pet's own face: shows a mood for a while, then settles back to neutral
+    const layout = sprite(species_).face
+    let faceTimer = 0, curFace: PetFace = 'happy'
+    const showFace = (f: PetFace) => { if (f !== curFace) { curFace = f; faceEl.innerHTML = petFace(layout, f) } }
+    const handle: PetHead = {
+      emote: (m, ms = 1500) => { clearTimeout(faceTimer); showFace(FACE[m] ?? 'neutral'); faceTimer = setTimeout(() => showFace(a.state === 'sleep' ? 'sleepy' : 'neutral'), ms) as unknown as number },
+      destroy: () => clearTimeout(faceTimer),
+    }
+    handle.emote('happy', 1200)
     const now = performance.now()
     const a: Agent = {
-      api: null as unknown as Roamer, el, flip, bubble, head: handle, species: species_, persona, w: W,
+      api: null as unknown as Roamer, el, flip, bubble, head: handle, hx: layout.head, species: species_, persona, w: W,
       x: rand(0, Math.max(0, vw() - W)), y: vh() + 80, vy: 0, dir: Math.random() < 0.5 ? 1 : -1,
       state: 'fall', until: 0, tx: 0, ty: 0, legs: 0, speed: rand(...persona.speed), nextSay: now + rand(4000, 12000), nextSnore: 0, nextShove: 0, hopAt: 0, flipAt: 0,
+      nextFeud: now + rand(6000, 14000),
     }
     a.api = {
       species: species_, el,
       say: (text, ms = 1800) => { bubble.textContent = text; setTimeout(() => { if (bubble.textContent === text) bubble.textContent = '' }, ms) },
       jump: () => { if (a.state !== 'held' && a.y <= 1) { a.vy = 380; a.state = 'jump' } },
-      remove: () => { const i = agents.indexOf(a); if (i >= 0) agents.splice(i, 1); handle.destroy?.(); el.remove(); if (!agents.length) stop() },
+      emote: (mood, ms = 1500) => handle.emote(mood, ms),
+      chase: (other) => { const b = agents.find((x) => x.api === other); if (b && b !== a) feud(a, b, performance.now()) },
+      remove: () => { if (a.foe) calm_(a.foe, performance.now()); calm_(a, 0); const i = agents.indexOf(a); if (i >= 0) agents.splice(i, 1); handle.destroy(); el.remove(); if (!agents.length) stop() },
     }
     // pat and pick-up
     let moved = 0, sx = 0, sy = 0
     head.addEventListener('pointerdown', (e) => {
       head.setPointerCapture(e.pointerId); moved = 0; sx = e.clientX; sy = e.clientY
+      if (a.foe) { const f = a.foe; calm_(a, 0); f.head?.emote('confused', 1200); calm_(f, performance.now()) }
       a.held = { dx: e.clientX - a.x }; a.state = 'held'; el.dataset.s = 'held'
     })
     head.addEventListener('pointermove', (e) => {
       if (a.state !== 'held') return
       moved = Math.max(moved, Math.hypot(e.clientX - sx, e.clientY - sy))
-      a.x = e.clientX - (a.held?.dx ?? 0); a.y = Math.max(0, vh() - ground - e.clientY - size * 0.6); a.vy = 0
+      a.x = e.clientX - (a.held?.dx ?? 0); a.y = Math.max(0, vh() - ground - e.clientY - ((W * GH) / GW) * 0.5); a.vy = 0
     })
     const drop = (e: PointerEvent) => {
       if (a.state !== 'held') return
       head.releasePointerCapture?.(e.pointerId)
       if (moved < 6) { a.state = 'idle'; a.until = performance.now() + 1400; handle.emote('love', 1200); a.api.say('❤️', 1200); a.api.jump(); hear(a); opts.onPat?.(a.api) }
-      else { a.state = 'fall'; handle.emote('surprised', 900) }
+      else { a.state = 'fall'; handle.emote('scared', 900) }
     }
     head.addEventListener('pointerup', drop); head.addEventListener('pointercancel', drop)
     agents.push(a)
     if (!raf) start()
     return a.api
+  }
+
+  const free = (b: Agent) => b.state !== 'held' && b.state !== 'fly' && b.state !== 'fall' && b.state !== 'jump' && b.state !== 'sleep' && !b.foe && b.y < 4
+  /** Start a chase: `a` goes after `b`. */
+  const feud = (a: Agent, b: Agent, t: number) => {
+    if (a.foe || b.foe || a.state === 'held' || b.state === 'held') return
+    a.foe = b; b.foe = a
+    a.state = 'chase'; b.state = 'flee'
+    a.until = b.until = t + rand(5000, 8000)
+    a.speed = a.persona.speed[1] * 1.9; b.speed = b.persona.speed[1] * 1.7
+    a.head?.emote('angry', 8000); b.head?.emote('scared', 8000)
+    a.api.say(pick(['!!', '😠', 'get back here!', a.persona.says[0] ?? '!'])); b.api.say(pick(['eek!', '😱', 'help!', '!!']))
+    hear(a)
+  }
+  /** Drop out of any feud and go back to normal life. */
+  const calm_ = (a: Agent, t: number) => {
+    a.foe = undefined; a.dust?.remove(); a.dust = undefined
+    if (t) decide(a, t)
+  }
+  const dust = (a: Agent) => {
+    const d = document.createElement('div'); d.className = 'lvr-dust'
+    let h = ''
+    for (const [x, y, r] of [[18, 40, 30], [44, 18, 36], [70, 38, 30], [32, 60, 26], [58, 58, 28]]) h += `<i style="left:${x}%;top:${y}%;width:${r}%;height:${r * 1.2}%;animation-delay:${(x % 5) / 10}s"></i>`
+    for (const [x, y, c, dl] of [[10, 0, '💢', 0], [70, -10, '⭐', 0.2], [40, -24, 'POW!', 0.35], [86, 30, '💥', 0.1]] as const) h += `<b style="left:${x}%;top:${y}%;animation-delay:${dl}s">${c}</b>`
+    d.innerHTML = h; a.el.append(d); a.dust = d
+  }
+  /** The chase is over: `win` gloats, `lose` cries and runs off. */
+  const settle = (win: Agent, lose: Agent, t: number) => {
+    win.foe = lose.foe = undefined
+    win.nextFeud = lose.nextFeud = t + rand(20000, 35000)
+    win.dust?.remove(); lose.dust?.remove(); win.dust = lose.dust = undefined
+    win.state = 'sit'; win.until = t + rand(2500, 4000)
+    win.head?.emote(Math.random() < 0.5 ? 'smug' : 'cool', 3000); win.api.say(pick(['😏', 'hmph.', 'too easy', '🏆']), 2200)
+    lose.state = 'walk'; lose.tx = lose.x < vw() / 2 ? vw() - lose.w : 0; lose.dir = lose.tx >= lose.x ? 1 : -1; lose.speed = lose.persona.speed[1] * 1.4; lose.until = t + 20000
+    lose.head?.emote('cry', 3500); lose.api.say(pick(['😭', 'waaah', 'not fair!', '💔']), 2200)
+    hear(lose); opts.onFight?.(win.api, lose.api)
+  }
+
+  const WAKE = ['😠 I was sleeping!', 'HEY! 💢', 'do you mind?!', 'ugh, so loud…', '😤 shoo!']
+  const BACK = ['not my fault!', 'it\'s my spot too', '😜 oops', 'sleep less!', 'whatever 🙄']
+  const RANT = ['💢#@!', 'you always do this', 'grr…', 'say that again!', '😡']
+  /** A sleeper woken by a passer-by: they argue, then either scuffle or stomp off. */
+  const argue = (a: Agent, b: Agent, t: number) => {
+    a.foe = b; b.foe = a
+    a.state = b.state = 'argue'; a.until = t + rand(3200, 4400); b.until = a.until + 600
+    a.dir = b.x >= a.x ? 1 : -1; b.dir = a.x >= b.x ? 1 : -1
+    a.el.querySelector('.lvr-z')?.remove()
+    a.head?.emote('angry', 4500); b.head?.emote('surprised', 900)
+    const lines: [Agent, string, number, Mood][] = [[a, pick(WAKE), 0, 'angry'], [b, pick(BACK), 1000, pick<Mood>(['smug', 'angry', 'silly'])], [a, pick(RANT), 2000, 'angry'], [b, pick(RANT), 2900, 'angry']]
+    for (const [who, text, ms, mood] of lines) setTimeout(() => { if (who.state === 'argue') { who.api.say(text, 1100); who.head?.emote(mood, 1200) } }, ms)
+    hear(a, a.persona.snd === 'snore' ? 'growl' : a.persona.snd)
   }
 
   /** Choose what to do next, according to the species' habits. */
@@ -364,7 +416,56 @@ export function roam(opts: RoamOptions = {}): Roam {
         if (t > a.until) decide(a, t)
         // naughty: a zooming pig barges into whoever is in the way
         if (a.species === 'pig' && st === 'zoom' && t > a.nextShove) for (const b of agents) {
-          if (b !== a && b.state !== 'held' && b.y < 4 && Math.abs(b.x - a.x) < a.w * 0.7) { a.nextShove = t + 5000; b.x += a.dir * 40; b.vy = 300; b.state = 'fall'; b.head?.emote('surprised', 1200); b.api.say('hey!'); a.api.say('hehe'); hear(a); break }
+          if (b !== a && b.state !== 'held' && b.y < 4 && Math.abs(b.x - a.x) < a.w * 0.7) { a.nextShove = t + 5000; b.x += a.dir * 40; b.vy = 300; b.state = 'fall'; b.head?.emote('angry', 1200); b.api.say('hey!'); a.head?.emote('laugh', 1200); a.api.say('hehe'); hear(a); break }
+        }
+      } else if (st === 'chase' || st === 'flee') {
+        const f = a.foe
+        if (!f || !agents.includes(f) || (f.state !== 'chase' && f.state !== 'flee' && f.state !== 'fight')) { calm_(a, t); continue }
+        if (st === 'chase') {
+          a.dir = f.x >= a.x ? 1 : -1
+          a.x += a.dir * a.speed * dt
+          if (Math.abs(f.x - a.x) < a.w * 0.45) {
+            // caught: scuffle in a dust cloud
+            a.state = f.state = 'fight'; a.until = f.until = t + rand(1800, 2600)
+            a.x = f.x = (a.x + f.x) / 2; dust(a); f.el.style.visibility = 'hidden'
+            a.head?.emote('angry', 3000); f.head?.emote('angry', 3000); hear(a, 'growl')
+          } else if (t > a.until) {
+            // gave up: the prey has the last laugh
+            a.foe = f.foe = undefined; a.nextFeud = f.nextFeud = t + rand(15000, 25000)
+            a.head?.emote('sad', 1600); a.api.say(pick(['hmph', 'fine.', '😤'])); decide(a, t)
+            f.head?.emote('laugh', 2000); f.api.say(pick(['nyah!', 'too slow!', '😜'])); f.state = 'idle'; f.until = t + 1800
+          }
+        } else {
+          const away = a.x >= f.x ? 1 : -1, edge = away === 1 ? a.x >= vw() - a.w * 0.85 : a.x <= -a.w * 0.15
+          if (edge) { a.dir = (away * -1) as 1 | -1; if (Math.random() < 0.02) { a.vy = 260; a.y = 1; a.state = 'flee' } }
+          else { a.dir = away as 1 | -1; a.x += a.dir * a.speed * dt }
+          if (a.y > 0) { a.vy -= 1500 * dt; a.y = Math.max(0, a.y + a.vy * dt) }
+          if (a.persona.move === 'hop' && a.y <= 0 && Math.random() < 0.06) { a.vy = 220; a.y = 0.5 }
+        }
+      } else if (st === 'fight') {
+        const f = a.foe
+        if (!f || !agents.includes(f)) { a.el.style.visibility = ''; calm_(a, t); continue }
+        if (Math.random() < 0.03) a.dir = a.dir === 1 ? -1 : 1
+        if (a.dust && Math.random() < 0.012) a.api.say(pick(['💢', 'grr!', '#@!', 'ow!']), 700)
+        if (a.dust && t > a.until) {
+          f.el.style.visibility = ''
+          const chaserWins = Math.random() < 0.65
+          settle(chaserWins ? a : f, chaserWins ? f : a, t)
+          f.x += (f.x < vw() / 2 ? -1 : 1) * a.w * 0.6
+        }
+      } else if (st === 'argue') {
+        const f = a.foe
+        if (!f || !agents.includes(f) || f.state !== 'argue') { a.foe = undefined; decide(a, t); continue }
+        // the woken one (the one that started it) decides how it ends
+        if (t > a.until && a.until < f.until) {
+          if (opts.rivals !== false && Math.random() < 0.55) {
+            a.state = f.state = 'fight'; a.until = f.until = t + rand(1800, 2600)
+            a.x = f.x = (a.x + f.x) / 2; dust(a); f.el.style.visibility = 'hidden'; hear(a, 'growl')
+          } else {
+            a.foe = f.foe = undefined
+            a.head?.emote('sleepy', 1500); a.api.say('hmph. 💤', 1400); a.state = 'sleep'; a.until = t + rand(6000, 10000); a.nextSnore = t + 2500
+            f.head?.emote(pick<Mood>(['smug', 'sad', 'laugh']), 1800); f.state = 'walk'; f.tx = f.x < vw() / 2 ? vw() - f.w : 0; f.dir = f.tx >= f.x ? 1 : -1; f.until = t + 20000
+          }
         }
       } else if (st === 'fly') {
         const dx = a.tx - a.x, dy = a.ty - a.y, dist = Math.hypot(dx, dy), step = 120 * dt
@@ -373,11 +474,22 @@ export function roam(opts: RoamOptions = {}): Roam {
         else { a.x += (dx / dist) * step; a.y += (dy / dist) * step + Math.sin(t / 140) * 0.6 }
       } else if (st !== 'held') {
         if (st === 'spin' && t > a.flipAt) { a.dir = a.dir === 1 ? -1 : 1; a.flipAt = t + 130 }
+        if (st === 'sleep' && t > a.nextFeud && !a.foe) {
+          const b = agents.find((b) => b !== a && !b.foe && (b.state === 'walk' || b.state === 'zoom' || b.state === 'roll' || b.state === 'spin') && b.y < 4 && Math.abs(b.x - a.x) < a.w * 0.75)
+          if (b) { a.nextFeud = t + rand(12000, 20000); if (Math.random() < 0.85) { argue(a, b, t); continue } }
+        }
         if (st === 'sleep' && t > a.nextSnore) { a.nextSnore = t + rand(3500, 6500); if (a.species === 'koala' || Math.random() < 0.35) hear(a, 'snore') }
         if (t > a.until) decide(a, t)
       }
+      // rivals: a chaser that spots its prey nearby goes for it
+      if (opts.rivals !== false && t > a.nextFeud && free(a) && (a.state === 'walk' || a.state === 'idle' || a.state === 'sit')) {
+        a.nextFeud = t + rand(14000, 30000)
+        const prey = PREY[a.species]
+        const b = prey && agents.find((b) => b !== a && prey.includes(b.species) && free(b) && Math.abs(b.x - a.x) < vw() * 0.6)
+        if (b && Math.random() < 0.6) feud(a, b, t)
+      }
       // greet a neighbour
-      if (a.state === 'idle' || a.state === 'sit') for (const b of agents) if (b !== a && Math.abs(b.x - a.x) < a.w * 0.9 && b.state !== 'sleep' && b.state !== 'held' && Math.random() < 0.004) { a.dir = b.x >= a.x ? 1 : -1; a.api.say('👋'); a.head?.emote('happy', 900) }
+      if (a.state === 'idle' || a.state === 'sit') for (const b of agents) if (b !== a && Math.abs(b.x - a.x) < a.w * 0.9 && b.state !== 'sleep' && b.state !== 'held' && Math.random() < 0.004) { a.dir = b.x >= a.x ? 1 : -1; a.api.say(pick(['👋', 'hi!', 'haha'])); a.head?.emote(pick<Mood>(['happy', 'laugh', 'wink']), 900) }
       if (opts.speak !== false && t > a.nextSay && a.state !== 'held' && a.state !== 'fall') {
         a.nextSay = t + rand(8000, 20000)
         a.api.say(a.state === 'sleep' ? '💤' : pick(a.persona.says))
@@ -387,15 +499,16 @@ export function roam(opts: RoamOptions = {}): Roam {
       const s = a.state === 'fall' || a.state === 'jump' ? 'idle' : a.state
       if (a.el.dataset.s !== s) a.el.dataset.s = s
       a.flip.style.transform = `scaleX(${a.dir})`
-      const headX = a.x + (a.dir === 1 ? size * 0.92 : a.w - size * 0.92)
-      a.bubble.style.left = (a.dir === 1 ? size * 0.92 : a.w - size * 0.92) + 'px'
+      const hOff = a.dir === 1 ? a.w * a.hx : a.w * (1 - a.hx), Hs = (a.w * GH) / GW
+      const headX = a.x + hOff
+      a.bubble.style.left = hOff + 'px'
       // near the pointer but not on its head: step aside visually so the page underneath stays usable
-      const bottomY = vh() - ground - a.y, near = Math.abs(px - (a.x + a.w / 2)) < a.w * 0.9 && py > bottomY - size * 1.5 && py < bottomY + 8
-      const onHead = Math.hypot(px - headX, py - (bottomY - size * 0.95)) < size * 0.5
+      const bottomY = vh() - ground - a.y, near = Math.abs(px - (a.x + a.w / 2)) < a.w * 0.9 && py > bottomY - Hs * 1.3 && py < bottomY + 8
+      const onHead = Math.hypot(px - headX, py - (bottomY - Hs * 0.6)) < Hs * 0.55
       const fade = near && !onHead && a.state !== 'held' ? '0.35' : ''
       if (a.el.style.opacity !== fade) a.el.style.opacity = fade
       a.el.style.transform = `translate3d(${Math.round(a.x)}px, ${-Math.round(a.y + ground)}px, 0)`
-      if (a.state === 'sleep' && !a.el.querySelector('.lvr-z')) { const z = document.createElement('span'); z.className = 'lvr-z'; z.textContent = 'z'; z.style.left = a.w * 0.8 + 'px'; z.style.top = -size * 0.62 + 'px'; a.el.append(z) }
+      if (a.state === 'sleep' && !a.el.querySelector('.lvr-z')) { const z = document.createElement('span'); z.className = 'lvr-z'; z.textContent = 'z'; z.style.left = hOff + a.w * 0.12 + 'px'; z.style.top = '0px'; a.el.append(z) }
       else if (a.state !== 'sleep') a.el.querySelector('.lvr-z')?.remove()
     }
   }

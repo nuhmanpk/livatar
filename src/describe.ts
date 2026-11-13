@@ -7,12 +7,12 @@ import type { LivatarConfig } from './code'
 const SPACED = (v: unknown) => String(v).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
 const MOOD: Record<string, string> = {
   neutral: '', happy: 'happy', sad: 'sad', angry: 'angry', surprised: 'surprised', sleepy: 'sleepy',
-  love: 'love-struck', wink: 'winking', silly: 'silly', confused: 'confused',
+  love: 'love-struck', wink: 'winking', silly: 'silly', confused: 'confused', laugh: 'laughing', cool: 'cool', cry: 'crying', scared: 'scared', smug: 'smug', starstruck: 'starstruck',
 }
 const NOUN: Record<string, string> = {
   buddy: 'cartoon person', bot: 'robot', blob: 'blob creature', pixel: 'pixel critter', monster: 'monster',
   ghost: 'ghost', emoji: 'smiley', initials: 'initials avatar', food: 'food character', plant: 'potted plant',
-  dino: 'dinosaur', alien: 'alien', planet: 'planet', clay: 'clay character', memoji: 'cartoon person',
+  dino: 'dinosaur', alien: 'alien', planet: 'planet', clay: 'clay character', memoji: 'cartoon person', anime: 'anime character', notion: 'line-art person', chibi: 'chibi character', flat: 'flat illustrated person', lowpoly: 'low-poly person', sketch: 'pencil-sketch person', retro: 'retro person', toon: 'cartoon character',
   ui: 'UI icon', device: 'gadget', fruit: 'fruit', drink: 'drink', vehicle: 'vehicle', tech: 'tech gadget', money: 'money character', home: 'home object', office: 'office supply', dev: 'developer', human: 'person',
   weather: 'weather character', sport: 'sports ball', music: 'musical instrument', sea: 'sea creature', bug: 'bug', magic: 'magic item', party: 'party character', season: 'seasonal character', tool: 'tool',
 }

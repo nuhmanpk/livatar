@@ -1,6 +1,6 @@
 # livatar
 
-> Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, chew while you type, watch the caret, cover their eyes on password fields, and show 10 moods. Deterministic from a seed. Works in vanilla JS, React/Next.js, Vue/Nuxt, Svelte, Solid, Angular (web component), SSR, <img>, email, and a CLI. Also ships 540+ animated brand icons (livatar/icons). MIT.
+> Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, chew while you type, watch the caret, cover their eyes on password fields, and show 16 moods. Deterministic from a seed. Works in vanilla JS, React/Next.js, Vue/Nuxt, Svelte, Solid, Angular (web component), SSR, <img>, email, and a CLI. Also ships 540+ animated brand icons (livatar/icons). MIT.
 
 Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.md (or `npx livatar skill`). Agent notes: https://nuhmanpk.github.io/livatar/AGENTS.md. Docs: https://nuhmanpk.github.io/livatar/docs/
 
@@ -19,12 +19,13 @@ Install: `npm i livatar`. Agent skill: https://nuhmanpk.github.io/livatar/SKILL.
 - buddy: hair, facialHair, glasses, accessory, clothes, mouth, freckles, skin, hairColor
 - animal: species (cat dog bear bunny fox panda frog mouse shark penguin owl chick parrot pig koala lion), fur, pattern, whiskers, outline
 - monster: eyes(1|2|3), horns, teeth, spots · ghost: accessory, blush · emoji: tone, eyes, mouth, blush
+- anime: hair (spiky fringe bob twintails ponytail), eyeColor, skin, hairColor, shirt · chibi: hair (fluffy bowl tuft pigtails long), hat (none beanie cat bow flower), skin, hairColor, outfit · toon: hair (quiff spikes pigtails cap curly bald), skin, hairColor, shirt · notion: hair (short curly long bun mohawk side bald), accessory (none glasses earring cap headphones), beard, ink, paper · flat: hair (bob afro quiff long bun bald), pattern (none dots stripes zigzag), skin, hairColor, shirt · lowpoly: hair (crop spiky long bald), skin, hairColor, shirt · sketch: hair (messy slick long curly bald), pencil, paper, boil · retro: hair (afro mullet feathered pompadour bald), accessory (none aviators headband mustache), skin, hairColor, shirt, sun
 - memoji: hair, beard, glasses, skin, hairColor, shirt · clay: hair, skin, hairColor, outfit · planet: kind (earth saturn mars moon sun gas comet star heart cloud), satellite, stars · dino: kind, spots, hat · alien: eyes, antenna, head, helmet · food: kind, topping, outline · plant: kind, pot, flower · initials: name, chars, face, weight
 - bot: eyes, antenna, glow · blob: eyes, mouth, blush, spots · pixel: density · ui: kind (toggle bell folder trash lock gear cart chat), badge · device: kind (phone laptop watch camera headphones tv tablet gamepad), screen · fruit: kind (apple banana cherry lemon peach grape orange pear pineapple kiwi), leaf · drink: kind (coffee tea juicebox soda milk bottle smoothie cocoa), steam · vehicle: kind (car bus rocket plane scooter van train boat), color · tech: kind (server database cloud chip terminal plug router drive), leds · money: kind (coin wallet piggy card receipt gem bag bill), sparkle · home: kind (house lamp sofa door key mug clock bed), smoke · office: kind (clipboard calendar note paperclip folder stapler pencil briefcase), lines
 - weather: kind (raincloud snowflake lightning rainbow umbrella tornado snowman droplet), sparkles · sport: kind (soccer basketball tennis baseball football bowling trophy volleyball), motion · music: kind (guitar drum note mic trumpet vinyl piano maraca), notes · sea: kind (fish octopus crab whale jellyfish starfish puffer turtle), bubbles · bug: kind (bee ladybug butterfly snail caterpillar ant spider firefly), flower · magic: kind (crystalball potion hat spellbook wand crystal cauldron scroll), sparkles · party: kind (balloon gift cake partyhat popper candle pinata disco), confetti · season: kind (pumpkin acorn leaf pinecone chestnut mitten sandcastle snowglobe), falling · tool: kind (hammer wrench screwdriver saw drill toolbox roller tape), finish (classic candy)
 - human (realistic portrait): age (baby toddler kid teen adult senior), gender (boy girl neutral), skin, hair (short long curly coily bun braids ponytail bob bald buzz hijab turban wavy), hairColor, eyes, facialHair, glasses (none round square sun), accessory, clothes, clothesColor, freckles, pacifier
 - dev (developer at work): activity (coding thinking debugging solved coffee reviewing shipping stuck), hair (short long curly bun buzz beanie), skin, hairColor, hoodie, glasses, headphones
-- Moods: neutral happy sad angry surprised sleepy love wink silly confused
+- Moods: neutral happy sad angry surprised sleepy love wink silly confused laugh cool cry scared smug starstruck
 
 ## Extras
 - `describe(config) → "A happy owl"` alt text. Style `initials` (options.name, chars).
@@ -40,7 +41,7 @@ All take any handle (from `mount`, `mountCode`, a React ref, `<live-avatar>.hand
 - `pet(handle, { key, store, decay, onChange, onLevelUp, tick }) → { stats, feed(), play(), pat(), sleep(), wake(), reward(xp), mood(), reset(), destroy() }`. Stats: hunger energy happiness (0…100) xp level stage(baby kid teen adult) asleep. Drifts in real time, also while the page is closed; saved to localStorage by default, or any `{ get, set }` store. Poking = petting.
 - `group({ idleAfter, empathy }) → { members, join(id, handle), leave(id), speaking(id, on?), message(id, text), active(id), all(fn), destroy() }`: avatars look at whoever speaks, greet joiners, react to message mood, notice @mentions, doze when idle. Transport-agnostic: call from your socket events.
 - Photo fallback: `<LivatarPhoto src seed alt size shape variant />` (livatar/components) or vanilla `photoFallback(imgOrList, { style, seed })` from 'livatar' (seed from data-seed/alt). Use it for every user avatar that may have no photo.
-- Roaming pets (`livatar/roam`): `const zoo = roam({ count, species, size, ground, sound })` → `zoo.spawn('fox')`, `zoo.sound = true` (call from a click), `zoo.destroy()`. Full-body animals with per-species habits (koala sleeps, pig naughty, birds fly, cat scratches). Decorative (aria-hidden), no-op with reduced motion or on the server.
+- Roaming pets (`livatar/roam`): `const zoo = roam({ count, species, size, ground, sound })` → `zoo.spawn('fox')`, `zoo.sound = true` (call from a click), `zoo.destroy()`. Pixel-art pets (cat dog fox lion pig panda bunny koala bear mouse frog penguin owl chick dino) with their own pixel faces (`roamer.emote('dizzy')`; livatar moods map onto them) and per-species habits (koala sleeps, pig naughty, birds fly, cat scratches). Rivals chase and scuffle (dog → cat, cat → mouse, fox → chick…): winner looks smug, loser cries. A pet walking past a sleeper wakes it: they argue, then scuffle or it goes back to sleep. `roam({ rivals: false })` turns it off; `onFight(winner, loser)`; `roamer.chase(other)`, `roamer.emote(mood)`. Decorative (aria-hidden), no-op with reduced motion or on the server.
 - React/Next.js components (`livatar/components`, 'use client'; gallery with live previews: https://nuhmanpk.github.io/livatar/components/): `<LivatarLoader status label />` (idle loading success error), `<LivatarMeet participants={[{ id, name, speaking, muted, avatar }]} message={{ id, from, text }} avatar size />`, `<LivatarForm onSubmit={(data) => ok} avatar moods placement>` (false/throw → error face), `<LivatarAssistant status text showState />` (status also accepts Vercel AI SDK submitted/streaming/ready), `<LivatarPet pet controls>{(pet, stats) => …}</LivatarPet>`, `<LivatarStack users={[{ id, status: online|away|busy|offline }]} max size />`, `<LivatarEmptyState title description action />`, `<LivatarReaction text hold />`, `<LivatarBackground variants children />` (avatar wall following the cursor), `<LivatarChat messages={[{ id, from, text, me }]} typing people />`, `<LivatarToast open type title description onClose duration />`, `<LivatarNotFound title description action code />`, `<LivatarTyping name />`, `<LivatarProfileCard name role status action />`, `<LivatarTestimonial quote name title />`, `<LivatarCheckout amount onPay={(card) => ok} />` (money card character; covers eyes on CVC), `<LivatarCartButton count onClick />` (ui cart), `<LivatarUpload onFiles accept multiple />` (office folder), `<LivatarThemeToggle dark onChange />` (planet sun/moon), `<LivatarPasswordStrength value score />` (ui lock), `<LivatarRating value onChange max />` (emoji), `<LivatarConnection online />` (tech cloud), `<LivatarMarquee users rows />, <LivatarConfetti fire>…</LivatarConfetti>, <LivatarPresence users max>{shared surface}</LivatarPresence> (presence dots, typing, multiplayer cursors; feed from Liveblocks/Yjs/PartyKit), <LivatarSkeleton kind='text|list|card|image|video|profile|table|chat|feed|grid' count shimmer avatar />, <LivatarInput avatar validate end face follow cycle …inputAttrs /> (follow = seed the face from the typed text; cycle = click the face to change character type)` (face inside the field, transparent; happy when valid, covers eyes on password), `<LivatarSearch onSearch={(q) => results} debounce />` (owl), `<LivatarOTP length onComplete={(code) => ok} />` (key), `<LivatarNewsletter onSubscribe button />` (sprout → sunflower), `<LivatarCookieConsent onAccept onDecline />` (donut), `<LivatarProgress value label />` (car), `<LivatarStepper steps current />` (rocket), `<LivatarPricing tiers={[{ name, price, period, features, popular, onSelect }]} />` (coin/piggy/gem), `<LivatarBell count onClick />`, `<LivatarLike liked onChange count />` (heart planet), `<LivatarCountdown to onDone label />` (clock), `<LivatarHelpLauncher title position>{panel}</LivatarHelpLauncher>` (bot). All take <Livatar> props (variant, seed, size, …). Hooks: `usePersonality(ref, input)`, `useAssistant(ref) → [ai, state]`, `usePet(ref, opts) → [pet, stats]`, `useContextAware(ref, opts)`.
 
 ## Framework entry points
@@ -67,7 +68,7 @@ Any SVG comes alive via attributes: data-lv-depth, data-lv-tilt, data-lv-eye, da
 
 ## Generated reference (from the built package)
 
-Moods: neutral, happy, sad, angry, surprised, sleepy, love, wink, silly, confused
+Moods: neutral, happy, sad, angry, surprised, sleepy, love, wink, silly, confused, laugh, cool, cry, scared, smug, starstruck
 Palettes: pastel, vivid, candy, ocean, forest, sunset, mono, neon, retro, earth
 
 ### blob
@@ -263,6 +264,56 @@ Palettes: pastel, vivid, candy, ocean, forest, sunset, mono, neon, retro, earth
 - kind: hammer, wrench, screwdriver, saw, drill, toolbox, roller, tape
 - finish: classic, candy
 
+### anime
+- hair: spiky, fringe, bob, twintails, ponytail
+- eyeColor: #3b6fd8, #c0392b, #2e9e6a, #8e44ad, #d68910, #4a3426
+- skin: #ffe0c7, #f6c9a4, #e2a87e, #c68658, #9c6440, #6e4630
+- hairColor: #1e1a1d, #3b2a22, #6b4429, #b07a45, #e2bf7a, #b8462e, #9a9aa6, #4a6cf7, #ff7eb6, #e8e8f0
+- shirt: #1f2a44, #f4f1ea, #c0392b, #5b7cfa, #2ec4b6, #3d405b
+
+### notion
+- hair: short, curly, long, bun, mohawk, side, bald
+- accessory: none, glasses, earring, cap, headphones
+- beard: none, stubble, full, mustache
+
+### chibi
+- hair: fluffy, bowl, tuft, pigtails, long
+- hat: none, beanie, cat, bow, flower
+- skin: #ffe0c7, #f6c9a4, #e2a87e, #c68658, #9c6440, #6e4630
+- hairColor: #1e1a1d, #3b2a22, #6b4429, #b07a45, #e2bf7a, #b8462e, #9a9aa6
+- outfit: #5b7cfa, #ff7a8a, #2ec4b6, #ffb347, #8f6bf2, #3d405b, #f4f1ea
+
+### flat
+- hair: bob, afro, quiff, long, bun, bald
+- pattern: none, dots, stripes, zigzag
+- skin: #ffe0c7, #f6c9a4, #e2a87e, #c68658, #9c6440, #6e4630, #8f7cf8, #5fb4ff
+- hairColor: #1e1a1d, #3b2a22, #6b4429, #b07a45, #e2bf7a, #b8462e, #9a9aa6
+- shirt: #ff5a5f, #ffb400, #00a699, #3d5afe, #7b61ff, #1e1e2f, #ff8a3d
+
+### lowpoly
+- hair: crop, spiky, long, bald
+- skin: #ffe0c7, #f6c9a4, #e2a87e, #c68658, #9c6440, #6e4630
+- hairColor: #1e1a1d, #3b2a22, #6b4429, #b07a45, #e2bf7a, #b8462e, #9a9aa6
+- shirt: #5b7cfa, #ff7a8a, #2ec4b6, #ffb347, #8f6bf2, #3d405b, #f4f1ea
+
+### sketch
+- hair: messy, slick, long, curly, bald
+- pencil: #3a3a3a, #2b3a67, #5a3d2b, #7a2e2e
+- paper: #fbf8f1, #f4efe3, #ffffff, #eef3f7
+
+### retro
+- hair: afro, mullet, feathered, pompadour, bald
+- accessory: none, aviators, headband, mustache
+- skin: #ffe0c7, #f6c9a4, #e2a87e, #c68658, #9c6440, #6e4630
+- hairColor: #2b1a12, #4a2a17, #7a4a22, #b5793a, #e0b25c, #9c3b1e
+- shirt: #e2583e, #f2a541, #3b8686, #7b4b94, #c94f7c, #5c6b2e
+
+### toon
+- hair: quiff, spikes, pigtails, cap, curly, bald
+- skin: #ffe0c7, #f6c9a4, #e2a87e, #c68658, #9c6440, #6e4630
+- hairColor: #1e1a1d, #3b2a22, #6b4429, #b07a45, #e2bf7a, #b8462e, #9a9aa6
+- shirt: #5b7cfa, #ff7a8a, #2ec4b6, #ffb347, #8f6bf2, #3d405b, #f4f1ea
+
 ## README
 
 
@@ -298,8 +349,8 @@ Animated preview. Open the live demo to play with the real thing.
 
 Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes when you type a password, and show ten moods.
 
-- **37 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
-- **10 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
+- **45 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
+- **16 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, `laugh`, `cool`, `cry`, `scared`, `smug`, `starstruck`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
 - **One code per avatar.** Every look packs into a short, URL-safe string such as `lvAQQBAG51aG1hbnBr`. Store it with the user and render it anywhere.
 - **Light.** One style plus the engine is about 9 KB gzipped. Styles are tree-shakable, so you only ship the ones you import.
 - **Runs anywhere.** ESM, CJS, `<script>` CDN, a web component, React, Vue, Svelte, Angular, SSR, `<img>`, and email (static).
@@ -322,6 +373,14 @@ Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, ch
 | `pixel` | Mirrored pixel critters |  |
 | `memoji` | Glossy 3D-style heads: curly tops, beards, aviators |  |
 | `clay` | Soft claymorphism people |  |
+| `anime` | Cel-shaded anime people |  |
+| `chibi` | Super-deformed cute people |  |
+| `toon` | Saturday-morning cartoon people |  |
+| `notion` | Minimal black-ink line portraits with glasses, caps, headphones and beards. Pick any ink and paper color. |  |
+| `flat` | Flat corporate-illustration people |  |
+| `lowpoly` | Faceted low-poly people built from flat-shaded triangles, like a cut gem. |  |
+| `sketch` | Pencil-sketch portraits with hatching and a jittery "boiling line" animation. |  |
+| `retro` | 70s/80s people |  |
 | `planet` | Earth, Saturn, the Moon, the Sun, comets |  |
 | `dino` | T-rex, triceratops, stego, bronto, ptero, dragon |  |
 | `alien` | Friendly aliens with 1–3 eyes and helmets |  |
@@ -341,7 +400,7 @@ The `animal` species are cat, dog, bear, bunny, fox, panda, frog, mouse, shark, 
 
 
 
-neutral · happy · sad · angry · surprised · sleepy · love · wink · silly · confused
+neutral · happy · sad · angry · surprised · sleepy · love · wink · silly · confused · laugh · cool · cry · scared · smug · starstruck
 
 ```js
 createAvatar(animal, { seed: 'ada', mood: 'love' })  // static, works in <img> and email
@@ -450,7 +509,7 @@ Attributes:
 | --- | --- |
 | `code` | A livatar code. Other attributes override what it says. |
 | `seed`, `variant` | Seed and style name: `buddy`, `animal`, `monster`, `ghost`, `emoji`, `bot`, `blob`, or `pixel` |
-| `mood` | One of the ten moods |
+| `mood` | One of the sixteen moods |
 | `options` | Style options as JSON, for example `'{"hair":"afro"}'` |
 | `size` | A number in px or any CSS length |
 | `shape` | `circle`, `rounded`, or `square` |
@@ -506,7 +565,7 @@ If you render SVG on the server, call `alive(el)` on the client to wake it up.
 | Option | Type | Default |
 | --- | --- | --- |
 | `seed` | `string \| number` | `'livatar'` |
-| `mood` | one of the ten moods | `'neutral'` |
+| `mood` | one of the sixteen moods | `'neutral'` |
 | `size` | `number \| string` | `100%` (fluid) |
 | `shape` | `'circle' \| 'rounded' \| 'square'` | `'circle'` |
 | `background` | `boolean \| string` | `true` (picked from the palette) |
@@ -723,7 +782,7 @@ export default { fetch: avatarHandler() }                      // Cloudflare / B
 - **Own the components.** `npx livatar components` lists them. `npx livatar add skeleton` scaffolds an editable wrapper in `components/livatar/`.
 - **Presence.** `LivatarPresence` shows who is here (presence dots, typing, `+N`) and multiplayer cursors with faces. Feed it from Liveblocks, Yjs, PartyKit, Supabase Realtime or your own socket.
 - **Photo with fallback.** `<LivatarPhoto src={user.avatarUrl} seed={user.id} />` shows the photo, or the user's livatar when there is none, the URL 404s or they are offline. Without React: `photoFallback(document.querySelectorAll('img[data-seed]'))`.
-- **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Full-body animals (head, body, legs, tail) wander along the bottom of the page, each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
+- **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Pixel-art pets (cat, dog, fox, lion, pig, panda, bunny, koala, bear, mouse, frog, penguin, owl, chick, dino) wander along the bottom of the page with their own pixel faces (happy, laughing, angry, crying, scared, smug, dizzy…), each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Natural rivals chase each other (dog → cat, cat → mouse, fox → chick…), scuffle in a dust cloud when caught, then the winner looks smug and the loser runs off crying. Walk past a sleeping pet and it wakes up grumpy: they argue in speech bubbles, then either scuffle or it goes back to sleep (`rivals: false` to turn it off, `onFight(winner, loser)` to listen, `roamer.chase(other)` to start one). Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
 - **Social proof and delight.** `LivatarMarquee` (endless face scroller), `LivatarConfetti` (faces burst out), `LivatarSkeleton` (ten loading placeholders). Every animation respects `prefers-reduced-motion`, and a test keeps it that way.
 
 ## Develop

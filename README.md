@@ -31,8 +31,8 @@
 
 Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes when you type a password, and show ten moods.
 
-- **37 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
-- **10 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
+- **45 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
+- **16 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, `laugh`, `cool`, `cry`, `scared`, `smug`, `starstruck`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
 - **One code per avatar.** Every look packs into a short, URL-safe string such as `lvAQQBAG51aG1hbnBr`. Store it with the user and render it anywhere.
 - **Light.** One style plus the engine is about 9 KB gzipped. Styles are tree-shakable, so you only ship the ones you import.
 - **Runs anywhere.** ESM, CJS, `<script>` CDN, a web component, React, Vue, Svelte, Angular, SSR, `<img>`, and email (static).
@@ -55,6 +55,14 @@ Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, ch
 | `pixel` | Mirrored pixel critters | <img src="assets/style-pixel.svg" alt="pixel avatars" height="44"> |
 | `memoji` | Glossy 3D-style heads: curly tops, beards, aviators | <img src="assets/style-memoji.svg" alt="memoji avatars" height="44"> |
 | `clay` | Soft claymorphism people | <img src="assets/style-clay.svg" alt="clay avatars" height="44"> |
+| `anime` | Cel-shaded anime people | <img src="assets/style-anime.svg" alt="anime avatars" height="44"> |
+| `chibi` | Super-deformed cute people | <img src="assets/style-chibi.svg" alt="chibi avatars" height="44"> |
+| `toon` | Saturday-morning cartoon people | <img src="assets/style-toon.svg" alt="toon avatars" height="44"> |
+| `notion` | Minimal black-ink line portraits with glasses, caps, headphones and beards. Pick any ink and paper color. | <img src="assets/style-notion.svg" alt="notion avatars" height="44"> |
+| `flat` | Flat corporate-illustration people | <img src="assets/style-flat.svg" alt="flat avatars" height="44"> |
+| `lowpoly` | Faceted low-poly people built from flat-shaded triangles, like a cut gem. | <img src="assets/style-lowpoly.svg" alt="lowpoly avatars" height="44"> |
+| `sketch` | Pencil-sketch portraits with hatching and a jittery "boiling line" animation. | <img src="assets/style-sketch.svg" alt="sketch avatars" height="44"> |
+| `retro` | 70s/80s people | <img src="assets/style-retro.svg" alt="retro avatars" height="44"> |
 | `planet` | Earth, Saturn, the Moon, the Sun, comets | <img src="assets/style-planet.svg" alt="planet avatars" height="44"> |
 | `dino` | T-rex, triceratops, stego, bronto, ptero, dragon | <img src="assets/style-dino.svg" alt="dino avatars" height="44"> |
 | `alien` | Friendly aliens with 1–3 eyes and helmets | <img src="assets/style-alien.svg" alt="alien avatars" height="44"> |
@@ -69,12 +77,12 @@ The `animal` species are cat, dog, bear, bunny, fox, panda, frog, mouse, shark, 
 
 ## Moods
 
-<img src="assets/moods-emoji.svg" alt="emoji in all ten moods" width="940"><br>
-<img src="assets/moods-animal.svg" alt="a shark in all ten moods" width="940"><br>
-<img src="assets/moods-buddy.svg" alt="a cartoon human in all ten moods" width="940"><br>
+<img src="assets/moods-emoji.svg" alt="emoji in all sixteen moods" width="940"><br>
+<img src="assets/moods-animal.svg" alt="a shark in all sixteen moods" width="940"><br>
+<img src="assets/moods-buddy.svg" alt="a cartoon human in all sixteen moods" width="940"><br>
 <img src="assets/moods-mixed.svg" alt="one mood per character" width="940">
 
-<sub>neutral · happy · sad · angry · surprised · sleepy · love · wink · silly · confused</sub>
+<sub>neutral · happy · sad · angry · surprised · sleepy · love · wink · silly · confused · laugh · cool · cry · scared · smug · starstruck</sub>
 
 ```js
 createAvatar(animal, { seed: 'ada', mood: 'love' })  // static, works in <img> and email
@@ -183,7 +191,7 @@ Attributes:
 | --- | --- |
 | `code` | A livatar code. Other attributes override what it says. |
 | `seed`, `variant` | Seed and style name: `buddy`, `animal`, `monster`, `ghost`, `emoji`, `bot`, `blob`, or `pixel` |
-| `mood` | One of the ten moods |
+| `mood` | One of the sixteen moods |
 | `options` | Style options as JSON, for example `'{"hair":"afro"}'` |
 | `size` | A number in px or any CSS length |
 | `shape` | `circle`, `rounded`, or `square` |
@@ -239,7 +247,7 @@ If you render SVG on the server, call `alive(el)` on the client to wake it up.
 | Option | Type | Default |
 | --- | --- | --- |
 | `seed` | `string \| number` | `'livatar'` |
-| `mood` | one of the ten moods | `'neutral'` |
+| `mood` | one of the sixteen moods | `'neutral'` |
 | `size` | `number \| string` | `100%` (fluid) |
 | `shape` | `'circle' \| 'rounded' \| 'square'` | `'circle'` |
 | `background` | `boolean \| string` | `true` (picked from the palette) |
@@ -456,7 +464,7 @@ export default { fetch: avatarHandler() }                      // Cloudflare / B
 - **Own the components.** `npx livatar components` lists them. `npx livatar add skeleton` scaffolds an editable wrapper in `components/livatar/`.
 - **Presence.** `LivatarPresence` shows who is here (presence dots, typing, `+N`) and multiplayer cursors with faces. Feed it from Liveblocks, Yjs, PartyKit, Supabase Realtime or your own socket.
 - **Photo with fallback.** `<LivatarPhoto src={user.avatarUrl} seed={user.id} />` shows the photo, or the user's livatar when there is none, the URL 404s or they are offline. Without React: `photoFallback(document.querySelectorAll('img[data-seed]'))`.
-- **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Full-body animals (head, body, legs, tail) wander along the bottom of the page, each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
+- **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Pixel-art pets (cat, dog, fox, lion, pig, panda, bunny, koala, bear, mouse, frog, penguin, owl, chick, dino) wander along the bottom of the page with their own pixel faces (happy, laughing, angry, crying, scared, smug, dizzy…), each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Natural rivals chase each other (dog → cat, cat → mouse, fox → chick…), scuffle in a dust cloud when caught, then the winner looks smug and the loser runs off crying. Walk past a sleeping pet and it wakes up grumpy: they argue in speech bubbles, then either scuffle or it goes back to sleep (`rivals: false` to turn it off, `onFight(winner, loser)` to listen, `roamer.chase(other)` to start one). Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
 - **Social proof and delight.** `LivatarMarquee` (endless face scroller), `LivatarConfetti` (faces burst out), `LivatarSkeleton` (ten loading placeholders). Every animation respects `prefers-reduced-motion`, and a test keeps it that way.
 
 ## Develop

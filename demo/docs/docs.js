@@ -22,7 +22,7 @@ const el = (tag, attrs = {}, ...kids) => {
 }
 const box = (parent, width) => { const d = el('div'); if (width) d.style.width = width; parent.append(d); return d }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-const PREF = ['human', 'buddy', 'memoji', 'clay', 'dev', 'animal', 'dino', 'alien', 'planet', 'food', 'plant', 'monster', 'ghost', 'emoji', 'initials', 'bot', 'blob', 'pixel']
+const PREF = ['clay', 'memoji', 'animal', 'human', 'anime', 'chibi', 'toon', 'notion', 'flat', 'lowpoly', 'sketch', 'retro', 'buddy', 'dev', 'animal', 'dino', 'alien', 'planet', 'food', 'plant', 'monster', 'ghost', 'emoji', 'initials', 'bot', 'blob', 'pixel']
 // preferred order first, then any style added later (so docs never go stale)
 const ORDER = [...PREF.filter((n) => styles[n]), ...Object.keys(styles).filter((n) => !PREF.includes(n))]
 const NAMES = Object.keys(styles)
@@ -142,6 +142,14 @@ const ABOUT = {
   bot: 'Robots with LED eyes, antennas and a glow color.',
   blob: 'Abstract gradient creatures with soft organic outlines.',
   pixel: 'Mirrored pixel critters; density controls how full the sprite is.',
+  anime: 'Cel-shaded anime people: big glossy eyes, spiky, fringe, bob, twintail and ponytail hair, any eye color.',
+  chibi: 'Super-deformed cute people: a huge round head on a tiny body, sparkly eyes, beanies, cat ears, bows.',
+  toon: 'Saturday-morning cartoon people: thick outlines, giant eyes and a big expressive grin.',
+  notion: 'Minimal black-ink line portraits with glasses, caps, headphones and beards. Pick any ink and paper color.',
+  flat: 'Flat corporate-illustration people: geometric shapes, no outlines, patterned shirts.',
+  lowpoly: 'Faceted low-poly people built from flat-shaded triangles, like a cut gem.',
+  sketch: 'Pencil-sketch portraits with hatching and a jittery "boiling line" animation.',
+  retro: '70s/80s people: halftone shading, sunset stripes, afros, mullets and aviators.',
   memoji: 'Glossy 3D-style cartoon heads: curly tops, fades, beards, aviator sunglasses, skin and hair colors.',
   clay: 'Soft claymorphism people built from layered gradients (no filters), in matte pastels.',
   dino: 'T-rex, triceratops, stego, bronto, ptero and a little dragon, with spots and party hats.',

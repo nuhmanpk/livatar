@@ -6,7 +6,7 @@
 <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>livatar docs</title>
-<meta name="description" content="Documentation for livatar: tiny, zero-dependency SVG avatars that follow your cursor, blink, breathe, react to typing and show 10 moods. Guides for every framework, live examples, and the full API." />
+<meta name="description" content="Documentation for livatar: tiny, zero-dependency SVG avatars that follow your cursor, blink, breathe, react to typing and show 16 moods. Guides for every framework, live examples, and the full API." />
 <script>
   // theme before paint: ?theme=dark|light wins (handy for screenshots), then the saved choice
   try {
@@ -65,8 +65,8 @@
   <h2 id="why">Introduction &amp; why</h2>
   <p>Most avatar libraries draw a picture and stop there. livatar draws a <em>character</em>: every avatar has eyes that track the pointer, a mouth that moves while you type, a body that breathes, and a mood. That makes empty states, login forms, chat bots and presence lists feel friendly without shipping a video, a Lottie file, or an animation runtime.</p>
   <div class="cards">
-    <div class="card"><b>37 characters</b><span>weather, sport, music, sea creatures, bugs, magic, party, seasons, tools, human (baby to grandparent), buddy, memoji, clay, dev, animal (16 species), dino, alien, planet, food, fruit, drink, plant, monster, ghost, emoji, initials, bot, blob, pixel, ui, device, tech, vehicle, money, home, office.</span></div>
-    <div class="card"><b>10 moods</b><span>Static in SVG, or live with <code>handle.emote()</code>.</span></div>
+    <div class="card"><b>45 characters</b><span>weather, sport, music, sea creatures, bugs, magic, party, seasons, tools, human (baby to grandparent), buddy, memoji, clay, dev, animal (16 species), dino, alien, planet, food, fruit, drink, plant, monster, ghost, emoji, initials, bot, blob, pixel, ui, device, tech, vehicle, money, home, office.</span></div>
+    <div class="card"><b>16 moods</b><span>Static in SVG, or live with <code>handle.emote()</code>.</span></div>
     <div class="card"><b>One code per avatar</b><span>A short URL-safe string you can store, share and render anywhere.</span></div>
     <div class="card"><b>Small</b><span>One style plus the engine is about 9 KB gzipped. Zero dependencies.</span></div>
     <div class="card"><b>Deterministic</b><span>The same seed draws the same avatar on the server and in the browser.</span></div>
@@ -947,7 +947,7 @@ h.destroy()</script>
     <tbody>
       <tr><td><code>code</code></td><td>A livatar code. Other attributes override what it says.</td></tr>
       <tr><td><code>seed</code>, <code>variant</code></td><td>Seed and style name (default <code>blob</code>)</td></tr>
-      <tr><td><code>mood</code></td><td>One of the ten moods</td></tr>
+      <tr><td><code>mood</code></td><td>One of the sixteen moods</td></tr>
       <tr><td><code>options</code></td><td>Style options as JSON, e.g. <code>'{"hair":"afro"}'</code></td></tr>
       <tr><td><code>size</code></td><td>Number (px) or any CSS length; default 64px</td></tr>
       <tr><td><code>shape</code></td><td><code>circle</code>, <code>rounded</code>, <code>square</code></td></tr>
@@ -1359,7 +1359,7 @@ h.emote('love') // moods work: the face helpers draw them</script>
     </tbody>
   </table></div>
   <h3 id="face-helpers">FaceSpec helpers</h3>
-  <p><code>faceEyes</code>, <code>faceBrows</code>, <code>faceMouth</code> and <code>faceExtras</code> draw all ten moods from a small <code>FaceSpec</code>: face centre <code>x</code>, eye line <code>ey</code>, half eye distance <code>gap</code>, mouth top <code>my</code>, <code>ink</code> color, optional scale <code>s</code> (1 suits ~7-unit eyes), your open <code>eye(x, y)</code>, and an optional <code>extra: [x, y]</code> spot for floating extras. <code>faceMouth</code> returns <code>''</code> for neutral, so draw your own default mouth. <code>heart(x, y, r, fill?)</code> is exported too, as are <code>hash</code>, <code>createRand</code>, <code>luma</code> and <code>smoothPath</code> (a closed Catmull-Rom path through points, handy for organic shapes).</p>
+  <p><code>faceEyes</code>, <code>faceBrows</code>, <code>faceMouth</code> and <code>faceExtras</code> draw all sixteen moods from a small <code>FaceSpec</code>: face centre <code>x</code>, eye line <code>ey</code>, half eye distance <code>gap</code>, mouth top <code>my</code>, <code>ink</code> color, optional scale <code>s</code> (1 suits ~7-unit eyes), your open <code>eye(x, y)</code>, and an optional <code>extra: [x, y]</code> spot for floating extras. <code>faceMouth</code> returns <code>''</code> for neutral, so draw your own default mouth. <code>heart(x, y, r, fill?)</code> is exported too, as are <code>hash</code>, <code>createRand</code>, <code>luma</code> and <code>smoothPath</code> (a closed Catmull-Rom path through points, handy for organic shapes).</p>
   <p>Custom styles work with codes too: pass your own registry as the last argument, e.g. <code>encode(cfg, { ...styles, jelly })</code> and <code>render(code, {}, { ...styles, jelly })</code>, and append new styles at the end so old indexes stay stable.</p>
 </section>
 

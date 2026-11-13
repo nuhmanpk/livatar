@@ -87,7 +87,7 @@ test('roam: every species has a body, a persona, and sound is off by default', a
   assert.equal(zoo.spawn('cat'), null)
   zoo.destroy()
   const src = (await import('node:fs')).readFileSync('src/roam.ts', 'utf8')
-  for (const sp of ['cat', 'dog', 'bear', 'bunny', 'fox', 'panda', 'frog', 'mouse', 'shark', 'penguin', 'owl', 'chick', 'parrot', 'pig', 'koala', 'lion']) {
+  for (const sp of ['cat', 'dog', 'bear', 'bunny', 'fox', 'panda', 'frog', 'mouse', 'penguin', 'owl', 'chick', 'pig', 'koala', 'lion', 'dino']) {
     assert.ok(new RegExp(`\\b${sp}: \\{ move:`).test(src), `persona for ${sp}`)
   }
   assert.ok(/sound\?: boolean/.test(src) && /!!opts\.sound/.test(src))

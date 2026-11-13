@@ -214,7 +214,7 @@ Entry points:
 - Vue: 'livatar/vue' · Any framework: <live-avatar> from 'livatar/element' · Brand icons: icon(name) from 'livatar/icons'
 - Login forms: bindForm(handle, form) → covers eyes on password fields, happy/sad on validation
 
-Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human
+Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human anime chibi toon notion flat lowpoly sketch retro
 Moods: neutral happy sad angry surprised sleepy love wink silly confused
 
 Rules: same seed = same avatar; don't invent options (check llms-full.txt); wrap interactive ones in a <button> with an aria-label; use describe(config) for alt text.
@@ -294,14 +294,16 @@ document.addEventListener('click', (e) => {
   st.textContent = `#paw{position:relative;width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:50%;background:var(--card,#fff);color:var(--fg,#1f1a2e);border:1px solid var(--line,#ece6dc);flex:none;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
 #paw svg{width:18px;height:18px}#paw:hover{transform:translateY(-1px)}
 #paw[data-mode=on],#paw[data-mode=sound]{background:var(--brand,#7f5af0);border-color:var(--brand,#7f5af0);color:#fff}
-#paw .snd{position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-radius:50%;background:var(--card,#fff);color:var(--brand,#7f5af0);display:none;place-items:center;box-shadow:0 0 0 1.5px var(--brand,#7f5af0)}
-#paw .snd svg{width:10px;height:10px}#paw[data-mode=sound] .snd{display:grid}
+#paw{display:inline-flex;align-items:center;justify-content:center;gap:5px;width:auto;min-width:36px;padding:0 9px;border-radius:999px}
+#paw .snd{display:none;line-height:0}#paw .snd svg{width:16px;height:16px}
+#paw[data-mode=on] .snd,#paw[data-mode=sound] .snd{display:inline-block}
+#paw .snd .on{display:none}#paw[data-mode=sound] .snd .on{display:inline}#paw[data-mode=sound] .snd .off{display:none}
 #paw.float{position:fixed;left:14px;bottom:14px;z-index:60}
-@media (max-width:640px){#paw{width:32px;height:32px}}`
+@media (max-width:640px){#paw{min-width:32px;height:32px;padding:0 7px}}`
   document.head.append(st)
   const btn = document.createElement('button')
   btn.id = 'paw'; btn.type = 'button'
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="6.5" cy="10" rx="2.1" ry="2.8"/><ellipse cx="10.3" cy="5.8" rx="2.1" ry="2.8"/><ellipse cx="15.2" cy="5.8" rx="2.1" ry="2.8"/><ellipse cx="19" cy="10" rx="2.1" ry="2.8"/><path d="M12.7 11c-3 0-5.6 3.2-5.6 5.8 0 2 1.6 2.7 3.1 2.4 1-.2 1.6-.5 2.5-.5s1.5.3 2.5.5c1.5.3 3.1-.4 3.1-2.4 0-2.6-2.6-5.8-5.6-5.8z"/></svg><span class="snd" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a5 5 0 010 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></span>'
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="6.5" cy="10" rx="2.1" ry="2.8"/><ellipse cx="10.3" cy="5.8" rx="2.1" ry="2.8"/><ellipse cx="15.2" cy="5.8" rx="2.1" ry="2.8"/><ellipse cx="19" cy="10" rx="2.1" ry="2.8"/><path d="M12.7 11c-3 0-5.6 3.2-5.6 5.8 0 2 1.6 2.7 3.1 2.4 1-.2 1.6-.5 2.5-.5s1.5.3 2.5.5c1.5.3 3.1-.4 3.1-2.4 0-2.6-2.6-5.8-5.6-5.8z"/></svg><span class="snd" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9z"/><g class="on" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M15.5 9a4 4 0 010 6"/><path d="M18.5 6.5a8 8 0 010 11"/></g><g class="off" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M16 9.5l5 5M21 9.5l-5 5"/></g></svg></span>'
   let zoo = null, mod = null, mode = 'off'
   const LABEL = { off: 'Let animals roam this site', on: 'Animals are roaming (muted). Click for sounds', sound: 'Animals with sounds. Click to hide them' }
   const draw = () => { btn.dataset.mode = mode; btn.setAttribute('aria-label', LABEL[mode]); btn.title = LABEL[mode]; btn.setAttribute('aria-pressed', String(mode !== 'off')) }

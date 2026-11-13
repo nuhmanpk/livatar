@@ -13,6 +13,11 @@ const EYES: Partial<Record<Mood, string>> = {
   happy: '.#.|#.#|...',
   sleepy: '...|###|...',
   love: 'r.r|rrr|.r.',
+  laugh: '#..|.#.|#..',
+  cool: '###|###|...',
+  cry: '...|###|.b.',
+  smug: '...|###|.#.',
+  starstruck: '.w.|www|w.w',
 }
 const MOUTHS: Partial<Record<Mood, string>> = {
   happy: '######|#pppp#|.####.',
@@ -24,6 +29,12 @@ const MOUTHS: Partial<Record<Mood, string>> = {
   wink: '.....#|#...#.|.###..',
   silly: '######|...pp.|...pp.',
   confused: '.#....|#.#.#.|...#.#',
+  laugh: '######|#wwww#|#pppp#|.####.',
+  cool: '......|....##|.###..',
+  cry: '.####.|#pppp#|######',
+  scared: '######|#w#w#w|######',
+  smug: '......|.....#|.####.',
+  starstruck: '######|#pppp#|.####.',
 }
 const INKS: Record<string, string> = { '#': INK, w: '#fff', p: '#ff7a93', r: '#ff4d6d', b: '#5ec5ff' }
 const bitmap = (map: string, x: number, y: number, px: number, ink = INK) =>

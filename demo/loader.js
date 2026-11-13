@@ -21,40 +21,42 @@
     // holding hands in a line, a wave runs through them
     chain: function () { for (var i = 0; i < n; i++) html += (i ? '<i class="lv-hand"></i>' : '') + '<span class="lv-c">' + face(i, 40) + '</span>'; return '<div class="lv-chain">' + html + '</div>' },
     // small friends orbit a big one
-    orbit: function () { for (var i = 0; i < 4; i++) html += '<span class="lv-o" style="--a:' + i * 90 + 'deg">' + face(i + 1, 28) + '</span>'; return '<div class="lv-orbit"><span class="lv-big">' + face(0, 64, 'o') + '</span>' + html + '</div>' },
+    // (static rotations inline; keyframes hold no CSS variables, which Safari animates wrongly)
+    orbit: function () { for (var i = 0; i < 4; i++) html += '<span class="lv-arm" style="transform:rotate(' + i * 90 + 'deg)"><span class="lv-pos"><span style="display:block;transform:rotate(' + -i * 90 + 'deg)"><span class="lv-o">' + face(i + 1, 28) + '</span></span></span></span>'; return '<div class="lv-orbit"><span class="lv-big">' + face(0, 64, 'o') + '</span><span class="lv-ring">' + html + '</span></div>' },
     // a conga line marching across
     conga: function () { for (var i = 0; i < n; i++) html += '<span class="lv-g" style="--i:' + i + '">' + face(i, 36) + '</span>'; return '<div class="lv-conga">' + html + '</div>' },
     // stacking up into a tower, then tumbling
-    stack: function () { for (var i = 0; i < 4; i++) html += '<span class="lv-s" style="--i:' + i + '">' + face(i + 2, 38) + '</span>'; return '<div class="lv-stack">' + html + '</div>' },
+    stack: function () { for (var i = 0; i < 4; i++) html += '<span class="lv-s lv-s' + i + '" style="bottom:' + i * 36 + 'px;animation-delay:' + i * 0.25 + 's">' + face(i + 2, 38) + '</span>'; return '<div class="lv-stack">' + html + '</div>' },
   }
   var keys = Object.keys(scenes)
   var want = (location.search.match(/[?&]loader=(\w+)/) || [])[1]
   var pick = scenes[want] ? want : keys[Math.floor(Math.random() * keys.length)]
   var LINES = ['Waking up the avatars…', 'Brushing their teeth…', 'Practising smiles…', 'Finding everyone a seat…', 'Untangling the hand-holding…']
   var css = '' +
-    '#lv-load{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:var(--bg,#faf7f2);color:var(--fg,#1f1a2e);transition:opacity .3s ease-out,visibility 0s linear .3s;font:600 14px/1.4 system-ui,sans-serif}' +
+    '#lv-load{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:9999;display:grid;place-items:center;background:var(--bg,#faf7f2);color:var(--fg,#1f1a2e);transition:opacity .3s ease-out,visibility 0s linear .3s;font:600 14px/1.4 system-ui,sans-serif}' +
     '#lv-load.out{opacity:0;visibility:hidden}' +
     '#lv-load .lv-in{display:flex;flex-direction:column;align-items:center;gap:22px}' +
-    '#lv-load .lv-t{opacity:.6;min-height:20px;transition:opacity .3s}' +
+    '#lv-load .lv-t{opacity:.6;min-height:20px;width:260px;max-width:90vw;text-align:center;transition:opacity .3s}' +
     '.lv-c,.lv-big,.lv-o,.lv-o svg,.lv-g,.lv-g svg,.lv-s{will-change:transform;backface-visibility:hidden}#lv-load{overscroll-behavior:none;touch-action:none;-webkit-tap-highlight-color:transparent}.lv-f{display:block}.lv-f .lv-eyes{transform-origin:24px 21px;animation:lv-blink 3.2s infinite var(--d)}' +
     '.lv-chain{display:flex;align-items:center}.lv-c{display:block;animation:lv-wave 1.1s ease-in-out infinite;animation-delay:calc(var(--k,0) * 1s)}' +
     '.lv-chain .lv-c:nth-of-type(2){animation-delay:.12s}.lv-chain .lv-c:nth-of-type(3){animation-delay:.24s}.lv-chain .lv-c:nth-of-type(4){animation-delay:.36s}.lv-chain .lv-c:nth-of-type(5){animation-delay:.48s}' +
     '.lv-hand{display:block;width:10px;height:4px;border-radius:4px;background:currentColor;opacity:.25;margin:0 -2px}' +
     '.lv-orbit{position:relative;width:150px;height:150px;display:grid;place-items:center}.lv-big{animation:lv-bob 1.6s ease-in-out infinite}' +
-    '.lv-o{position:absolute;left:61px;top:61px;animation:lv-spin 2.4s linear infinite;--r:62px}' +
-    '.lv-o svg{display:block;animation:lv-unspin 2.4s linear infinite}' +
+    '.lv-ring{position:absolute;inset:0;animation:lv-spin 2.4s linear infinite}' +
+    '.lv-arm{position:absolute;left:61px;top:61px;width:28px;height:28px}.lv-pos{display:block;transform:translateX(62px)}' +
+    '.lv-o{display:block}.lv-o svg{display:block;animation:lv-unspin 2.4s linear infinite}' +
     '.lv-conga{position:relative;transform:translateZ(0);width:260px;height:60px;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);mask:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}' +
     '.lv-g{position:absolute;bottom:6px;left:0;animation:lv-march 3s linear infinite;animation-delay:calc(var(--i) * -.6s)}.lv-g svg{display:block;animation:lv-hop .5s ease-in-out infinite alternate;animation-delay:calc(var(--i) * -.1s)}' +
     '.lv-stack{position:relative;width:60px;height:170px}' +
-    '.lv-s{position:absolute;left:11px;bottom:calc(var(--i) * 36px);opacity:0;animation:lv-drop 2.8s cubic-bezier(.3,1.4,.5,1) infinite;animation-delay:calc(var(--i) * .25s)}' +
+    '.lv-s{position:absolute;left:11px;opacity:0;animation:2.8s cubic-bezier(.3,1.4,.5,1) infinite}' +
+    [0, 1, 2, 3].map(function (i) { var k = i - 1.5; return '.lv-s' + i + '{animation-name:lv-drop' + i + '}@keyframes lv-drop' + i + '{0%{opacity:0;transform:translateY(-120px)}15%,70%{opacity:1;transform:translateY(0)}85%{opacity:1;transform:translate(' + k * 30 + 'px,40px) rotate(' + k * 40 + 'deg)}100%{opacity:0;transform:translate(' + k * 40 + 'px,60px)}}' }).join('') +
     '@keyframes lv-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}' +
     '@keyframes lv-wave{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-16px) rotate(-6deg)}}' +
     '@keyframes lv-bob{50%{transform:translateY(-6px) scale(1.04)}}' +
-    '@keyframes lv-spin{from{transform:rotate(var(--a)) translateX(var(--r))}to{transform:rotate(calc(var(--a) + 360deg)) translateX(var(--r))}}' +
-    '@keyframes lv-unspin{from{transform:rotate(calc(-1 * var(--a)))}to{transform:rotate(calc(-1 * var(--a) - 360deg))}}' +
+    '@keyframes lv-spin{to{transform:rotate(360deg)}}' +
+    '@keyframes lv-unspin{to{transform:rotate(-360deg)}}' +
     '@keyframes lv-march{from{transform:translate3d(-40px,0,0)}to{transform:translate3d(270px,0,0)}}' +
     '@keyframes lv-hop{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-10px) rotate(5deg)}}' +
-    '@keyframes lv-drop{0%{opacity:0;transform:translateY(-120px)}15%,70%{opacity:1;transform:translateY(0)}85%{opacity:1;transform:translate(calc((var(--i) - 1.5) * 30px),40px) rotate(calc((var(--i) - 1.5) * 40deg))}100%{opacity:0;transform:translate(calc((var(--i) - 1.5) * 40px),60px)}}' +
     '@media (prefers-reduced-motion:reduce){#lv-load *{animation:none!important}.lv-s{opacity:1}}'
   var style = document.createElement('style')
   style.textContent = css

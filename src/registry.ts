@@ -15,6 +15,14 @@ import { alien } from './styles/alien'
 import { planet } from './styles/planet'
 import { clay } from './styles/clay'
 import { memoji } from './styles/memoji'
+import { anime } from './styles/anime'
+import { notion } from './styles/notion'
+import { chibi } from './styles/chibi'
+import { flat } from './styles/flat'
+import { lowpoly } from './styles/lowpoly'
+import { sketch } from './styles/sketch'
+import { retro } from './styles/retro'
+import { toon } from './styles/toon'
 import { ui } from './styles/ui'
 import { device } from './styles/device'
 import { fruit } from './styles/fruit'
@@ -41,4 +49,4 @@ import { tool } from './styles/tool'
  * All built-in styles keyed by name. Importing this pulls every style into
  * your bundle. The key order is part of the livatar code format: append only.
  */
-export const styles: Record<string, AvatarStyle<any>> = { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai, weather, sport, music, sea, bug, magic, party, season, tool }
+export const styles: Record<string, AvatarStyle<any>> = { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai, weather, sport, music, sea, bug, magic, party, season, tool, anime, notion, chibi, flat, lowpoly, sketch, retro, toon }

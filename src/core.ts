@@ -37,7 +37,7 @@ export function createRand(seed: number): Rand {
 }
 
 /** Every built-in style can draw all of these. */
-export const MOODS = ['neutral', 'happy', 'sad', 'angry', 'surprised', 'sleepy', 'love', 'wink', 'silly', 'confused'] as const
+export const MOODS = ['neutral', 'happy', 'sad', 'angry', 'surprised', 'sleepy', 'love', 'wink', 'silly', 'confused', 'laugh', 'cool', 'cry', 'scared', 'smug', 'starstruck'] as const
 export type Mood = (typeof MOODS)[number]
 
 export interface StyleContext<O = Record<string, unknown>> {

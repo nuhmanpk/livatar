@@ -5,7 +5,7 @@ description: Add living, animated SVG avatars and UI icons to a web app with the
 
 # livatar
 
-Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, chew while you type, cover their eyes on password fields, and show 10 moods. Deterministic from a seed.
+Tiny, zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, chew while you type, cover their eyes on password fields, and show 16 moods. Deterministic from a seed.
 
 - Install: `npm i livatar`
 - Full API (read first if unsure): https://nuhmanpk.github.io/livatar/llms-full.txt
@@ -69,9 +69,9 @@ import { LivatarAssistant, LivatarMeet, LivatarLoader } from 'livatar/components
 ```
 
 ## Facts to get right
-- Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human weather sport music sea bug magic party season tool.
+- Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human weather sport music sea bug magic party season tool anime notion chibi flat lowpoly sketch retro toon.
 - planet kinds: earth saturn mars moon sun gas comet star heart cloud.
-- Moods: neutral happy sad angry surprised sleepy love wink silly confused.
+- Moods: neutral happy sad angry surprised sleepy love wink silly confused laugh cool cry scared smug starstruck.
 - Every style option also accepts `'random'` (picked from the seed). Same seed → same avatar.
 - `alive: false` renders static; animation respects `prefers-reduced-motion`.
 - Wrap interactive avatars/icons in a real `<button>` with an `aria-label`; use `describe(config)` for alt text.

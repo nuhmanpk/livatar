@@ -1,7 +1,7 @@
 {
   "name": "livatar",
-  "version": "0.3.0",
-  "description": "Tiny, zero-dependency SVG avatars that are alive: they follow your cursor, blink, breathe, react to typing, and show 10 moods. 8 characters (humans, animals, robots, monsters, ghosts, emoji, pixel, blobs), shareable avatar codes, and it runs everywhere: vanilla, React, Vue, Svelte, Web Components, SSR, CDN.",
+  "version": "0.4.0",
+  "description": "Tiny, zero-dependency SVG avatars that are alive: they follow your cursor, blink, breathe, react to typing, and show 16 moods. 8 characters (humans, animals, robots, monsters, ghosts, emoji, pixel, blobs), shareable avatar codes, and it runs everywhere: vanilla, React, Vue, Svelte, Web Components, SSR, CDN.",
   "keywords": [
     "avatar",
     "svg",

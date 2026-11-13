@@ -62,7 +62,7 @@ test('SSR safe: alive() without DOM is a no-op handle', () => {
   const h = alive(null)
   h.talk(); h.look(1, 0); h.destroy()
   assert.equal(typeof toDataUri(blob, { seed: 'x' }), 'string')
-  assert.deepEqual(Object.keys(styles), ['blob', 'buddy', 'bot', 'pixel', 'animal', 'monster', 'ghost', 'emoji', 'initials', 'food', 'plant', 'dino', 'alien', 'planet', 'clay', 'memoji', 'ui', 'device', 'fruit', 'drink', 'vehicle', 'tech', 'money', 'home', 'office', 'dev', 'human', 'ai', 'weather', 'sport', 'music', 'sea', 'bug', 'magic', 'party', 'season', 'tool'])
+  assert.deepEqual(Object.keys(styles), ['blob', 'buddy', 'bot', 'pixel', 'animal', 'monster', 'ghost', 'emoji', 'initials', 'food', 'plant', 'dino', 'alien', 'planet', 'clay', 'memoji', 'ui', 'device', 'fruit', 'drink', 'vehicle', 'tech', 'money', 'home', 'office', 'dev', 'human', 'ai', 'weather', 'sport', 'music', 'sea', 'bug', 'magic', 'party', 'season', 'tool', 'anime', 'notion', 'chibi', 'flat', 'lowpoly', 'sketch', 'retro', 'toon'])
 })
 
 const wellFormed = (svg, msg) => {

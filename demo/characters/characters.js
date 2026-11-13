@@ -26,11 +26,19 @@ $('theme').onclick = () => {
   try { localStorage.setItem('livatar-theme', root.dataset.theme) } catch {}
 }
 
-const PREF = ['human', 'buddy', 'memoji', 'clay', 'dev', 'animal', 'dino', 'alien', 'planet', 'food', 'fruit', 'drink', 'plant', 'monster', 'ghost', 'emoji', 'initials', 'bot', 'blob', 'pixel', 'ui', 'device', 'tech', 'vehicle', 'money', 'home', 'office', 'weather', 'sport', 'music', 'sea', 'bug', 'magic', 'party', 'season', 'tool', 'ai']
+const PREF = ['clay', 'memoji', 'animal', 'human', 'anime', 'chibi', 'toon', 'notion', 'flat', 'lowpoly', 'sketch', 'retro', 'buddy', 'dev', 'animal', 'dino', 'alien', 'planet', 'food', 'fruit', 'drink', 'plant', 'monster', 'ghost', 'emoji', 'initials', 'bot', 'blob', 'pixel', 'ui', 'device', 'tech', 'vehicle', 'money', 'home', 'office', 'weather', 'sport', 'music', 'sea', 'bug', 'magic', 'party', 'season', 'tool', 'ai']
 const ORDER = [...PREF.filter((n) => styles[n]), ...Object.keys(styles).filter((n) => !PREF.includes(n))]
 const ABOUT = {
   human: 'People from baby to grandparent, with age, gender, skin tone, hair and clothes.',
   buddy: 'Cartoon humans with hair styles, facial hair, glasses, accessories, clothes, skin and hair colors. Hands cover the eyes on password fields.',
+  anime: 'Cel-shaded anime people: big glossy eyes, spiky, fringe, bob, twintail and ponytail hair, any eye color.',
+  chibi: 'Super-deformed cute people: a huge round head on a tiny body, sparkly eyes, beanies, cat ears, bows.',
+  toon: 'Saturday-morning cartoon people: thick outlines, giant eyes and a big expressive grin.',
+  notion: 'Minimal black-ink line portraits with glasses, caps, headphones and beards. Pick any ink and paper color.',
+  flat: 'Flat corporate-illustration people: geometric shapes, no outlines, patterned shirts.',
+  lowpoly: 'Faceted low-poly people built from flat-shaded triangles, like a cut gem.',
+  sketch: 'Pencil-sketch portraits with hatching and a jittery "boiling line" animation.',
+  retro: '70s/80s people: halftone shading, sunset stripes, afros, mullets and aviators.',
   memoji: 'Glossy 3D-style cartoon heads: curly tops, fades, beards, aviator sunglasses, skin and hair colors.',
   clay: 'Soft claymorphism people built from layered gradients, in matte pastels.',
   dev: 'A developer at work: coding, debugging, shipping, with a hoodie color.',

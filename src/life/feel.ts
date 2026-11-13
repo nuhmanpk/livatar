@@ -3,22 +3,34 @@ import type { Mood } from '../core'
 // Tiny sentiment lexicon: enough to pick a believable face, not a classifier.
 const WORDS: Record<string, Mood> = {}
 const add = (mood: Mood, list: string) => list.split(' ').forEach((w) => (WORDS[w] = mood))
-add('happy', 'good great nice awesome amazing cool yay yes thanks thank ty glad happy fun win won works working fixed done perfect excellent sweet congrats congratulations lol haha hehe')
+add('happy', 'good great nice awesome amazing yay yes thanks thank ty glad happy fun win won works working fixed done perfect excellent sweet congrats congratulations')
 add('love', 'love loved lovely adore beautiful cute heart xoxo wonderful')
-add('sad', 'sad sorry unfortunately miss missed lost lose failed fail cry crying depressed bad worse worst no nope alone tired')
+add('sad', 'sad sorry unfortunately miss missed lost lose failed fail depressed bad worse worst no nope alone tired')
 add('angry', 'angry hate hated broken broke bug bugs crash crashed crashing stupid annoying annoyed wtf ugh furious damn terrible awful')
 add('surprised', 'wow whoa woah omg really seriously what unexpected suddenly huh')
 add('confused', 'confused confusing why how hmm unclear weird strange lost idk dunno')
 add('sleepy', 'sleepy sleep zzz bored boring yawn night bedtime')
-add('silly', 'silly joke kidding jk lmao rofl meme goofy')
+add('silly', 'silly joke kidding jk meme goofy')
 add('wink', 'wink secret psst ;)')
+add('laugh', 'lol haha hahaha hehe lmao rofl hilarious')
+add('cool', 'cool chill smooth easy relax relaxed')
+add('cry', 'cry crying tears sob heartbroken devastated')
+add('scared', 'scared scary afraid fear terrified nervous anxious yikes spooky')
+add('smug', 'obviously told duh smug ez flex')
+add('starstruck', 'incredible legendary epic stunning star famous starstruck')
 
 const EMOJI: [RegExp, Mood][] = [
   [/[😍🥰😘❤️💖💕♥]/u, 'love'],
-  [/[😂🤣😄😁😃😀🙂😊🎉👍✅]/u, 'happy'],
-  [/[😢😭😞☹️🙁💔]/u, 'sad'],
+  [/[😂🤣]/u, 'laugh'],
+  [/[🤩🌟⭐]/u, 'starstruck'],
+  [/[😎🆒]/u, 'cool'],
+  [/[😏]/u, 'smug'],
+  [/[😭]/u, 'cry'],
+  [/[😨😰😱👻]/u, 'scared'],
+  [/[😄😁😃😀🙂😊🎉👍✅]/u, 'happy'],
+  [/[😢😞☹️🙁💔]/u, 'sad'],
   [/[😠😡🤬💢]/u, 'angry'],
-  [/[😮😲😱🤯]/u, 'surprised'],
+  [/[😮😲🤯]/u, 'surprised'],
   [/[🤔😕❓]/u, 'confused'],
   [/[😴🥱💤]/u, 'sleepy'],
   [/[😜🤪😛]/u, 'silly'],
@@ -26,7 +38,7 @@ const EMOJI: [RegExp, Mood][] = [
 ]
 
 const NEGATE = new Set(['not', "don't", 'dont', "isn't", 'isnt', 'never', "doesn't", 'doesnt', "can't", 'cant', "won't", 'wont'])
-const FLIP: Partial<Record<Mood, Mood>> = { happy: 'sad', love: 'sad', sad: 'happy', angry: 'neutral' }
+const FLIP: Partial<Record<Mood, Mood>> = { happy: 'sad', love: 'sad', sad: 'happy', angry: 'neutral', laugh: 'sad', cry: 'happy', scared: 'cool', cool: 'scared' }
 
 export interface Feeling {
   mood: Mood

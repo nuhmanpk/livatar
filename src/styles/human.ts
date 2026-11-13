@@ -389,6 +389,12 @@ export const human = defineStyle<HumanOptions>({
       wink: [{ hi: 0.85, ho: 0.9, lo: 0.4 }, { hi: 0, ho: 0, lo: 0, closed: true }],
       silly: [{ hi: 1.35, ho: 1.35, lo: 1.15, look: [0.6, 0] }, { hi: 0.5, ho: 0.5, lo: 0.4, look: [-0.6, 0] }],
       confused: [{ hi: 1.15, ho: 1.15, lo: 1, look: [0.9, -0.4] }, { hi: 0.7, ho: 0.7, lo: 0.9, look: [0.9, -0.4] }],
+      laugh: [{ hi: 0, ho: 0, lo: 0, closed: true }, { hi: 0, ho: 0, lo: 0, closed: true }],
+      cool: [{ hi: 0.55, ho: 0.6, lo: 0.6, look: [0.6, 0] }, { hi: 0.55, ho: 0.6, lo: 0.6, look: [0.6, 0] }],
+      cry: [{ hi: 0.5, ho: 0.35, lo: 0.9, look: [0, 0.6] }, { hi: 0.5, ho: 0.35, lo: 0.9, look: [0, 0.6] }],
+      scared: [{ hi: 1.5, ho: 1.5, lo: 1.35, ir: 0.6 }, { hi: 1.5, ho: 1.5, lo: 1.35, ir: 0.6 }],
+      smug: [{ hi: 0.45, ho: 0.45, lo: 0.7, look: [-0.7, 0] }, { hi: 0.45, ho: 0.45, lo: 0.7, look: [-0.7, 0] }],
+      starstruck: [{ hi: 1.2, ho: 1.2, lo: 1.1, ir: 0.9 }, { hi: 1.2, ho: 1.2, lo: 1.1, ir: 0.9 }],
     }
     const F: FaceSpec = { x: cx, ey, gap, my, ink: INK, s: k * 0.8, eye: () => '', extra: [cx + rx + 1, cy - ry * 0.5] }
     const [pl, pr] = EP[mood] ?? EP.neutral
@@ -401,6 +407,8 @@ export const human = defineStyle<HumanOptions>({
       angry: [-0.4, -1.8, 0.7, -0.4, -1.8, 0.7], surprised: [2, 0.6, 2, 2, 0.6, 2], sleepy: [-0.3, 0, 0.8, -0.3, 0, 0.8],
       love: [0.6, 0.6, 1.2, 0.6, 0.6, 1.2], wink: [0.3, 0, 1.2, -0.5, -0.4, 0.9], silly: [1.4, 0.4, 1.8, -0.3, 0, 0.9],
       confused: [1.8, 0.4, 1.9, -0.4, -0.9, 0.6],
+      laugh: [1, 0.4, 1.5, 1, 0.4, 1.5], cool: [-0.2, -0.4, 0.9, -0.2, -0.4, 0.9], cry: [0.6, 2.4, 0.1, 0.6, 2.4, 0.1],
+      scared: [2.2, 1.8, 1.2, 2.2, 1.8, 1.2], smug: [-0.3, -0.2, 0.9, 1.6, 0.3, 1.8], starstruck: [1.8, 0.5, 2, 1.8, 0.5, 2],
     }
     const bp = BP[mood] ?? BP.neutral
     const bt = (little ? 0.75 : gender === 'girl' ? 1.05 : 1.45) * k
@@ -473,6 +481,12 @@ export const human = defineStyle<HumanOptions>({
         case 'wink': mouth = closed(cx + 0.4, mw, 0.1 * k, 1.8 * k); break
         case 'silly': mouth = open(cx, mw * 1.1, 1.2 * k, 3.6 * k, little ? 0 : 1.7, false, true); break
         case 'confused': mouth = closed(cx + 0.8, mw * 0.85, -0.7 * k, 0.9 * k); break
+        case 'laugh': mouth = open(cx, mw * 1.3, 1.6 * k, 6.4 * k, little ? 0 : 2.1, true); break
+        case 'starstruck': mouth = open(cx, mw * 1.15, 1.3 * k, 5.4 * k, little ? 0 : 1.9, true); break
+        case 'cool': mouth = closed(cx + 0.6, mw * 0.95, -0.1 * k, 1.4 * k); break
+        case 'smug': mouth = closed(cx + 1, mw * 0.85, -0.4 * k, 1.9 * k); break
+        case 'cry': mouth = open(cx, mw * 0.85, -1.6 * k, 3.2 * k, 0, false); break
+        case 'scared': mouth = open(cx, mw * 0.95, -0.6 * k, 2.6 * k, 2.4, false); break
         default: mouth = closed(cx, mw, 0.35 * k, 0.35 * k)
       }
     const philtrum = little ? '' : S(`M${n(cx - 0.8 * k)} ${n(noseY + 2.3 * k)}L${n(cx - 1 * k)} ${n(my - 1.7 * k)}M${n(cx + 0.8 * k)} ${n(noseY + 2.3 * k)}L${n(cx + 1 * k)} ${n(my - 1.7 * k)}`, dark, 0.45, ' opacity=".35"')

@@ -4,13 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>livatar — avatars that are alive</title>
-<meta name="description" content="Tiny, zero-dependency SVG avatars that follow your cursor, blink, breathe, react to typing and show 10 moods." />
+<meta name="description" content="Tiny, zero-dependency SVG avatars that follow your cursor, blink, breathe, react to typing and show 16 moods." />
 <meta property="og:title" content="livatar — avatars that are alive" />
-<meta property="og:description" content="Tiny SVG avatars that follow your cursor, blink, breathe, and show 10 moods. 12 characters, codes, React/Vue/Svelte, animated icons." />
+<meta property="og:description" content="Tiny SVG avatars that follow your cursor, blink, breathe, and show 16 moods. 12 characters, codes, React/Vue/Svelte, animated icons." />
 <meta name="theme-color" content="#7f5af0" />
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"livatar","description":"Tiny zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, and show 10 moods. 37 characters, shareable codes, React/Vue/Svelte/web component, animated icons, avatar API.","codeRepository":"https://github.com/nuhmanpk/livatar","programmingLanguage":"TypeScript","license":"https://opensource.org/licenses/MIT","author":{"@type":"Person","name":"Nuhman PK","url":"https://github.com/nuhmanpk"},"url":"https://nuhmanpk.github.io/livatar/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"livatar","description":"Tiny zero-dependency SVG avatars that are alive: they follow the cursor, blink, breathe, and show 16 moods. 45 characters, shareable codes, React/Vue/Svelte/web component, animated icons, avatar API.","codeRepository":"https://github.com/nuhmanpk/livatar","programmingLanguage":"TypeScript","license":"https://opensource.org/licenses/MIT","author":{"@type":"Person","name":"Nuhman PK","url":"https://github.com/nuhmanpk"},"url":"https://nuhmanpk.github.io/livatar/"}</script>
 <script>
   // apply saved theme before paint (no flash)
   try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
@@ -223,7 +223,7 @@
 </div></header>
 <main>
   <h1>livatar</h1>
-  <p class="lead tagline">Tiny, zero-dependency SVG avatars that are <b>alive</b>. They follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes on password fields, and show 10 moods. Try the arrow keys. Click one.</p>
+  <p class="lead tagline">Tiny, zero-dependency SVG avatars that are <b>alive</b>. They follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes on password fields, and show 16 moods. Try the arrow keys. Click one.</p>
   <div class="cta">
     <a class="btn primary" href="docs/">Read the docs</a>
     <a class="btn" href="docs/#builder">Build your avatar</a>
@@ -536,7 +536,7 @@
     </section>
 
     <section class="case" data-cat="fun">
-      <h3>Mood mirror</h3><p>All ten moods, one click each.</p>
+      <h3>Mood mirror</h3><p>All sixteen moods, one click each.</p>
       <div class="row nowrap"><div class="av" id="uMirror"></div><div class="moodbtns" id="uMirrorBtns" role="group" aria-label="Moods"></div></div>
     </section>
 
@@ -649,7 +649,9 @@
 
   const $ = (id) => document.getElementById(id)
   const box = (parent, w) => { const d = document.createElement('div'); if (w) d.style.width = w; parent.append(d); return d }
-  const names = Object.keys(styles)
+  // people first (clay, memoji, animal, human, then the other human styles), then everything else
+  const FIRST = ['clay', 'memoji', 'animal', 'human', 'anime', 'chibi', 'toon', 'notion', 'flat', 'lowpoly', 'sketch', 'retro']
+  const names = [...FIRST.filter((n) => styles[n]), ...Object.keys(styles).filter((n) => !FIRST.includes(n))]
 
   // theme toggle: flips whatever is currently showing, remembers the choice
   $('theme').onclick = () => {
@@ -690,7 +692,7 @@
     if (!window.livatarKit) await new Promise((r) => document.addEventListener('livatar:kit', r, { once: true }))
     const K = window.livatarKit
     $('whyCards').replaceWith(K.cards([
-      { title: '37 characters', text: 'People, animals, robots, food, planets, gadgets and more. Every one has its own options.', seed: 'cards-1', style: 'animal', href: 'characters/' },
+      { title: '45 characters', text: 'People, animals, robots, food, planets, gadgets and more. Every one has its own options.', seed: 'cards-1', style: 'animal', href: 'characters/' },
       { title: 'Alive', text: 'Eyes follow the cursor, bodies breathe, faces react to typing and passwords.', seed: 'cards-2', style: 'bot', href: 'docs/' },
       { title: 'Tiny', text: 'About 9 KB gzipped with zero dependencies. Offscreen avatars sleep and cost nothing.', seed: 'cards-3', style: 'ghost', href: 'docs/#why' },
       { title: 'Ready-made UI', text: 'Footer, breadcrumbs, carousel, accordion, username check and 40 more components.', seed: 'cards-4', style: 'emoji', href: 'components/' },
@@ -720,8 +722,34 @@
   }
   kit()
 
-  // hero: one of each character (without 'ai', so the grid fills 3 even rows of 9)
-  names.filter((n) => n !== 'ai').forEach((n, i) => mount(box($('hero')), styles[n], { seed: 'nuhmanpk', mood: i % 3 === 1 ? 'happy' : 'neutral', alive: { intensity: 1.2 } }))
+  // hero: 36 random characters (without 'ai') so the grid fills 4 even rows of 9
+  // fresh seeds, so every visit shows a different crowd
+  // grouped: notion, clay and the other people first, then creatures, then plants and food, then objects
+  // (fixed order within people/creatures, shuffled objects so each visit shows different ones)
+  const HERO = [
+    ['notion', 'clay', 'memoji', 'human', 'anime', 'chibi', 'toon', 'flat', 'lowpoly', 'sketch', 'retro', 'buddy', 'dev', 'initials'],
+    ['animal', 'dino', 'sea', 'bug', 'monster', 'alien', 'ghost', 'bot', 'blob', 'pixel', 'emoji'],
+    ['plant', 'fruit', 'food', 'drink'],
+  ]
+  const grouped = HERO.flat()
+  const rest = names.filter((n) => n !== 'ai' && !grouped.includes(n)).sort(() => Math.random() - 0.5)
+  const heroPool = [...grouped.filter((n) => styles[n]), ...rest].slice(0, 36)
+  const rseed = () => Math.random().toString(36).slice(2, 9)
+  heroPool.forEach((n, i) => {
+    // one background per slot, kept across re-rolls so only the character changes
+    const pal = styles[n].colors, bg = pal[(Math.random() * pal.length) | 0]
+    const d = box($('hero')), opts = { mood: i % 3 === 1 ? 'happy' : 'neutral', background: bg, alive: { intensity: 1.2 } }
+    let h = mount(d, styles[n], { ...opts, seed: rseed() })
+    // click: same character, new seed
+    d.style.cursor = 'pointer'; d.title = 'Click for a new ' + n
+    // pointerup, not click: the poke reaction redraws the SVG on pointerdown, which swallows the click
+    d.addEventListener('pointerup', (e) => {
+      if (e.button) return
+      // same task, so the browser never paints an empty circle in between; no entrance animation
+      h.destroy?.()
+      h = mount(d, styles[n], { ...opts, seed: rseed() })
+    })
+  })
 
   // character grid with a "mixed" tab
   // the first avatar of each style uses the exact seed; the rest add a suffix
