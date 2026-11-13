@@ -261,7 +261,7 @@
     "vue": "^3.5.45"
   },
   "bin": {
-    "livatar": "./bin/livatar.mjs"
+    "livatar": "bin/livatar.mjs"
   },
   "engines": {
     "node": ">=18"
