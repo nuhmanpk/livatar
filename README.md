@@ -45,30 +45,30 @@ Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, ch
 
 | Style | What it is | |
 | --- | --- | --- |
-| `buddy` | Cartoon humans: 10 hair styles, beards, glasses, hats, headphones, clothes | <img src="assets/style-buddy.svg" alt="buddy avatars" height="44"> |
-| `animal` | 16 sticker-style animals and birds | <img src="assets/style-animal.svg" alt="animal avatars" height="44"> |
-| `monster` | Fuzzy monsters with 1 to 3 eyes, horns, and fangs | <img src="assets/style-monster.svg" alt="monster avatars" height="44"> |
-| `ghost` | Little sheet ghosts with hats, bows, crowns, and halos | <img src="assets/style-ghost.svg" alt="ghost avatars" height="44"> |
-| `emoji` | Classic round smileys, the best canvas for moods | <img src="assets/style-emoji.svg" alt="emoji avatars" height="44"> |
-| `bot` | Robots with LED eyes | <img src="assets/style-bot.svg" alt="bot avatars" height="44"> |
-| `blob` | Abstract gradient creatures | <img src="assets/style-blob.svg" alt="blob avatars" height="44"> |
-| `pixel` | Mirrored pixel critters | <img src="assets/style-pixel.svg" alt="pixel avatars" height="44"> |
-| `memoji` | Glossy 3D-style heads: curly tops, beards, aviators | <img src="assets/style-memoji.svg" alt="memoji avatars" height="44"> |
-| `clay` | Soft claymorphism people | <img src="assets/style-clay.svg" alt="clay avatars" height="44"> |
-| `anime` | Cel-shaded anime people | <img src="assets/style-anime.svg" alt="anime avatars" height="44"> |
-| `chibi` | Super-deformed cute people | <img src="assets/style-chibi.svg" alt="chibi avatars" height="44"> |
-| `toon` | Saturday-morning cartoon people | <img src="assets/style-toon.svg" alt="toon avatars" height="44"> |
-| `notion` | Minimal black-ink line portraits with glasses, caps, headphones and beards. Pick any ink and paper color. | <img src="assets/style-notion.svg" alt="notion avatars" height="44"> |
-| `flat` | Flat corporate-illustration people | <img src="assets/style-flat.svg" alt="flat avatars" height="44"> |
-| `lowpoly` | Faceted low-poly people built from flat-shaded triangles, like a cut gem. | <img src="assets/style-lowpoly.svg" alt="lowpoly avatars" height="44"> |
-| `sketch` | Pencil-sketch portraits with hatching and a jittery "boiling line" animation. | <img src="assets/style-sketch.svg" alt="sketch avatars" height="44"> |
-| `retro` | 70s/80s people | <img src="assets/style-retro.svg" alt="retro avatars" height="44"> |
-| `planet` | Earth, Saturn, the Moon, the Sun, comets | <img src="assets/style-planet.svg" alt="planet avatars" height="44"> |
-| `dino` | T-rex, triceratops, stego, bronto, ptero, dragon | <img src="assets/style-dino.svg" alt="dino avatars" height="44"> |
-| `alien` | Friendly aliens with 1–3 eyes and helmets | <img src="assets/style-alien.svg" alt="alien avatars" height="44"> |
-| `food` | Kawaii avocado, donut, sushi, boba, and more | <img src="assets/style-food.svg" alt="food avatars" height="44"> |
-| `plant` | Potted cacti, succulents, monstera, mushrooms | <img src="assets/style-plant.svg" alt="plant avatars" height="44"> |
-| `initials` | Initials with a tiny living face | <img src="assets/style-initials.svg" alt="initials avatars" height="44"> |
+| `buddy` | Cartoon humans: 10 hair styles, beards, glasses, hats, headphones, clothes | <img src="assets/style-buddy.svg" alt="buddy avatars" height="72"> |
+| `animal` | 16 sticker-style animals and birds | <img src="assets/style-animal.svg" alt="animal avatars" height="72"> |
+| `monster` | Fuzzy monsters with 1 to 3 eyes, horns, and fangs | <img src="assets/style-monster.svg" alt="monster avatars" height="72"> |
+| `ghost` | Little sheet ghosts with hats, bows, crowns, and halos | <img src="assets/style-ghost.svg" alt="ghost avatars" height="72"> |
+| `emoji` | Classic round smileys, the best canvas for moods | <img src="assets/style-emoji.svg" alt="emoji avatars" height="72"> |
+| `bot` | Robots with LED eyes | <img src="assets/style-bot.svg" alt="bot avatars" height="72"> |
+| `blob` | Abstract gradient creatures | <img src="assets/style-blob.svg" alt="blob avatars" height="72"> |
+| `pixel` | Mirrored pixel critters | <img src="assets/style-pixel.svg" alt="pixel avatars" height="72"> |
+| `memoji` | Glossy 3D-style heads: curly tops, beards, aviators | <img src="assets/style-memoji.svg" alt="memoji avatars" height="72"> |
+| `clay` | Soft claymorphism people | <img src="assets/style-clay.svg" alt="clay avatars" height="72"> |
+| `anime` | Cel-shaded anime people | <img src="assets/style-anime.svg" alt="anime avatars" height="72"> |
+| `chibi` | Super-deformed cute people | <img src="assets/style-chibi.svg" alt="chibi avatars" height="72"> |
+| `toon` | Saturday-morning cartoon people | <img src="assets/style-toon.svg" alt="toon avatars" height="72"> |
+| `notion` | Minimal black-ink line portraits with glasses, caps, headphones and beards. Pick any ink and paper color. | <img src="assets/style-notion.svg" alt="notion avatars" height="72"> |
+| `flat` | Flat corporate-illustration people | <img src="assets/style-flat.svg" alt="flat avatars" height="72"> |
+| `lowpoly` | Faceted low-poly people built from flat-shaded triangles, like a cut gem. | <img src="assets/style-lowpoly.svg" alt="lowpoly avatars" height="72"> |
+| `sketch` | Pencil-sketch portraits with hatching and a jittery "boiling line" animation. | <img src="assets/style-sketch.svg" alt="sketch avatars" height="72"> |
+| `retro` | 70s/80s people | <img src="assets/style-retro.svg" alt="retro avatars" height="72"> |
+| `planet` | Earth, Saturn, the Moon, the Sun, comets | <img src="assets/style-planet.svg" alt="planet avatars" height="72"> |
+| `dino` | T-rex, triceratops, stego, bronto, ptero, dragon | <img src="assets/style-dino.svg" alt="dino avatars" height="72"> |
+| `alien` | Friendly aliens with 1–3 eyes and helmets | <img src="assets/style-alien.svg" alt="alien avatars" height="72"> |
+| `food` | Kawaii avocado, donut, sushi, boba, and more | <img src="assets/style-food.svg" alt="food avatars" height="72"> |
+| `plant` | Potted cacti, succulents, monstera, mushrooms | <img src="assets/style-plant.svg" alt="plant avatars" height="72"> |
+| `initials` | Initials with a tiny living face | <img src="assets/style-initials.svg" alt="initials avatars" height="72"> |
 
 The `animal` species are cat, dog, bear, bunny, fox, panda, frog, mouse, shark, penguin, owl, chick, parrot, pig, koala, and lion:
 
