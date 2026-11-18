@@ -14,7 +14,7 @@ const NOUN: Record<string, string> = {
   ghost: 'ghost', emoji: 'smiley', initials: 'initials avatar', food: 'food character', plant: 'potted plant',
   dino: 'dinosaur', alien: 'alien', planet: 'planet', clay: 'clay character', memoji: 'cartoon person', anime: 'anime character', notion: 'line-art person', chibi: 'chibi character', flat: 'flat illustrated person', lowpoly: 'low-poly person', sketch: 'pencil-sketch person', retro: 'retro person', toon: 'cartoon character',
   ui: 'UI icon', device: 'gadget', fruit: 'fruit', drink: 'drink', vehicle: 'vehicle', tech: 'tech gadget', money: 'money character', home: 'home object', office: 'office supply', dev: 'developer', human: 'person',
-  weather: 'weather character', sport: 'sports ball', music: 'musical instrument', sea: 'sea creature', bug: 'bug', magic: 'magic item', party: 'party character', season: 'seasonal character', tool: 'tool',
+  weather: 'weather character', sport: 'sports ball', music: 'musical instrument', sea: 'sea creature', bug: 'bug', magic: 'magic item', party: 'party character', season: 'seasonal character', tool: 'tool', bean: 'bean character', hero: 'superhero', fantasy: 'fantasy character', pirate: 'adventurer', job: 'worker', creature: 'mythical creature', spooky: 'spooky monster', kid: 'cartoon person', critter: 'small animal', mascot: 'mascot', scifi: 'sci-fi character', myth: 'mythological figure',
 }
 
 /**

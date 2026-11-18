@@ -197,3 +197,64 @@ test('LivatarPhoto shows the photo, or the seeded livatar when there is none', a
   // same seed, same fallback face
   assert.equal(renderToString(h(LivatarPhoto, { seed: 'bo' })), renderToString(h(LivatarPhoto, { seed: 'bo' })))
 })
+
+test('effects and UI primitives server-render faces', async () => {
+  const C = await import('../dist/components.js')
+  const ppl = [{ id: 'ada', name: 'Ada', role: 'Eng' }, { id: 'bob' }, { id: 'cy' }]
+  const cases = {
+    LivatarAnimatedTooltip: [{ people: ppl }, 3], LivatarDock: [{ items: ppl }, 3], LivatarTiltCard: [{ seed: 'a', title: 'T' }, 1], LivatarSpotlightCard: [{ seed: 'a' }, 1],
+    LivatarCompare: [{ left: { mood: 'happy' }, right: { mood: 'sad' } }, 2], LivatarFocusCards: [{ people: ppl }, 3], LivatarExpandableCard: [{ title: 'x', seed: 'a' }, 1],
+    LivatarBento: [{ items: ppl }, 3], LivatarOrbit: [{ people: ppl, center: { seed: 'c' } }, 4], LivatarBeam: [{ from: ppl[0], to: ppl[1] }, 3], LivatarGlobe: [{ people: ppl }, 3],
+    LivatarTabs: [{ tabs: [{ id: 'a', label: 'A', content: 'x' }, { id: 'b', label: 'B', content: 'y' }] }, 1], LivatarSwitch: [{ checked: true, onChange() {} }, 1],
+    LivatarSlider: [{ value: 50, onChange() {} }, 1], LivatarCommand: [{ items: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }] }, 3],
+    LivatarCalendar: [{ month: new Date(2026, 0, 1), marks: { '2026-01-05': ['a', 'b'] } }, 2], LivatarPagination: [{ page: 2, pages: 9, onChange() {} }, 1],
+    LivatarAlert: [{ title: 'Hi', type: 'error' }, 1], LivatarTimeline: [{ items: [{ id: 'a', title: 'x' }, { id: 'b', title: 'y' }] }, 2],
+    LivatarComment: [{ comments: [{ id: 'a', author: 'Ada', body: 'hi', replies: [{ id: 'b', author: 'Bob', body: 'yo' }] }] }, 2], LivatarResult: [{ status: '404' }, 1],
+    LivatarSegmented: [{ options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }], value: 'a', onChange() {} }, 2], LivatarStatistic: [{ title: 'Users', value: 1234, trend: 5 }, 1],
+    LivatarTour: [{ steps: [{ title: 'one' }], open: true, onClose() {} }, 1], LivatarAvatar: [{ name: 'Ada', status: 'online' }, 1],
+  }
+  for (const [n, c] of Object.entries(cases)) {
+    const html = renderToString(h(C[n], c[0]))
+    assert.equal(svgs(html), c[1], `${n}: expected ${c[1]} svgs`)
+  }
+  assert.equal(renderToString(h(C.LivatarDialog, { open: false, onClose() {}, title: 'x' })), '')
+  assert.equal(svgs(renderToString(h(C.LivatarDialog, { open: true, onClose() {}, title: 'x' }))), 1)
+  assert.match(renderToString(h(C.LivatarSwitch, { checked: false, onChange() {} })), /aria-checked="false"/)
+  assert.equal(svgs(renderToString(h(C.LivatarAvatar, { src: 'x.png', name: 'Ada' }))), 0)
+})
+
+test('playful components server-render faces', async () => {
+  const C = await import('../dist/components.js')
+  const ppl = [{ id: 'ada' }, { id: 'bob' }, { id: 'cy' }]
+  const cases = {
+    LivatarMagnetic: [{ children: 'Go' }, 1], LivatarFlipCard: [{ back: 'hi' }, 1], LivatarCarousel3D: [{ people: ppl }, 3], LivatarRain: [{ count: 4 }, 4],
+    LivatarMemory: [{ pairs: 4 }, 0], LivatarSpinWheel: [{ people: ppl }, 3], LivatarPeek: [{ children: 'x' }, 1], LivatarSwipeCards: [{ people: ppl }, 1],
+    LivatarMoodPicker: [{ seed: 'a' }, 5], LivatarSpeech: [{ text: 'Hello' }, 1], LivatarLeaderboard: [{ rows: [{ id: 'a', score: 5 }, { id: 'b', score: 9 }] }, 2],
+    LivatarSlotMachine: [{}, 3], LivatarWave: [{ seeds: ['a', 'b', 'c'] }, 3], LivatarBuddy: [{ children: 'x' }, 1], LivatarPhotoBooth: [{}, 4],
+    LivatarCursorTrail: [{ length: 3 }, 3], LivatarSwarm: [{ seeds: ['a', 'b'] }, 2], LivatarRipple: [{ children: 'x' }, 0],
+  }
+  for (const [n, c] of Object.entries(cases)) assert.equal(svgs(renderToString(h(C[n], c[0]))), c[1], `${n}: expected ${c[1]} svgs`)
+})
+
+test('more effects server-render faces', async () => {
+  const C = await import('../dist/components.js')
+  const cases = {
+    LivatarBeamNetwork: [{ center: 'hub', people: ['a', 'b', 'c', 'd'] }, 6], LivatarBorderBeam: [{ title: 'x' }, 1], LivatarMeteors: [{ count: 4 }, 4],
+    LivatarPulse: [{ center: 'c', people: ['a', 'b', 'c'] }, 4], LivatarParticles: [{ count: 5 }, 5], LivatarAura: [{ seed: 'a' }, 1], LivatarMarquee3D: [{ columns: 2, seeds: ['a', 'b'] }, 8],
+    LivatarSphereCloud: [{ seeds: ['a', 'b', 'c'] }, 3], LivatarLens: [{}, 24], LivatarProximityGrid: [{ columns: 3, rows: 2 }, 6],
+    LivatarTracingBeam: [{ items: [{ id: 'a', title: 'x' }, { id: 'b', title: 'y' }] }, 2], LivatarParallax: [{ seeds: ['a', 'b'] }, 2],
+  }
+  for (const [n, c] of Object.entries(cases)) assert.equal(svgs(renderToString(h(C[n], c[0]))), c[1], `${n}: expected ${c[1]} svgs`)
+})
+
+test('calendar views server-render faces', async () => {
+  const C = await import('../dist/components.js')
+  const d = new Date(2026, 0, 14)
+  assert.equal(svgs(renderToString(h(C.LivatarCalendar, { month: d, fill: true }))), 31 + 0)
+  assert.equal(svgs(renderToString(h(C.LivatarWeekStrip, { value: d, marks: { '2026-01-13': ['a'], '2026-01-15': ['b', 'c'] } }))), 3)
+  assert.equal(svgs(renderToString(h(C.LivatarAgenda, { events: [{ id: 'e', date: '2026-01-14', title: 'Standup', who: ['a', 'b'] }] }))), 2)
+  assert.equal(svgs(renderToString(h(C.LivatarAgenda, { events: [] }))), 1)
+  assert.equal(svgs(renderToString(h(C.LivatarYearCalendar, { year: 2026, marks: { '2026-01-05': ['a'] } }))), 0)
+  assert.equal(svgs(renderToString(h(C.LivatarHeatmap, { data: { '2026-01-05': 3 } }))), 1)
+  assert.equal(svgs(renderToString(h(C.LivatarDatePicker, {}))), 1)
+})

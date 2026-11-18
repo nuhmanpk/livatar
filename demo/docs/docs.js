@@ -157,6 +157,16 @@ const ABOUT = {
   planet: 'Earth, Saturn, Mars, the Moon, the Sun, gas giants, comets and stars, with orbiting moons.',
   food: 'Kawaii food: avocado, toast, donut, sushi, onigiri, cupcake, boba, taco and more.',
   plant: 'Potted cacti, succulents, monstera, sunflowers, tulips, bonsai and mushrooms. Leaves cover the eyes on password fields.',
+  fantasy: 'Wizard, elf, dwarf, knight, orc, fairy, witch and bard, each with their own hat, hair and prop.',
+  pirate: 'Pirate, explorer, cowboy, viking, samurai, ninja, astronaut and diver adventurers.',
+  job: 'Chef, doctor, farmer, firefighter, pilot, scientist, artist and detective.',
+  creature: 'Chibi dragon, unicorn, phoenix, yeti, mermaid, kraken, griffin and golem.',
+  spooky: 'Zombie, vampire, mummy, skeleton, werewolf, pumpkin head, reaper and stitched monster.',
+  kid: 'Baby, toddler, grandma, grandpa, teen, punk, nerd and athlete.',
+  critter: 'Hamster, turtle, goldfish, hedgehog, otter, sloth, raccoon and llama.',
+  mascot: 'Object mascots: cube, cloud, star, gem, battery and heart, with faces.',
+  scifi: 'Cyborg, android, space marine, alien captain, mech pilot and rogue AI.',
+  myth: 'Greek god, Norse god, pharaoh, jackal god, gorgon, minotaur, centaur and satyr.',
   initials: 'Initials from a name (or the seed) with a tiny face that blinks and follows the cursor. Set options.name.',
 }
 // The gallery must show every kind at least once: pick the option that defines "what it is" and cover all its values.
@@ -574,36 +584,143 @@ const importSnippet = (id) => {
   })
 }
 
-/* ---------------- performance stress test ---------------- */
+/* ---------------- performance lab ---------------- */
 {
-  let hs = []
-  const t0 = { n: 0, ms: 0 }
-  const fill = (n) => {
+  const box = $('stress')
+  const POOL = {
+    all: ORDER,
+    heavy: ['human', 'hero', 'bean', 'dev'].filter((k) => styles[k]),
+    light: ['initials', 'pixel', 'blob'].filter((k) => styles[k]),
+  }
+  let hs = [], cells = [], n = 0, mountMs = 0, gen = 0
+  const opt = () => ({ n: +$('plN').value, pool: POOL[$('plStyle').value], mode: $('plMode').value, size: +$('plSize').value })
+
+  const make = (d, i, o) => {
+    const name = o.pool[i % o.pool.length], seed = 'st' + i + '-' + gen
+    d.style.width = o.size + 'px'
+    if (o.mode === 'static') { d.innerHTML = createAvatar(styles[name], { seed, size: o.size }); return null }
+    if (o.mode === 'wc') { const w = document.createElement('live-avatar'); w.setAttribute('variant', name); w.setAttribute('seed', seed); w.setAttribute('size', o.size); d.append(w); return null }
+    return mount(d, styles[name], { seed, size: o.size })
+  }
+  const clear = () => { hs.forEach((h) => h && h.destroy()); hs = []; cells = []; box.innerHTML = ''; n = 0; mountMs = 0 }
+  const fill = () => {
     clear()
+    const o = opt(); gen++
+    box.style.gridTemplateColumns = `repeat(auto-fill, minmax(${o.size}px, 1fr))`
     const s = performance.now()
     const frag = document.createDocumentFragment()
-    const boxes = Array.from({ length: n }, () => { const d = el('div'); frag.append(d); return d })
-    $('stress').append(frag)
-    hs = boxes.map((d, i) => mount(d, styles[ORDER[i % ORDER.length]], { seed: 'st' + i }))
-    t0.n = n; t0.ms = performance.now() - s
+    cells = Array.from({ length: o.n }, () => { const d = el('div'); frag.append(d); return d })
+    box.append(frag)
+    hs = cells.map((d, i) => make(d, i, o))
+    n = o.n; mountMs = performance.now() - s
+    $('psMount').textContent = Math.round(mountMs)
   }
-  const clear = () => { hs.forEach((h) => h.destroy()); hs = []; $('stress').innerHTML = ''; t0.n = 0; t0.ms = 0 }
-  $$('[data-n]').forEach((b) => (b.onclick = () => fill(+b.dataset.n)))
+  $('plGo').onclick = fill
   $('stClear').onclick = clear
-  let vis = false, frames = 0, since = performance.now(), raf = 0
-  const tick = (t) => {
-    frames++
-    if (t - since >= 500) {
-      const fps = Math.round((frames * 1000) / (t - since))
-      $('fps').textContent = `${fps} fps · ${t0.n} avatars${t0.n ? ` · mounted in ${Math.round(t0.ms)} ms` : ''}`
-      frames = 0; since = t
+
+  /* scenarios: each runs from the meter's frame callback */
+  const MS = MOODS
+  let lastMood = 0, lastPoke = 0, lastChurn = 0
+  const scenario = (t) => {
+    if ($('plSweep').checked) {
+      const r = box.getBoundingClientRect()
+      const x = r.left + r.width * (0.5 + 0.5 * Math.sin(t / 400)), y = r.top + Math.min(r.height, innerHeight) * (0.5 + 0.4 * Math.cos(t / 530))
+      dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y }))
     }
-    raf = vis ? requestAnimationFrame(tick) : 0
+    if ($('plMood').checked && t - lastMood > 500) { lastMood = t; const m = MS[(t / 500 | 0) % MS.length]; hs.forEach((h) => h && h.emote(m, 600)) }
+    if ($('plTalk').checked) hs.forEach((h, i) => h && (i + (t / 16 | 0)) % 60 === 0 && h.talk(1200))
+    if ($('plPoke').checked && t - lastPoke > 120) { lastPoke = t; for (let k = 0; k < 10; k++) { const h = hs[(Math.random() * hs.length) | 0]; h && h.poke() } }
+    if ($('plScroll').checked) { box.scrollTop = (Math.sin(t / 1500) * 0.5 + 0.5) * (box.scrollHeight - box.clientHeight) }
+    if ($('plChurn').checked && n && t - lastChurn > 100) {
+      lastChurn = t; const o = opt()
+      for (let k = 0; k < Math.max(1, n / 100); k++) {
+        const i = (Math.random() * n) | 0
+        hs[i] && hs[i].destroy(); cells[i].innerHTML = ''; gen++
+        hs[i] = make(cells[i], i, o)
+      }
+    }
+    if ($('plBlock').checked) { const e = performance.now() + 8; while (performance.now() < e); }
   }
+
+  /* meter */
+  let longTasks = 0
+  try { new PerformanceObserver((l) => (longTasks += l.getEntries().length)).observe({ type: 'longtask', buffered: false }) } catch {}
+  const W = { frames: [], since: 0 }
+  let prev = 0, vis = false, raf = 0, dropped = 0, minFps = Infinity, secFrames = 0, secStart = 0
+  const hist = []
+  const g = $('plGraph'), cx = g.getContext('2d')
+  const draw = () => {
+    const w = (g.width = g.clientWidth * devicePixelRatio), h = (g.height = 60 * devicePixelRatio)
+    cx.clearRect(0, 0, w, h)
+    const y = (ms) => h - Math.min(1, ms / 50) * h
+    cx.strokeStyle = 'rgba(128,128,128,.5)'; cx.setLineDash([4, 4]); cx.beginPath(); cx.moveTo(0, y(16.7)); cx.lineTo(w, y(16.7)); cx.stroke(); cx.setLineDash([])
+    const bw = w / 180
+    hist.forEach((ms, i) => { cx.fillStyle = ms > 33 ? '#e8344e' : ms > 20 ? '#f2a81d' : '#2fb36b'; cx.fillRect(i * bw, y(ms), Math.max(1, bw - 1), h - y(ms)) })
+  }
+  const pct = (a, p) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(s.length * p))] }
+  const tick = (t) => {
+    raf = vis ? requestAnimationFrame(tick) : 0
+    scenario(t)
+    if (prev) {
+      const ms = t - prev
+      W.frames.push(ms); hist.push(ms); if (hist.length > 180) hist.shift()
+      if (ms > 20) dropped++
+      secFrames++
+      if (t - secStart >= 1000) { minFps = Math.min(minFps, (secFrames * 1000) / (t - secStart)); secFrames = 0; secStart = t }
+      run && run.frames.push(ms)
+    }
+    prev = t
+    if (t - W.since >= 500) {
+      const avg = W.frames.length ? W.frames.reduce((a, b) => a + b, 0) / W.frames.length : 16.7
+      $('psFps').textContent = Math.round(1000 / avg)
+      $('psMin').textContent = minFps === Infinity ? '–' : Math.round(minFps)
+      $('psP95').textContent = pct(W.frames, 0.95).toFixed(1)
+      $('psDrop').textContent = dropped
+      $('psLong').textContent = longTasks
+      $('psN').textContent = n
+      $('psDom').textContent = document.getElementsByTagName('*').length
+      $('psHeap').textContent = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : 'n/a'
+      W.frames = []; W.since = t
+      draw()
+    }
+  }
+  const reset = () => { dropped = 0; minFps = Infinity; longTasks = 0; secFrames = 0; secStart = prev = 0 }
   new IntersectionObserver(([e]) => {
     vis = e.isIntersecting
-    if (vis && !raf) { frames = 0; since = performance.now(); raf = requestAnimationFrame(tick) }
+    if (vis && !raf) { reset(); W.since = performance.now(); raf = requestAnimationFrame(tick) }
   }).observe($('fps'))
+
+  /* suite: every scenario for 3 s at the current count */
+  let run = null, results = []
+  const CHECKS = ['plSweep', 'plMood', 'plTalk', 'plPoke', 'plScroll', 'plChurn', 'plBlock']
+  const SUITE = [['idle'], ['pointer sweep', 'plSweep'], ['mood storm', 'plMood'], ['talking', 'plTalk'], ['poke storm', 'plPoke'], ['auto-scroll', 'plScroll'], ['churn', 'plChurn'], ['everything', 'plSweep', 'plMood', 'plTalk', 'plPoke', 'plScroll', 'plChurn']]
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+  $('plSuite').onclick = async () => {
+    const btn = $('plSuite'); btn.disabled = true
+    if (!n) fill()
+    results = []
+    const body = $('plTable').tBodies[0]; body.innerHTML = ''; $('plTable').hidden = false
+    for (const [name, ...on] of SUITE) {
+      CHECKS.forEach((c) => ($(c).checked = on.includes(c)))
+      btn.textContent = 'Running: ' + name
+      await wait(400)
+      const lt0 = longTasks
+      run = { frames: [] }
+      await wait(3000)
+      const f = run.frames; run = null
+      const avg = f.reduce((a, b) => a + b, 0) / (f.length || 1)
+      const r = { scenario: name, avatars: n, mode: $('plMode').value, styles: $('plStyle').value, fps: Math.round(1000 / avg), minFps: Math.round(1000 / Math.max(...f, 1)), p95: +pct(f, 0.95).toFixed(1), dropped: f.filter((x) => x > 20).length, longTasks: longTasks - lt0 }
+      results.push(r)
+      body.append(el('tr', { html: `<td>${r.scenario}</td><td>${r.fps}</td><td>${r.minFps}</td><td>${r.p95}</td><td>${r.dropped}</td><td>${r.longTasks}</td>` }))
+    }
+    CHECKS.forEach((c) => ($(c).checked = false))
+    btn.textContent = 'Run suite'; btn.disabled = false
+  }
+  $('plCopy').onclick = () => {
+    const env = { ua: navigator.userAgent, dpr: devicePixelRatio, cores: navigator.hardwareConcurrency }
+    navigator.clipboard?.writeText(JSON.stringify({ env, results: results.length ? results : [{ live: true, avatars: n, fps: $('psFps').textContent, p95: $('psP95').textContent, dropped }] }, null, 2))
+    $('plCopy').textContent = 'Copied'; setTimeout(() => ($('plCopy').textContent = 'Copy results'), 1200)
+  }
 }
 
 /* ---------------- accessibility demo ---------------- */

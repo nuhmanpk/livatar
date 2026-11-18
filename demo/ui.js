@@ -130,9 +130,13 @@ document.addEventListener('pointerdown', (e) => {
   const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2
   const dot = Object.assign(document.createElement('span'), { className: 'lv-ripple' })
   Object.assign(dot.style, { width: d + 'px', height: d + 'px', left: e.clientX - r.left - d / 2 + 'px', top: e.clientY - r.top - d / 2 + 'px' })
-  if (getComputedStyle(b).overflow === 'visible') b.style.overflow = 'hidden'
+  const cs = getComputedStyle(b)
+  // the ripple is absolutely positioned: a static button (e.g. one with `all: unset`) would send it to the top-left of the page
+  const pos = cs.position === 'static', clip = cs.overflow === 'visible'
+  if (pos) b.style.position = 'relative'
+  if (clip) b.style.overflow = 'hidden'
   b.append(dot)
-  dot.addEventListener('animationend', () => dot.remove())
+  dot.addEventListener('animationend', () => { dot.remove(); if (pos) b.style.position = ''; if (clip) b.style.overflow = '' })
 })
 // whenever a copy button swaps its icon to the check, pop it
 new MutationObserver((ms) => {

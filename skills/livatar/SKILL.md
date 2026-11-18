@@ -69,7 +69,7 @@ import { LivatarAssistant, LivatarMeet, LivatarLoader } from 'livatar/components
 ```
 
 ## Facts to get right
-- Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human weather sport music sea bug magic party season tool anime notion chibi flat lowpoly sketch retro toon.
+- Styles: buddy animal monster ghost emoji memoji clay planet dino alien food plant initials bot blob pixel ui device fruit drink vehicle tech money home office dev human weather sport music sea bug magic party season tool anime notion chibi flat lowpoly sketch retro toon bean hero fantasy pirate job creature spooky kid critter mascot scifi myth.
 - planet kinds: earth saturn mars moon sun gas comet star heart cloud.
 - Moods: neutral happy sad angry surprised sleepy love wink silly confused laugh cool cry scared smug starstruck.
 - Every style option also accepts `'random'` (picked from the seed). Same seed → same avatar.

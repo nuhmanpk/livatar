@@ -43,6 +43,10 @@ await page('demo/icons/index.html', 'icons')
 await page('demo/life/index.html', 'life')
 await page('demo/components/index.html', 'components')
 await page('demo/characters/index.html', 'characters')
+await page('demo/examples/index.html', 'examples')
+// complete example websites: demo/examples/<slug>/index.html → /examples/<slug>/
+import { readdir } from 'node:fs/promises'
+for (const d of existsSync(r('demo/examples')) ? await readdir(r('demo/examples'), { withFileTypes: true }) : []) if (d.isDirectory()) await page(`demo/examples/${d.name}/index.html`, `examples/${d.name}`)
 await writeFile(`${out}/components/variants.js`, shift(await readFile(r('demo/components/variants.js'), 'utf8')))
 await writeFile(`${out}/characters/characters.js`, shift(await readFile(r('demo/characters/characters.js'), 'utf8')))
 await page('demo/readme/index.html', 'readme')

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0
+
+### New
+- **Examples**: nine complete, mobile-ready websites at `/examples/`, each with its own identity: shop, SaaS landing page, analytics dashboard, social feed, team chat, kanban board, learning app, studio portfolio and neobank.
+- **Calendar views**: `LivatarWeekStrip`, `LivatarAgenda`, `LivatarYearCalendar`, `LivatarHeatmap`, `LivatarDatePicker`; `LivatarCalendar` is now sparse by default (`fill` floods every day).
+- **Effects**: `LivatarGlobe` is a real dotted-continent globe; `LivatarOrbit` faces stay upright.
+- **`LivatarBreadcrumbs`** takes `onNavigate`.
+- **Components gallery**: every demo has a Character picker and a Shuffle button to re-skin it with any human-like style (memoji, clay, human, toon, anime, chibi, flat, notion, hero, kid, fantasy…). Components that default to the emoji ball start with a shuffled human style. `LivatarCalendar` now floods every day with its own seeded face (`fill`, `size`).
+- **10 character styles** (76 characters): `fantasy`, `pirate`, `job`, `creature`, `spooky`, `kid`, `critter`, `mascot`, `scifi`, `myth`, each with a `kind` option.
+- **28 React components** in `livatar/components`, modelled on shadcn, Magic UI, HeroUI, Ant Design and Aceternity patterns, each with a face that reacts to state:
+  effects (`LivatarAnimatedTooltip`, `LivatarDock`, `LivatarTiltCard`, `LivatarSpotlightCard`, `LivatarCompare`, `LivatarFocusCards`, `LivatarExpandableCard`, `LivatarBento`, `LivatarPointer`, `LivatarOrbit`, `LivatarBeam`, `LivatarGlobe`),
+  primitives (`LivatarAvatar`, `LivatarTabs`, `LivatarDialog`, `LivatarTooltip`, `LivatarPopover`, `LivatarSwitch`, `LivatarSlider`, `LivatarCommand`, `LivatarCalendar`, `LivatarPagination`, `LivatarAlert`),
+  more effects (`LivatarBeamNetwork`, `LivatarBorderBeam`, `LivatarMeteors`, `LivatarPulse`, `LivatarParticles`, `LivatarAura`, `LivatarMarquee3D`, `LivatarSphereCloud`, `LivatarLens`, `LivatarProximityGrid`, `LivatarTracingBeam`, `LivatarParallax`),
+  playful (`LivatarMagnetic`, `LivatarCursorTrail`, `LivatarFlipCard`, `LivatarCarousel3D`, `LivatarRain`, `LivatarMemory`, `LivatarSpinWheel`, `LivatarPeek`, `LivatarSwarm`, `LivatarSwipeCards`, `LivatarMoodPicker`, `LivatarSpeech`, `LivatarLeaderboard`, `LivatarSlotMachine`, `LivatarWave`, `LivatarBuddy`, `LivatarPhotoBooth`, `LivatarRipple`),
+  Ant Design style (`LivatarTimeline`, `LivatarComment`, `LivatarResult`, `LivatarSegmented`, `LivatarStatistic`, `LivatarTour`).
+
 ## 0.3.0
 
 ### New

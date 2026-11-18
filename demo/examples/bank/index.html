@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nest — the bank with a face | livatar example</title>
+<meta name="description" content="Nest is a neobank demo built with livatar: a living virtual card, budgets, savings goals, a send-money flow with confetti, 2FA login and an ask-Nest assistant. All client-side.">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1511" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Red+Hat+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f1ea;--surface:#fffdf8;--surface2:#f0ece2;--ink:#12261e;--muted:#5d6b64;--line:#e2ddd0;--brand:#0c7a55;--brand-ink:#fff;--brand-soft:#d9f0e5;--amber:#f4a21f;--danger:#c2362b;--ok:#0c7a55;
+--c-food:#f4a21f;--c-transport:#7aa31f;--c-home:#c4552d;--c-tech:#2a9bd8;--c-fun:#e0527a;--c-transfer:#6b7a72;--c-income:#0c7a55;
+--lv-surface:var(--surface2);--lv-line:var(--line);--lv-accent:var(--brand);--lv-bg:var(--surface);--lv-card:var(--surface);--lv-fg:var(--ink);--lv-muted:var(--muted);--lv-ring:var(--surface);--lv-skel:var(--surface2);--lv-skel-hi:var(--line);--shadow:0 1px 2px rgba(18,38,30,.05),0 8px 24px rgba(18,38,30,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#0a1511;--surface:#12211b;--surface2:#183028;--ink:#eaf3ee;--muted:#93a89d;--line:#233a30;--brand:#3ddc9a;--brand-ink:#052116;--brand-soft:#173a2c;--amber:#ffbd4a;--danger:#ff7b6e;--ok:#3ddc9a;--c-transport:#b4dc4a;--c-home:#ff9068;--c-fun:#ff7fa3;--c-income:#3ddc9a;--c-tech:#6cc4f0;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}button,a,input,select,summary,[role=switch]{touch-action:manipulation}input,select{font-size:16px}input{min-height:44px}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:500 15px/1.5 'Red Hat Display',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{margin:0;font-family:Newsreader,Georgia,serif;font-weight:700;letter-spacing:-.01em}
+h1{font-size:clamp(26px,4vw,34px)}h2{font-size:20px}h3{font-size:16px}
+button,input,select{font:inherit;color:inherit}.modal .field{width:100%}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ex-back{position:fixed;top:calc(8px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));z-index:1000;min-height:30px;display:inline-flex;align-items:center;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:700;text-decoration:none;box-shadow:var(--shadow)}
+.ex-back::after{content:'';position:absolute;inset:-8px -4px}.ex-back:hover{background:var(--brand-soft)}
+.num{font-variant-numeric:tabular-nums}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:700;min-height:42px;transition:transform .1s,background .15s}
+.btn:hover{background:var(--surface2)}.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--brand);color:var(--brand-ink);border-color:transparent}.btn.pri:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--danger)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.muted{color:var(--muted)}.small{font-size:13px}
+.row{display:flex;align-items:center;gap:12px}.between{justify-content:space-between}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;background:var(--brand-soft);color:var(--ok)}
+input.field,.lvin input{width:100%}
+.field{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;min-height:44px}
+/* login */
+.login{min-height:100vh;height:100dvh;min-height:100dvh;display:grid;grid-template-columns:1.05fr 1fr}
+.hero{background:radial-gradient(120% 90% at 20% 0%,#16a574,#0a4f39 60%,#06281d);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;overflow:hidden}
+.hero h1{font-size:clamp(34px,4.4vw,56px);line-height:1.05;max-width:11ch}
+.hero p{max-width:34ch;opacity:.85;font-size:17px}
+.faces{display:flex}.faces>*{margin-right:-14px}
+.formwrap{display:grid;place-items:center;padding:60px 24px 24px}
+.formbox{width:min(400px,100%);display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}.formbox>*{min-width:0}
+.formbox form{display:grid;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;font:700 24px Newsreader,serif}
+.logo svg{width:32px;height:32px}
+/* shell */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh;height:100dvh;min-height:100dvh}
+.side{position:sticky;top:0;height:100vh;height:100dvh;padding:22px 14px;border-right:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.side .logo{padding:0 10px 18px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:9px 10px;border-radius:12px;font-weight:700;color:var(--muted);text-align:left}
+.nav button:hover{background:var(--surface2)}
+.nav button[aria-current=page]{background:var(--brand-soft);color:var(--ink)}
+.nav .ico{width:28px;height:28px;flex:none;display:grid}
+.me{margin-top:auto;display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--surface2)}
+main{padding:56px 32px 48px;max-width:1100px;width:100%;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.home{align-items:start;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+.bal{background:linear-gradient(135deg,#0c7a55,#0a4f39);color:#fff;border:0}
+.bal .amt{font:700 clamp(36px,6vw,52px)/1.1 Newsreader,serif;margin:6px 0 16px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.actions .btn{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.25);display:flex;flex-direction:column;gap:2px;align-items:center;padding:12px 4px}
+.actions .btn:hover{background:rgba(255,255,255,.26)}
+.vcard>div{background:linear-gradient(140deg,#06392b,#0c7a55 55%,#f4a21f)!important;color:#fff!important;border:0!important;border-radius:22px!important;min-height:210px;box-shadow:0 14px 34px rgba(6,57,43,.4);align-content:space-between;text-align:left!important;justify-items:stretch!important;gap:10px!important;transition:transform .15s,filter .5s}
+.vcard.frozen>div{filter:grayscale(.85) brightness(.8)}
+.vcard>div>:first-child{justify-self:center}
+.vcard>div strong{letter-spacing:.04em;font-size:13px;opacity:.9;text-align:center}
+.pan{font:600 18px ui-monospace,Menlo,monospace;letter-spacing:.12em}
+.donutwrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.legend{display:grid;gap:6px;flex:1;min-width:150px}
+.legend li{list-style:none;display:flex;align-items:center;gap:8px;font-size:14px}
+.legend{padding:0;margin:0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.tx{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.tx:first-child{border-top:0}
+.tx .mer{width:44px;height:44px;border-radius:14px;background:var(--surface2);display:grid;place-items:center;overflow:hidden}
+.pos{color:var(--ok)}.neg{color:var(--ink)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px}
+.tools .field{flex:1;min-width:150px}
+.screen{animation:in .35s ease both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:320px;margin:12px auto}
+.keypad button{min-height:64px;touch-action:manipulation;user-select:none;border:1px solid var(--line);background:var(--surface);border-radius:16px;font:700 26px Newsreader,serif}
+.keypad button:hover{background:var(--brand-soft)}
+.bigamt{font:700 56px/1 Newsreader,serif;text-align:center;margin:14px 0 4px}
+.contacts{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px}
+.contact{display:grid;justify-items:center;gap:4px;padding:14px 8px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface)}
+.contact[aria-pressed=true]{border-color:var(--brand);background:var(--brand-soft)}
+.bud{display:grid;gap:10px}
+.bud .head{display:flex;align-items:center;gap:12px}
+.bud .over{color:var(--danger);font-weight:700}
+.goal{display:grid;gap:12px}
+.sets{display:grid;gap:16px}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.setrow:first-child{border-top:0}
+.chat{display:grid;gap:10px}
+.bubble{background:var(--surface2);border-radius:16px;padding:10px 14px;max-width:100%;min-height:44px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:44px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600}
+.chip:hover{background:var(--brand-soft)}
+.cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.toastbox{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:900;width:min(92vw,380px)}
+.tabbar{display:none}
+body.lock{overflow:hidden;overscroll-behavior:contain}
+div:has(>[role=dialog]){overscroll-behavior:contain}
+[role=dialog] button,.chips .chip,.tools button,[role=radio],[role=tab]{min-height:44px!important}
+.tools [role=radio]{min-width:44px}
+[role=switch]{min-height:44px!important;min-width:44px}[aria-label$=" month"]{min-width:44px!important;min-height:44px!important}
+[role=dialog] button{min-width:44px}
+.tabbar button{min-height:52px}
+.otp input{height:52px!important;font-size:20px!important}
+@media (hover:none){.vcard>div{transform:none!important}}
+.modal{display:grid;gap:12px}
+@media (max-width:900px){.home,.cal-wrap{grid-template-columns:1fr}.g3{grid-template-columns:1fr}}
+@media (max-width:760px){
+.login{grid-template-columns:1fr}.hero{display:none}.formwrap{padding-top:64px}
+.shell{display:block}.side{display:none}
+main{padding:52px 16px 100px}
+.tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:500;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;min-width:0;border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:10.5px;font-weight:700;color:var(--muted);padding:4px 0;border-radius:10px}
+.tabbar button[aria-current=page]{color:var(--ink);background:var(--brand-soft)}
+.g2{grid-template-columns:1fr}.actions .btn{font-size:13px}
+.bigamt{font-size:44px}
+.toastbox{bottom:96px}
+}
+@media (max-width:760px){
+div:has(>[role=dialog]){place-items:end center!important;padding:0!important}
+[role=dialog]{width:100%!important;max-width:none!important;border-radius:24px 24px 0 0!important;max-height:90vh;max-height:90dvh;overflow:auto;overscroll-behavior:contain;padding-bottom:calc(22px + env(safe-area-inset-bottom))!important}
+.otp>:first-child{display:none!important}
+.otp,.otp [role=group]{min-width:0}.otp [role=group]{flex:1;gap:6px!important}
+.otp input{flex:1;min-width:0;width:auto!important}
+.formwrap{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.tabbar{padding-left:max(4px,env(safe-area-inset-left));padding-right:max(4px,env(safe-area-inset-right))}
+}
+@media (max-height:480px) and (orientation:landscape){
+.tabbar button{grid-auto-flow:column;align-items:center;justify-content:center;gap:6px;min-height:44px}.tabbar .ico{width:24px;height:24px}
+main{padding-bottom:70px!important}.login{grid-template-columns:1fr}.hero{display:none}.formwrap{place-items:start center}.login .formwrap{padding-top:50px}
+[role=dialog]{max-height:96dvh}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<noscript>Nest needs JavaScript to run.</noscript>
+<a class="ex-back" href="../" aria-label="Back to all examples">← All examples</a>
+<div id="root"></div>
+<script type="importmap">{ "imports": { "react": "https://esm.sh/react@19.3.1", "react-dom/client": "https://esm.sh/react-dom@19.3.1/client?deps=react@19.3.1" } }</script>
+<script type="module">
+import { createElement as h, useState, useEffect, useMemo, useRef, Fragment } from 'react'
+import { createRoot } from 'react-dom/client'
+import * as C from '../../../dist/components.js'
+import { Livatar } from '../../../dist/react.js'
+import { money, food, vehicle, home, tech, music, animal, memoji, clay, anime, chibi, flat, human, ui, bot } from '../../../dist/index.js'
+
+const PAL = ['#d9f0e5', '#c8e3d0', '#f3ecd6', '#eadfc2', '#f6e3a8']
+const KEY = 'nest-bank-v1'
+const STY = { food, transport: vehicle, home, tech, fun: music, income: money, transfer: money }
+const CATS = { food: 'Food & drink', transport: 'Transport', home: 'Home', tech: 'Tech', fun: 'Fun' }
+const still = { track: false, sleepAfter: 0, idle: false }
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+const buzz = (p = 12) => { try { if (navigator.vibrate && !reduced()) navigator.vibrate(p) } catch {} }
+const usd = (n, d = 2) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: d, maximumFractionDigits: d })
+const dkey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const ago = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return dkey(d) }
+const dlabel = (k) => { const n = Math.round((new Date(dkey(new Date()) + 'T00:00') - new Date(k + 'T00:00')) / 864e5); return n === 0 ? 'Today' : n === 1 ? 'Yesterday' : new Date(k + 'T00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' }) }
+
+const CONTACTS = [
+  { id: 'Maya Chen', name: 'Maya', role: 'Flatmate', avatar: { colors: PAL, variant: animal } },
+  { id: 'Theo Okafor', name: 'Theo', role: 'Brother', avatar: { colors: PAL, variant: memoji } },
+  { id: 'Priya Rao', name: 'Priya', role: 'Design club', avatar: { colors: PAL, variant: clay } },
+  { id: 'Jonas Weber', name: 'Jonas', role: 'Landlord', avatar: { colors: PAL, variant: anime } },
+  { id: 'Lena Fox', name: 'Lena', role: 'Friend', avatar: { colors: PAL, variant: chibi } },
+  { id: 'Omar Said', name: 'Omar', role: 'Work lunch', avatar: { colors: PAL, variant: flat } },
+]
+const MER = {
+  'Bean & Bloom': { cat: 'food', kind: 'donut' }, 'Noodle Lab': { cat: 'food', kind: 'sushi' }, 'Green Crate': { cat: 'food', kind: 'avocado' },
+  'Zip Rides': { cat: 'transport', kind: 'car' }, 'Metro Pass': { cat: 'transport', kind: 'train' },
+  'Sunday Rent': { cat: 'home', kind: 'house' }, 'Lumen Energy': { cat: 'home', kind: 'lamp' },
+  'Cloudbase': { cat: 'tech', kind: 'cloud' }, 'PixelPad': { cat: 'tech', kind: 'chip' },
+  'Vinyl Club': { cat: 'fun', kind: 'vinyl' }, 'Showtix': { cat: 'fun', kind: 'mic' },
+  'Acme Payroll': { cat: 'income', kind: 'bill' }, 'Kite Studio': { cat: 'income', kind: 'coin' },
+}
+const seedTx = () => [
+  ['Acme Payroll', 3400, 26], ['Sunday Rent', -1150, 25], ['Lumen Energy', -64.2, 23], ['Cloudbase', -29, 21], ['Noodle Lab', -22.5, 19], ['Vinyl Club', -18, 17],
+  ['Zip Rides', -14.8, 15], ['Bean & Bloom', -5.4, 13], ['Green Crate', -47.9, 11], ['Kite Studio', 420, 9], ['Metro Pass', -78, 8], ['PixelPad', -129, 6],
+  ['Showtix', -64, 4], ['Bean & Bloom', -6.2, 2], ['Zip Rides', -19.4, 1], ['Noodle Lab', -17.9, 0],
+].map(([name, amt, d], i) => ({ id: 's' + i, name, cat: MER[name].cat, amt, d: ago(d) }))
+const fresh = () => ({ balance: 8244.12, tx: seedTx(), limits: { food: 400, transport: 200, home: 1300, tech: 250, fun: 150 },
+  goals: [
+    { id: 'g1', name: 'Lisbon trip', kind: 'piggy', target: 1800, saved: 640, due: 75 },
+    { id: 'g2', name: 'New laptop', kind: 'gem', target: 2400, saved: 2250, due: 30 },
+    { id: 'g3', name: 'Rainy-day fund', kind: 'wallet', target: 5000, saved: 1200, due: 240 }],
+  frozen: { virtual: false, travel: false }, prefs: { tfa: true, bio: true, push: true, round: false } })
+const load = () => { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.tx) return { ...fresh(), ...s } } catch {} return fresh() }
+const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)) } catch {} }
+
+function useCount(to, ms = 1100) {
+  const [v, setV] = useState(reduced() ? to : 0); const from = useRef(0)
+  useEffect(() => {
+    if (reduced()) { setV(to); return }
+    const a = from.current, t0 = performance.now(); let id
+    const step = (t) => { const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); const x = a + (to - a) * e; setV(x); from.current = x; if (p < 1) id = requestAnimationFrame(step) }
+    id = requestAnimationFrame(step); return () => cancelAnimationFrame(id)
+  }, [to])
+  return v
+}
+const Merchant = ({ name, size = 30 }) => { const m = MER[name]; return h(Livatar, { colors: PAL, variant: STY[m.cat], seed: name, size, options: { kind: m.kind }, alive: still, title: name }) }
+const TxRow = ({ t }) => {
+  const person = CONTACTS.find((c) => c.id === t.p)
+  return h('li', { className: 'tx', style: { listStyle: 'none' } },
+    h('span', { className: 'mer' }, person ? h(Livatar, { seed: person.id, size: 38, alive: still, ...person.avatar }) : h(Merchant, { name: t.name, size: 36 })),
+    h('div', null, h('div', { style: { fontWeight: 700 } }, t.name), h('div', { className: 'muted small' }, (person ? 'Transfer' : CATS[t.cat] || 'Income') + ' · ' + dlabel(t.d) + (t.note ? ' · ' + t.note : ''))),
+    h('b', { className: 'num ' + (t.amt > 0 ? 'pos' : 'neg') }, (t.amt > 0 ? '+' : '−') + usd(Math.abs(t.amt))))
+}
+const spentBy = (tx) => { const o = {}; tx.filter((t) => t.amt < 0 && CATS[t.cat]).forEach((t) => { o[t.cat] = (o[t.cat] || 0) + -t.amt }); return o }
+const Logo = () => h('div', { className: 'logo' }, h('svg', { viewBox: '0 0 32 32', 'aria-hidden': true }, h('rect', { width: 32, height: 32, rx: 10, fill: '#0c7a55' }), h('path', { d: 'M6 19c2-6 7-9 10-9s8 3 10 9c-3 4-6 5-10 5S9 23 6 19Z', fill: '#f4a21f' }), h('ellipse', { cx: 16, cy: 18, rx: 4, ry: 3, fill: '#fff6dc' })), 'Nest')
+
+/* ---------- Login ---------- */
+function Login({ onIn }) {
+  const [step, setStep] = useState('creds'); const [pw, setPw] = useState(''); const [email, setEmail] = useState('')
+  return h('div', { className: 'login' },
+    h('aside', { className: 'hero', 'aria-hidden': 'true' },
+      h('div', { className: 'logo', style: { color: '#fff' } }, 'Nest'),
+      h('div', null, h('h1', null, 'Money that looks back at you.'), h('p', null, 'Budgets, goals and cards with a face you can trust. Your cash is safe; your piggy bank is smug.')),
+      h('div', { className: 'faces' }, [money, bot, animal, memoji, food].map((s, i) => h(Livatar, { key: i, colors: PAL, variant: s, seed: 'nest' + i, size: 72, mood: 'happy' })))),
+    h('main', { className: 'formwrap', style: { padding: '60px 24px 24px' } },
+      h('div', { className: 'formbox' },
+        h(Logo), step === 'creds'
+          ? h(Fragment, null, h('div', null, h('h1', null, 'Welcome back'), h('p', { className: 'muted', style: { margin: '6px 0 0' } }, 'Demo mode: any email and password works.')),
+            h(C.LivatarForm, { avatar: { colors: PAL, variant: money, seed: 'nest-login', size: 96 }, onSubmit: async () => { await new Promise((r) => setTimeout(r, 700)); if (pw.length < 4) return false; setStep('otp'); return true } },
+              h('label', { className: 'sr', htmlFor: 'em' }, 'Email'),
+              h(C.LivatarInput, { id: 'em', name: 'email', type: 'email', required: true, enterKeyHint: 'next', autoCapitalize: 'none', placeholder: 'you@nest.app', autoComplete: 'username', value: email, onChange: (e) => setEmail(e.target.value), follow: true, avatar: { colors: PAL, variant: animal } }),
+              h('label', { className: 'sr', htmlFor: 'pw' }, 'Password'),
+              h(C.LivatarInput, { id: 'pw', name: 'password', type: 'password', required: true, enterKeyHint: 'go', minLength: 4, placeholder: 'Password (4+ characters)', autoComplete: 'current-password', value: pw, onChange: (e) => setPw(e.target.value), avatar: { colors: PAL, variant: ui, options: { kind: 'lock' } } }),
+              pw && h(C.LivatarPasswordStrength, { avatar: { colors: PAL }, value: pw }),
+              h('button', { className: 'btn pri', type: 'submit' }, 'Continue')))
+          : h(Fragment, null, h('div', null, h('h1', null, 'Two-step check'), h('p', { className: 'muted', style: { margin: '6px 0 0' } }, 'Enter the 6-digit code we pretended to text you. Hint: 123456.')),
+            h(C.LivatarOTP, { className: 'otp', length: 6, avatar: { colors: PAL }, onComplete: async (code) => { await new Promise((r) => setTimeout(r, 500)); if (code !== '123456') return false; setTimeout(onIn, 900); return true } }),
+            h('button', { className: 'btn', onClick: () => setStep('creds') }, '← Back')))))
+}
+
+/* ---------- Virtual card ---------- */
+function VCard({ id, label, frozen, last4, expiry, kind }) {
+  return h(C.LivatarTiltCard, { className: 'vcard' + (frozen ? ' frozen' : ''), colors: PAL, variant: money, seed: 'card-' + id, size: 84, options: { kind: kind || 'card' }, mood: frozen ? 'sleepy' : 'happy', title: label + (frozen ? ' · frozen' : '') },
+    h('div', { className: 'pan', 'aria-label': 'Card ending ' + last4 }, '•••• •••• •••• ' + last4),
+    h('div', { className: 'row between small' }, h('span', null, 'Exp ' + expiry), h('b', null, 'NEST')))
+}
+
+/* ---------- Donut ---------- */
+function Donut({ by }) {
+  const total = Object.values(by).reduce((a, b) => a + b, 0), R = 54, L = 2 * Math.PI * R; let off = 0
+  return h('div', { className: 'donutwrap' },
+    h('svg', { viewBox: '0 0 140 140', width: 160, height: 160, role: 'img', 'aria-label': 'Spending by category, total ' + usd(total, 0) },
+      h('circle', { cx: 70, cy: 70, r: R, fill: 'none', stroke: 'var(--surface2)', strokeWidth: 18 }),
+      Object.entries(by).map(([k, v]) => { const len = (v / total) * L, el = h('circle', { key: k, cx: 70, cy: 70, r: R, fill: 'none', stroke: `var(--c-${k})`, strokeWidth: 18, strokeDasharray: `${Math.max(0, len - 2)} ${L}`, strokeDashoffset: -off, transform: 'rotate(-90 70 70)', style: { transition: 'stroke-dasharray .6s' } }); off += len; return el }),
+      h('text', { x: 70, y: 68, textAnchor: 'middle', fill: 'var(--ink)', style: { font: '700 20px Newsreader,serif' } }, usd(total, 0)),
+      h('text', { x: 70, y: 86, textAnchor: 'middle', fill: 'var(--muted)', style: { font: '600 10px Red Hat Display' } }, 'last 30 days')),
+    h('ul', { className: 'legend' }, Object.entries(by).sort((a, b) => b[1] - a[1]).map(([k, v]) => h('li', { key: k }, h('span', { className: 'dot', style: { background: `var(--c-${k})` } }), h('span', { style: { flex: 1 } }, CATS[k]), h('b', { className: 'num' }, usd(v, 0))))))
+}
+
+/* ---------- Home ---------- */
+function Home({ s, go, send, dialog }) {
+  const by = useMemo(() => spentBy(s.tx), [s.tx]); const bal = useCount(s.balance)
+  const [q, setQ] = useState(''); const [f, setF] = useState('all')
+  const list = s.tx.filter((t) => (f === 'all' || (f === 'out' ? t.amt < 0 : t.amt > 0)) && t.name.toLowerCase().includes(q.toLowerCase())).slice().reverse().sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0))
+  return h('div', { className: 'screen' },
+    h('div', { className: 'top' }, h('div', null, h('p', { className: 'muted small', style: { margin: 0 } }, 'Good to see you, Alex'), h('h1', null, 'Your nest')),
+      h('button', { className: 'btn pri', onClick: send }, 'Send money')),
+    h('div', { className: 'home' },
+      h('div', { className: 'grid' },
+        h('section', { className: 'card bal', 'aria-label': 'Balance' }, h('div', { className: 'small', style: { opacity: .8 } }, 'Available balance'), h('div', { className: 'amt num', 'aria-live': 'polite', 'aria-label': usd(s.balance) }, usd(bal)),
+          h('div', { className: 'actions' },
+            [['Send', '↗', send], ['Request', '↙', () => dialog('request')], ['Top up', '+', () => dialog('topup')]].map(([l, i, fn]) => h('button', { key: l, className: 'btn', onClick: fn }, h('span', { 'aria-hidden': true, style: { fontSize: 20 } }, i), l)))),
+        h('section', { className: 'card', 'aria-labelledby': 'sp' }, h('h2', { id: 'sp', style: { marginBottom: 12 } }, 'Spending'), h(Donut, { by }))),
+      h('div', { className: 'grid', style: { alignContent: 'start' } },
+        h(VCard, { id: 'virtual', label: 'Nest virtual', frozen: s.frozen.virtual, last4: '4821', expiry: '09/29' }),
+        h('section', { className: 'card', 'aria-labelledby': 'rt' }, h('h2', { id: 'rt' }, 'Recent activity'),
+          h('div', { className: 'tools' }, h('input', { className: 'field', type: 'search', enterKeyHint: 'search', autoComplete: 'off', placeholder: 'Search merchants', 'aria-label': 'Search transactions', value: q, onChange: (e) => setQ(e.target.value) }),
+            h(C.LivatarSegmented, { avatar: { colors: PAL }, size: 22, value: f, onChange: setF, options: [{ value: 'all', label: 'All' }, { value: 'out', label: 'Spent' }, { value: 'in', label: 'In' }] })),
+          h('ul', { style: { margin: 0, padding: 0 }, 'aria-live': 'polite' }, list.length ? list.slice(0, 8).map((t) => h(TxRow, { key: t.id, t })) : h('li', { className: 'muted', style: { listStyle: 'none', padding: 16 } }, 'No matches.'))))))
+}
+
+/* ---------- Send wizard ---------- */
+function SendFlow({ s, onSend, done, cancel }) {
+  const [step, setStep] = useState(0); const [who, setWho] = useState(null); const [amt, setAmt] = useState(''); const [fire, setFire] = useState(0); const [busy, setBusy] = useState(false); const [rcpt, setRcpt] = useState(null)
+  const n = parseFloat(amt || '0'), bad = n <= 0 || n > s.balance
+  const press = (k) => { buzz(8); keyp(k) }
+  const keyp = (k) => setAmt((a) => k === '⌫' ? a.slice(0, -1) : k === '.' ? (a.includes('.') ? a : (a || '0') + '.') : (a.includes('.') && a.split('.')[1].length >= 2) || a.length >= 7 ? a : a === '0' ? k : a + k)
+  useEffect(() => { if (step !== 1) return; const k = (e) => { if (/^[0-9.]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('⌫'); else if (e.key === 'Enter' && !bad) setStep(2) }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [step, bad])
+  const confirm = async () => { setBusy(true); await new Promise((r) => setTimeout(r, 900)); const r = onSend(who, n); setRcpt(r); setBusy(false); setStep(3); setFire((x) => x + 1); buzz([30, 40, 60]) }
+  return h('div', { className: 'screen' },
+    h('div', { className: 'top' }, h('h1', null, 'Send money'), h('button', { className: 'btn', onClick: cancel }, step === 3 ? 'Close' : 'Cancel')),
+    h('div', { className: 'card' }, h(C.LivatarStepper, { avatar: { colors: PAL }, steps: ['Who', 'Amount', 'Confirm', 'Done'], current: step }),
+      h('div', { style: { marginTop: 20 } },
+        step === 0 && h(Fragment, null, h('h2', null, 'Who are you paying?'), h('p', { className: 'muted small' }, 'Hover a face to peek, tap one to choose.'),
+          h(C.LivatarAnimatedTooltip, { avatar: { colors: PAL }, people: CONTACTS, size: 52 }),
+          h('div', { className: 'contacts', role: 'group', 'aria-label': 'Recipients' }, CONTACTS.map((c) => h('button', { key: c.id, className: 'contact', 'aria-pressed': who === c.id, 'aria-label': c.name + ', ' + c.role, onClick: () => { setWho(c.id); setStep(1) } },
+            h(Livatar, { seed: c.id, size: 64, mood: who === c.id ? 'happy' : undefined, ...c.avatar }), h('b', null, c.name), h('span', { className: 'muted small' }, c.role))))),
+        step === 1 && h(Fragment, null, h('div', { className: 'row', style: { justifyContent: 'center' } }, h(Livatar, { seed: who, size: 56, mood: bad && n > 0 ? 'scared' : 'happy', ...CONTACTS.find((c) => c.id === who).avatar }), h('b', null, 'To ' + who)),
+          h('div', { className: 'bigamt num', 'aria-live': 'polite' }, '$' + (amt || '0')), h('div', { className: 'muted small', style: { textAlign: 'center' } }, n > s.balance ? 'That is more than your balance.' : 'Balance ' + usd(s.balance)),
+          h('div', { className: 'keypad' }, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map((k) => h('button', { key: k, 'aria-label': k === '⌫' ? 'Delete' : k, onClick: () => press(k) }, k))),
+          h('div', { className: 'row', style: { justifyContent: 'center' } }, h('button', { className: 'btn', onClick: () => setStep(0) }, 'Back'), h('button', { className: 'btn pri', disabled: bad, onClick: () => setStep(2) }, 'Review'))),
+        step === 2 && h('div', { className: 'grid', style: { justifyItems: 'center', textAlign: 'center' } }, h(C.LivatarLoader, { colors: PAL, variant: money, seed: 'send', size: 110, status: busy ? 'loading' : 'idle', label: busy ? 'Sending…' : 'Ready to send' }),
+          h('h2', null, usd(n) + ' to ' + who), h('p', { className: 'muted small', style: { margin: 0 } }, 'Instant · no fees · from Nest main'),
+          h('div', { className: 'row' }, h('button', { className: 'btn', disabled: busy, onClick: () => setStep(1) }, 'Edit'), h('button', { className: 'btn pri', disabled: busy, onClick: confirm }, 'Send ' + usd(n)))),
+        step === 3 && h(C.LivatarConfetti, { fire, seeds: ['coin', 'gem', 'party', 'cash'], avatar: { colors: PAL, variant: money }, style: { display: 'block' } },
+          h(C.LivatarResult, { status: 'success', colors: PAL, variant: money, seed: 'sent', title: 'Sent! ' + usd(n), description: 'Receipt ' + (rcpt && rcpt.id.toUpperCase()) + ' · ' + who + ' will see it right away.',
+            extra: h('div', { className: 'row' }, h('button', { className: 'btn pri', onClick: done }, 'Back home'), h('button', { className: 'btn', onClick: () => { setStep(0); setAmt(''); setWho(null) } }, 'Send another')) })))))
+}
+
+/* ---------- Budgets ---------- */
+function Budgets({ s, setLimit }) {
+  const by = spentBy(s.tx)
+  return h('div', { className: 'screen' }, h('div', { className: 'top' }, h('div', null, h('h1', null, 'Budgets'), h('p', { className: 'muted small', style: { margin: '4px 0 0' } }, 'Drag a face to set the monthly limit.'))),
+    h('div', { className: 'grid g2' }, Object.keys(CATS).map((k) => { const sp = by[k] || 0, lim = s.limits[k], over = sp > lim
+      return h('section', { key: k, className: 'card bud', 'aria-label': CATS[k] },
+        h('div', { className: 'head' }, h('span', { className: 'dot', style: { background: `var(--c-${k})` } }), h('h3', { style: { flex: 1 } }, CATS[k]), h('span', { className: over ? 'over' : 'muted small' }, over ? 'Over by ' + usd(sp - lim, 0) : usd(lim - sp, 0) + ' left')),
+        h(C.LivatarProgress, { value: Math.min(100, (sp / lim) * 100), label: usd(sp, 0) + ' of ' + usd(lim, 0), colors: PAL, variant: vehicle, seed: 'bud-' + k }),
+        h(C.LivatarSlider, { colors: PAL, variant: STY[k], seed: 'lim-' + k, value: lim, min: 50, max: 2000, step: 10, label: CATS[k] + ' limit', moods: ['scared', 'sad', 'neutral', 'happy', 'laugh'], onChange: (v) => setLimit(k, v) })) })))
+}
+
+/* ---------- Goals ---------- */
+function Goals({ s, fund }) {
+  const [mood, setMood] = useState({}); const dues = useRef({})
+  return h('div', { className: 'screen' }, h('div', { className: 'top' }, h('h1', null, 'Savings goals')),
+    h('div', { className: 'grid g3' }, s.goals.map((g) => { const pct = Math.min(100, (g.saved / g.target) * 100), ok = pct >= 100
+      const due = (dues.current[g.id] ??= Date.now() + g.due * 864e5)
+      return h('section', { key: g.id, className: 'card goal', 'aria-label': g.name },
+        h('div', { className: 'row' }, h(Livatar, { colors: PAL, variant: money, seed: 'goal-' + g.id, options: { kind: g.kind, sparkle: ok }, size: 72, mood: mood[g.id] || (ok ? 'starstruck' : pct > 50 ? 'happy' : 'neutral') }),
+          h('div', null, h('h3', null, g.name), h('div', { className: 'muted small num' }, usd(g.saved, 0) + ' / ' + usd(g.target, 0)))),
+        h(C.LivatarProgress, { value: pct, label: Math.round(pct) + '%', colors: PAL, variant: vehicle, seed: 'gp-' + g.id }),
+        h(C.LivatarCountdown, { to: due, label: 'Target date', colors: PAL, variant: home, seed: 'cd-' + g.id, options: { kind: 'clock' } }),
+        h('button', { className: 'btn pri', disabled: ok || s.balance < 50, onClick: () => { fund(g.id, 50); setMood((m) => ({ ...m, [g.id]: 'love' })); setTimeout(() => setMood((m) => ({ ...m, [g.id]: undefined })), 1800) } }, ok ? 'Goal reached' : 'Add $50')) })))
+}
+
+/* ---------- Cards ---------- */
+function Cards({ s, setFrozen }) {
+  const cards = [['virtual', 'Nest virtual', '4821', '09/29', 'card'], ['travel', 'Travel card', '1190', '02/28', 'wallet']]
+  return h('div', { className: 'screen' }, h('div', { className: 'top' }, h('h1', null, 'Cards')),
+    h('div', { className: 'grid g2' }, cards.map(([id, label, l4, ex, kind]) => h('section', { key: id, className: 'card grid', 'aria-label': label },
+      h(VCard, { id, label, frozen: s.frozen[id], last4: l4, expiry: ex, kind }),
+      h(C.LivatarSwitch, { colors: PAL, variant: money, seed: 'sw-' + id, checked: s.frozen[id], onChange: (v) => setFrozen(id, v), label: s.frozen[id] ? 'Frozen. Tap to unfreeze' : 'Freeze card' }),
+      h('p', { className: 'muted small', style: { margin: 0 } }, s.frozen[id] ? 'Purchases are blocked and this card is having a nap.' : 'Card is active. Freeze it any time, instantly.')))))
+}
+
+/* ---------- Insights ---------- */
+function Insights({ s }) {
+  const [sel, setSel] = useState(new Date()); const inc = s.tx.filter((t) => t.amt > 0).reduce((a, t) => a + t.amt, 0), out = s.tx.filter((t) => t.amt < 0).reduce((a, t) => a - t.amt, 0)
+  const marks = useMemo(() => { const m = {}; s.tx.forEach((t) => { (m[t.d] = m[t.d] || []).push(t.name) }); return m }, [s.tx])
+  const day = s.tx.filter((t) => t.d === dkey(sel))
+  return h('div', { className: 'screen' }, h('div', { className: 'top' }, h('h1', null, 'Insights')),
+    h('div', { className: 'grid g3' },
+      h(C.LivatarStatistic, { title: 'Money in', value: Math.round(inc), prefix: '$', trend: 12, colors: PAL, variant: money, seed: 'in' }),
+      h(C.LivatarStatistic, { title: 'Money out', value: Math.round(out), prefix: '$', trend: out > inc ? 8 : -6, colors: PAL, variant: money, seed: 'out', options: { kind: 'bag' } }),
+      h(C.LivatarStatistic, { title: 'Savings rate', value: Math.max(0, Math.round(((inc - out) / inc) * 100)), suffix: '%', trend: inc > out ? 4 : -4, colors: PAL, variant: money, seed: 'rate', options: { kind: 'gem' } })),
+    h('div', { className: 'cal-wrap', style: { marginTop: 16 } },
+      h('section', { className: 'card', 'aria-label': 'Spending calendar' }, h('h2', { style: { marginBottom: 10 } }, 'Spending calendar'), h(C.LivatarCalendar, { value: sel, onChange: setSel, marks, fill: false, size: 24, avatar: { colors: PAL, variant: money }, style: { width: '100%', border: 0, background: 'none', padding: 0 } })),
+      h('section', { className: 'card', 'aria-live': 'polite' }, h('h2', null, sel.toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })),
+        h('ul', { style: { margin: '8px 0 0', padding: 0 } }, day.length ? day.map((t) => h(TxRow, { key: t.id, t })) : h('li', { className: 'muted', style: { listStyle: 'none', padding: '16px 0' } }, 'A quiet day. Your wallet thanks you.')))))
+}
+
+/* ---------- Settings + Ask Nest ---------- */
+function Ask({ s }) {
+  const [q, setQ] = useState(''); const [text, setText] = useState('Hi Alex! Ask me about spending, budgets, goals or your card.'); const [st, setSt] = useState('ready'); const tm = useRef()
+  const answer = (t) => { t = t.toLowerCase(); const by = spentBy(s.tx), tot = Object.values(by).reduce((a, b) => a + b, 0), top = Object.entries(by).sort((a, b) => b[1] - a[1])[0]
+    if (/balance|have|money/.test(t)) return `You have ${usd(s.balance)} available across Nest main.`
+    if (/spend|spent|where/.test(t)) return `You spent ${usd(tot, 0)} in the last 30 days. Biggest category: ${CATS[top[0]]} at ${usd(top[1], 0)}.`
+    if (/budget|limit|over/.test(t)) { const o = Object.keys(CATS).filter((k) => (by[k] || 0) > s.limits[k]); return o.length ? `You're over budget in ${o.map((k) => CATS[k]).join(' and ')}. Nudge the sliders on Budgets.` : 'All budgets are on track. Nice work.' }
+    if (/goal|save|saving/.test(t)) { const g = s.goals.map((x) => `${x.name} ${Math.round((x.saved / x.target) * 100)}%`).join(', '); return `Goals: ${g}. Tip: $50 a week closes the gap fast.` }
+    if (/card|freeze|lost/.test(t)) return 'Open Cards and flip the switch to freeze instantly. Frozen cards fall asleep.'
+    if (/fee|cost|price/.test(t)) return 'Nest is free: no monthly fee, no transfer fees, no foreign exchange markup under $1,000.'
+    if (/secur|2fa|safe|password/.test(t)) return 'Your account uses two-step login and device biometrics. Review them above.'
+    return "I'm only a small demo brain. Try: balance, spending, budgets, goals, freezing a card, or fees." }
+  const ask = (t) => { if (!t.trim()) return; clearInterval(tm.current); setQ(''); setSt('submitted'); const a = answer(t); let i = 0; setText('')
+    setTimeout(() => { setSt('streaming'); tm.current = setInterval(() => { i += 2; setText(a.slice(0, i)); if (i >= a.length) { clearInterval(tm.current); setSt('ready') } }, 28) }, 600) }
+  useEffect(() => () => clearInterval(tm.current), [])
+  return h('section', { className: 'card chat', 'aria-label': 'Ask Nest' }, h('h2', null, 'Ask Nest'),
+    h('div', { className: 'row', style: { alignItems: 'flex-start' } }, h(C.LivatarAssistant, { colors: PAL, variant: bot, seed: 'ask-nest', size: 76, status: st, text, showState: true }), h('div', { className: 'bubble', 'aria-live': 'polite', role: 'status' }, text || '…')),
+    h('div', { className: 'chips' }, ['What is my balance?', 'Where did I spend?', 'Am I over budget?', 'How are my goals?', 'How do I freeze a card?'].map((x) => h('button', { key: x, className: 'chip', onClick: () => ask(x) }, x))),
+    h('form', { className: 'row', onSubmit: (e) => { e.preventDefault(); ask(q) } }, h('input', { className: 'field', 'aria-label': 'Ask a question', placeholder: 'Ask anything about your money', value: q, onChange: (e) => setQ(e.target.value) }), h('button', { className: 'btn pri', type: 'submit' }, 'Ask')))
+}
+function Settings({ s, setPref, signOut, reset }) {
+  const rows = [['tfa', 'Two-step login', 'Require a code at every sign-in', ui, 'lock'], ['bio', 'Biometric unlock', 'Face or fingerprint on this device', ui, 'gear'], ['push', 'Push notifications', 'Instant alerts for payments', ui, 'bell'], ['round', 'Round-ups', 'Round purchases up into savings', money, 'coin']]
+  return h('div', { className: 'screen' }, h('div', { className: 'top' }, h('h1', null, 'Security & help')),
+    h('div', { className: 'grid g2', style: { alignItems: 'start' } },
+      h('section', { className: 'card sets', 'aria-label': 'Preferences' }, h('h2', null, 'Preferences'),
+        rows.map(([k, t, d, v, kind]) => h('div', { key: k, className: 'setrow' }, h('div', null, h('b', null, t), h('div', { className: 'muted small' }, d)), h(C.LivatarSwitch, { colors: PAL, variant: v, seed: 'p-' + k, options: { kind }, checked: s.prefs[k], onChange: (x) => setPref(k, x), label: h('span', { className: 'sr' }, t) }))),
+        h('div', { className: 'row' }, h('button', { className: 'btn', onClick: signOut }, 'Sign out'), h('button', { className: 'btn danger', onClick: reset }, 'Reset demo data'))),
+      h(Ask, { s })))
+}
+
+/* ---------- App ---------- */
+const NAV = [['home', 'Home', home, 'house'], ['budgets', 'Budgets', vehicle, 'car'], ['goals', 'Goals', money, 'piggy'], ['cards', 'Cards', money, 'card'], ['insights', 'Insights', tech, 'database'], ['settings', 'Security', ui, 'lock']]
+const NavIcon = ({ n }) => h('span', { className: 'ico', 'aria-hidden': true }, h(Livatar, { colors: PAL, variant: n[2], seed: 'nav-' + n[0], size: 28, options: { kind: n[3] }, alive: still, mood: 'happy' }))
+
+function App() {
+  const [auth, setAuth] = useState(() => { try { return sessionStorage.getItem(KEY + '-in') === '1' } catch { return false } })
+  const [s, setS] = useState(load); const [view, setView] = useState('home'); const [dlg, setDlg] = useState(null); const [toast, setToast] = useState(null); const [amt, setAmt] = useState('50'); const [who, setWho] = useState(CONTACTS[0].id)
+  useEffect(() => save(s), [s])
+  useEffect(() => { document.body.classList.toggle('lock', !!dlg); return () => document.body.classList.remove('lock') }, [dlg])
+  useEffect(() => { const t = { home: 'Home', budgets: 'Budgets', goals: 'Goals', cards: 'Cards', insights: 'Insights', settings: 'Security', send: 'Send money' }; document.title = auth ? `${t[view]} · Nest` : 'Sign in · Nest' }, [view, auth])
+  const note = (type, title, description) => setToast({ type, title, description, k: Date.now() })
+  const post = (name, amount, extra = {}) => { const t = { id: 't' + Date.now().toString(36), name, cat: MER[name]?.cat || 'transfer', amt: amount, d: dkey(new Date()), ...extra }; setS((o) => ({ ...o, balance: +(o.balance + amount).toFixed(2), tx: [...o.tx, t] })); return t }
+  const onSend = (p, n) => post(CONTACTS.find((c) => c.id === p).name, -n, { p })
+  const signIn = () => { try { sessionStorage.setItem(KEY + '-in', '1') } catch {} setAuth(true) }
+  const signOut = () => { try { sessionStorage.removeItem(KEY + '-in') } catch {} setDlg(null); setAuth(false) }
+  if (!auth) return h(Login, { onIn: signIn })
+  const nav = (id) => { setView(id); scrollTo(0, 0) }
+  const body = view === 'home' ? h(Home, { s, go: nav, send: () => nav('send'), dialog: setDlg })
+    : view === 'send' ? h(SendFlow, { s, onSend, done: () => nav('home'), cancel: () => nav('home') })
+    : view === 'budgets' ? h(Budgets, { s, setLimit: (k, v) => setS((o) => ({ ...o, limits: { ...o.limits, [k]: v } })) })
+    : view === 'goals' ? h(Goals, { s, fund: (id, v) => { setS((o) => ({ ...o, balance: +(o.balance - v).toFixed(2), goals: o.goals.map((g) => g.id === id ? { ...g, saved: g.saved + v } : g), tx: [...o.tx, { id: 'g' + Date.now(), name: 'Goal: ' + o.goals.find((g) => g.id === id).name, cat: 'transfer', amt: -v, d: dkey(new Date()) }] })); note('success', 'Saved $' + v, 'Moved into your goal.') } })
+    : view === 'cards' ? h(Cards, { s, setFrozen: (id, v) => { setS((o) => ({ ...o, frozen: { ...o.frozen, [id]: v } })); note(v ? 'info' : 'success', v ? 'Card frozen' : 'Card active', v ? 'It is taking a nap.' : 'Welcome back.') } })
+    : view === 'insights' ? h(Insights, { s })
+    : h(Settings, { s, setPref: (k, v) => setS((o) => ({ ...o, prefs: { ...o.prefs, [k]: v } })), signOut: () => setDlg('signout'), reset: () => { setS(fresh()); note('info', 'Demo data reset', 'Fresh start.') } })
+  const active = view === 'send' ? 'home' : view
+  const items = (cls) => NAV.map((n) => h('button', { key: n[0], 'aria-current': active === n[0] ? 'page' : undefined, onClick: () => nav(n[0]) }, h(NavIcon, { n }), n[1]))
+  const ok = Number(amt) > 0
+  return h('div', { className: 'shell' },
+    h('aside', { className: 'side' }, h(Logo), h('nav', { className: 'nav', 'aria-label': 'Primary' }, items()),
+      h('div', { className: 'me' }, h(Livatar, { seed: 'alex-rivera', colors: PAL, variant: memoji, size: 40, alive: { sleepAfter: 0 } }), h('div', null, h('b', null, 'Alex Rivera'), h('div', { className: 'muted small' }, 'Nest Plus')))),
+    h('main', { id: 'main' }, body),
+    h('nav', { className: 'tabbar', 'aria-label': 'Primary mobile' }, items()),
+    h('div', { className: 'toastbox' }, toast && h(C.LivatarToast, { key: toast.k, open: true, type: toast.type, title: toast.title, description: toast.description, colors: PAL, variant: money, onClose: () => setToast(null) })),
+    h(C.LivatarDialog, { open: dlg === 'signout', onClose: () => setDlg(null), title: 'Sign out of Nest?', tone: 'danger', colors: PAL, variant: money, seed: 'bye', options: { kind: 'wallet' }, actions: h(Fragment, null, h('button', { className: 'btn', onClick: () => setDlg(null) }, 'Stay'), h('button', { className: 'btn pri', onClick: signOut }, 'Sign out')) }, 'You will need your code again next time.'),
+    h(C.LivatarDialog, { open: dlg === 'topup', onClose: () => setDlg(null), title: 'Top up balance', tone: 'success', colors: PAL, variant: money, seed: 'topup', options: { kind: 'wallet' },
+      actions: h(Fragment, null, h('button', { className: 'btn', onClick: () => setDlg(null) }, 'Cancel'), h('button', { className: 'btn pri', disabled: !ok, onClick: () => { post('Kite Studio', Number(amt), { note: 'Top up' }); setDlg(null); note('success', 'Topped up ' + usd(Number(amt)), 'Funds are available now.') } }, 'Add funds')) },
+      h('div', { className: 'modal' }, h('label', { htmlFor: 'tu' }, 'Amount (USD)'), h('input', { id: 'tu', className: 'field', type: 'number', inputMode: 'decimal', enterKeyHint: 'done', min: 1, inputMode: 'decimal', value: amt, onChange: (e) => setAmt(e.target.value) }))),
+    h(C.LivatarDialog, { open: dlg === 'request', onClose: () => setDlg(null), title: 'Request money', tone: 'info', colors: PAL, variant: money, seed: 'req', options: { kind: 'wallet' },
+      actions: h(Fragment, null, h('button', { className: 'btn', onClick: () => setDlg(null) }, 'Cancel'), h('button', { className: 'btn pri', disabled: !ok, onClick: () => { setDlg(null); note('success', 'Request sent', usd(Number(amt)) + ' requested from ' + who.split(' ')[0] + '.') } }, 'Send request')) },
+      h('div', { className: 'modal' }, h('label', { htmlFor: 'rq' }, 'From'), h('select', { id: 'rq', className: 'field', value: who, onChange: (e) => setWho(e.target.value) }, CONTACTS.map((c) => h('option', { key: c.id, value: c.id }, c.name))), h('label', { htmlFor: 'ra' }, 'Amount (USD)'), h('input', { id: 'ra', className: 'field', type: 'number', inputMode: 'decimal', enterKeyHint: 'done', min: 1, value: amt, onChange: (e) => setAmt(e.target.value) }))))
+}
+createRoot(document.getElementById('root')).render(h(App))
+</script>
+</body>
+</html>

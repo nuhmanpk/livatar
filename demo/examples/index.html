@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>livatar examples</title>
+<meta name="description" content="Complete example websites built with livatar: an ecommerce shop, SaaS landing page, analytics dashboard, social feed, team chat, kanban board, learning app, studio portfolio and a neobank. Each one is a real page you can open and read the source of." />
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet" />
+<link rel="alternate" type="text/plain" href="../../llms.txt" title="llms.txt" />
+<script>
+  if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)
+  try { const t = localStorage.getItem('livatar-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  if (!document.documentElement.dataset.theme) document.documentElement.dataset.theme = 'light'
+</script>
+<link rel="stylesheet" href="../docs/docs.css" />
+<style>
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 90px }
+  h1 { font-size: clamp(34px, 6vw, 58px); letter-spacing: -0.03em; margin: 12px 0 6px }
+  .lead { color: var(--muted); max-width: 660px; margin: 0 0 30px; font-size: 18px }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px }
+  .ex { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; color: inherit; text-decoration: none; transition: transform .2s, box-shadow .2s }
+  .ex:hover, .ex:focus-visible { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(30, 20, 60, .14) }
+  .ex .art { height: 170px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden }
+  .ex .art span { line-height: 0; margin: 0 -8px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.18)); transition: transform .25s }
+  .ex:hover .art span:nth-child(odd) { transform: translateY(-8px) rotate(-5deg) }
+  .ex:hover .art span:nth-child(even) { transform: translateY(-4px) rotate(5deg) }
+  .ex .body { padding: 16px 18px 18px; display: grid; gap: 6px }
+  .ex h2 { margin: 0; font-size: 21px; letter-spacing: -0.01em; display: flex; align-items: center; justify-content: space-between }
+  .ex h2 i { font-style: normal; color: var(--muted); font-size: 18px; transition: transform .2s }
+  .ex:hover h2 i { transform: translateX(4px) }
+  .ex p { margin: 0; color: var(--muted); font-size: 14.5px }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px }
+  .tags span { font-size: 12px; padding: 2px 9px; border-radius: 99px; background: var(--soft); color: var(--muted); font-weight: 600 }
+  @media (prefers-reduced-motion: reduce) { .ex, .ex *, .ex:hover * { transition: none; transform: none } }
+</style>
+</head>
+<body data-wait>
+<script src="../loader.js"></script>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../" aria-label="livatar home"><span class="logo" id="logo"></span>livatar <span class="badge">examples</span></a>
+    <nav class="toplinks" aria-label="Site">
+      <a href="../">Home</a>
+      <a href="../docs/">Docs</a>
+      <a href="../components/">Components</a>
+      <a href="./" aria-current="page">Examples</a>
+      <a href="../icons/">Icons</a>
+      <a href="../life/">Life</a>
+      <a href="../readme/">README</a>
+      <a href="https://github.com/nuhmanpk/livatar">GitHub</a>
+    </nav>
+    <button id="theme" type="button" aria-label="Toggle light / dark mode" title="Toggle light / dark mode"></button>
+  </div>
+</header>
+<main>
+  <h1>Examples</h1>
+  <p class="lead">Complete websites and apps built with livatar. Each one is a standalone page: open it, use it, view the source. Every face is the library, no images.</p>
+  <div class="grid" id="grid"></div>
+</main>
+<script type="module">
+  import { memoji, clay, human, toon, anime, chibi, food, fruit, drink, fantasy, pirate, job, kid, critter, hero, money, bean, mascot, ui, planet, scifi, bot } from '../../dist/index.js'
+  import { mount } from '../../dist/index.js'
+  const EX = [
+    { slug: 'shop', name: 'Shop', desc: 'An ecommerce storefront with filters, quick view, a working cart drawer, checkout and order confetti. Products are livatar food, fruit and drinks.', tags: ['ecommerce', 'cart', 'checkout'], bg: '#ffe9d6', art: [[food, 'a'], [fruit, 'b'], [drink, 'c'], [food, 'd']] },
+    { slug: 'saas', name: 'SaaS landing page', desc: 'Orbit, a midnight-and-cyan startup site: orbiting hero, logo marquee, bento features, pricing toggle, testimonials, FAQ and newsletter.', tags: ['landing', 'pricing', 'marketing'], bg: '#d8f3fa', art: [[memoji, 'ada'], [bot, 'orbit'], [clay, 'bob'], [toon, 'cy']] },
+    { slug: 'dashboard', name: 'Analytics dashboard', desc: 'Pulse, a graphite-and-amber control room with KPI cards, SVG charts and a range switcher, a sortable customer table, a command palette, a globe and notifications.', tags: ['admin', 'charts', 'table'], bg: '#fbefd3', art: [[human, 'dee'], [mascot, 'kpi'], [job, 'eli'], [ui, 'chart']] },
+    { slug: 'social', name: 'Social feed', desc: 'Huddle, a bubblegum sticker-book community: stories, composer with a reacting face, polls, threaded comments, follow suggestions and swipeable profiles.', tags: ['social', 'feed', 'stories'], bg: '#ffe0ec', art: [[anime, 'fay'], [chibi, 'gus'], [kid, 'hal'], [memoji, 'ivy']] },
+    { slug: 'chat', name: 'Team chat', desc: 'Parley, an ink-and-yellow messenger: channels, presence, typing indicators, reactions, threads, an AI assistant channel and a huddle panel.', tags: ['messaging', 'realtime', 'AI'], bg: '#fff6bf', art: [[critter, 'jo'], [human, 'kai'], [bot, 'helper'], [fantasy, 'lee']] },
+    { slug: 'board', name: 'Kanban board', desc: 'A project manager with drag and drop cards, assignee filters, task dialogs with comments, burndown, list and calendar views.', tags: ['productivity', 'drag & drop'], bg: '#fde8e1', art: [[job, 'ada'], [pirate, 'bob'], [hero, 'cy'], [clay, 'dee']] },
+    { slug: 'learn', name: 'Learning app', desc: 'A gamified course app: a winding lesson path, three quiz types, a reacting mascot, streaks, hearts, XP, leagues and a gem shop.', tags: ['gamified', 'quiz', 'mobile'], bg: '#e4f5c8', art: [[critter, 'kiwi'], [bean, 'xp'], [mascot, 'star'], [kid, 'learn']] },
+    { slug: 'studio', name: 'Studio portfolio', desc: 'An award-style creative studio site: cursor-chasing faces, hover-reveal services, generative work, flip-card team and a live avatar playground.', tags: ['portfolio', 'creative', 'playground'], bg: '#f1e9d6', art: [[fantasy, 'one'], [scifi, 'two'], [pirate, 'three'], [toon, 'four']] },
+    { slug: 'bank', name: 'Neobank', desc: 'A finance app: login with 2FA, balance and card, spending donut, transactions, a send-money wizard, budgets, goals and a helper assistant.', tags: ['fintech', 'wizard', '2FA'], bg: '#d9f0e5', art: [[money, 'nest'], [human, 'sam'], [memoji, 'pat'], [ui, 'card']] },
+  ]
+  const grid = document.getElementById('grid')
+  for (const e of EX) {
+    const a = document.createElement('a'); a.className = 'ex'; a.href = `./${e.slug}/`
+    a.innerHTML = `<div class="art" style="background:${e.bg}" aria-hidden="true"></div><div class="body"><h2>${e.name}<i aria-hidden="true">→</i></h2><p>${e.desc}</p><div class="tags">${e.tags.map((t) => `<span>${t}</span>`).join('')}</div></div>`
+    const art = a.querySelector('.art')
+    e.art.forEach(([style, seed], i) => { const s = document.createElement('span'); s.style.width = '92px'; s.style.height = '92px'; art.append(s); mount(s, style, { seed, size: 92, mood: i % 2 ? 'happy' : 'neutral', shape: 'circle', background: false }) })
+    grid.append(a)
+  }
+  requestAnimationFrame(() => setTimeout(() => dispatchEvent(new Event('livatar:ready')), 50))
+</script>
+<script type="module" src="../ui.js"></script>
+</body>
+</html>

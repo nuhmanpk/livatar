@@ -21,7 +21,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/nuhmanpk/livatar?style=social)](https://github.com/nuhmanpk/livatar)
 
 
-**[Live demo and avatar builder →](https://nuhmanpk.github.io/livatar/)**
+**[Live demo and avatar builder →](https://nuhmanpk.github.io/livatar/)** · **[119 components →](https://nuhmanpk.github.io/livatar/components/)** · **[9 example websites →](https://nuhmanpk.github.io/livatar/examples/)** · **[Docs →](https://nuhmanpk.github.io/livatar/docs/)**
 
 <a href="https://nuhmanpk.github.io/livatar/"><img src="assets/demo.svg" alt="Four avatars from one seed follow an animated cursor; one squashes when clicked" width="100%"></a>
 
@@ -31,7 +31,7 @@
 
 Tiny, zero-dependency SVG characters that follow your cursor, blink, breathe, chew when you type, watch your caret, cover their eyes when you type a password, and show ten moods.
 
-- **45 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons and tools.
+- **59 characters.** Realistic humans from baby to grandparent, cartoon humans, a developer at work (coding, debugging, shipping…), Memoji-style 3D heads, clay people, 16 animals and birds, dinosaurs, aliens, planets, kawaii food, fruit, drinks, potted plants, living UI icons, devices, servers, vehicles, money, home and office things, robots, monsters, ghosts, emoji, initials, pixel critters, and blobs. Each has its own options. Plus weather, sports balls, instruments, sea creatures, bugs, magic items, party things, seasons, tools, jelly-bean party characters, chibi superheroes, plus fantasy, pirate/adventurer, job, creature, spooky, kid, critter, mascot, sci-fi and mythology casts (`kind` option).
 - **16 moods.** `happy`, `sad`, `angry`, `surprised`, `sleepy`, `love`, `wink`, `silly`, `confused`, `laugh`, `cool`, `cry`, `scared`, `smug`, `starstruck`, and `neutral`. They work in static SVG and change live with `handle.emote()`.
 - **One code per avatar.** Every look packs into a short, URL-safe string such as `lvAQQBAG51aG1hbnBr`. Store it with the user and render it anywhere.
 - **Light.** One style plus the engine is about 9 KB gzipped. Styles are tree-shakable, so you only ship the ones you import.
@@ -359,7 +359,7 @@ feel('this is broken!!')   // 'angry' (tiny local sentiment, no model)
 
 ### React & Next.js components (`livatar/components`)
 
-**[Browse all 34 with live previews and code →](https://nuhmanpk.github.io/livatar/components/)** Checkout (the card covers its eyes for the CVC), inline inputs with a face inside, search (an owl), one-time code, newsletter pill (a sprout that blooms), pricing, cookie consent, progress (a car), onboarding (a rocket), countdown, loader, login form, password strength, upload, cart, AI assistant, chat, meeting grid, toast, 404, avatar wall background and more. Each comes with a character that fits its job.
+**[Browse all 119 with live previews, code and a character picker →](https://nuhmanpk.github.io/livatar/components/)** Checkout (the card covers its eyes for the CVC), inline inputs with a face inside, search (an owl), one-time code, newsletter pill (a sprout that blooms), pricing, cookie consent, progress (a car), onboarding (a rocket), countdown, loader, login form, password strength, upload, cart, AI assistant, chat, meeting grid, toast, 404, avatar wall background and more. Each comes with a character that fits its job.
 
 Ready-made and `'use client'`. They render the static avatar on the server and start behaving after hydration.
 
@@ -378,6 +378,24 @@ import { LivatarLoader, LivatarMeet, LivatarForm, LivatarAssistant, LivatarPet, 
 ```
 
 Hooks for your own components: `usePersonality`, `useAssistant`, `usePet`, `useContextAware`.
+
+### Example websites (`/examples`)
+
+**[Open the examples →](https://nuhmanpk.github.io/livatar/examples/)** Nine complete, responsive, mobile-ready websites built only from livatar. Each has its own look and works end to end; view the source of any of them to copy a pattern.
+
+| Example | What it shows |
+|---|---|
+| [Shop](https://nuhmanpk.github.io/livatar/examples/shop/) | Ecommerce: filters, quick view, cart drawer, checkout, order confetti |
+| [SaaS landing page](https://nuhmanpk.github.io/livatar/examples/saas/) | Orbiting hero, bento features, pricing toggle, testimonials, FAQ |
+| [Analytics dashboard](https://nuhmanpk.github.io/livatar/examples/dashboard/) | KPIs, SVG charts, sortable table, command palette, globe |
+| [Social feed](https://nuhmanpk.github.io/livatar/examples/social/) | Stories, composer with a reacting face, polls, comments, swipe cards |
+| [Team chat](https://nuhmanpk.github.io/livatar/examples/chat/) | Channels, presence, threads, AI assistant channel, call panel |
+| [Kanban board](https://nuhmanpk.github.io/livatar/examples/board/) | Drag and drop (mouse and touch), dialogs, burndown, calendar |
+| [Learning app](https://nuhmanpk.github.io/livatar/examples/learn/) | Gamified lessons, reacting mascot, streaks, leagues, shop |
+| [Studio portfolio](https://nuhmanpk.github.io/livatar/examples/studio/) | Cursor-chasing faces, generative work, avatar playground |
+| [Neobank](https://nuhmanpk.github.io/livatar/examples/bank/) | Login with 2FA, send-money wizard, budgets, goals, assistant |
+
+The source is in [`demo/examples/`](demo/examples).
 
 ## Make anything alive
 
@@ -465,6 +483,7 @@ export default { fetch: avatarHandler() }                      // Cloudflare / B
 - **Presence.** `LivatarPresence` shows who is here (presence dots, typing, `+N`) and multiplayer cursors with faces. Feed it from Liveblocks, Yjs, PartyKit, Supabase Realtime or your own socket.
 - **Photo with fallback.** `<LivatarPhoto src={user.avatarUrl} seed={user.id} />` shows the photo, or the user's livatar when there is none, the URL 404s or they are offline. Without React: `photoFallback(document.querySelectorAll('img[data-seed]'))`.
 - **Pets that roam your site.** `import { roam } from 'livatar/roam'` then `roam({ count: 3 })`. Pixel-art pets (cat, dog, fox, lion, pig, panda, bunny, koala, bear, mouse, frog, penguin, owl, chick, dino) wander along the bottom of the page with their own pixel faces (happy, laughing, angry, crying, scared, smug, dizzy…), each with its own habits: koalas nap, pigs get naughty (zoomies, rolling, barging into friends), birds fly, cats scratch, dogs chase their tails, bunnies and frogs hop, lions roar. Natural rivals chase each other (dog → cat, cat → mouse, fox → chick…), scuffle in a dust cloud when caught, then the winner looks smug and the loser runs off crying. Walk past a sleeping pet and it wakes up grumpy: they argue in speech bubbles, then either scuffle or it goes back to sleep (`rivals: false` to turn it off, `onFight(winner, loser)` to listen, `roamer.chase(other)` to start one). Click one to pat it, drag to pick it up. Optional synthesized sounds (`zoo.sound = true`, off by default, no audio files). Off with reduced motion. Try the 🐾 button on the [site](https://nuhmanpk.github.io/livatar/).
+- **Library-style components.** Effects (`LivatarAnimatedTooltip`, `LivatarDock`, `LivatarTiltCard`, `LivatarSpotlightCard`, `LivatarCompare`, `LivatarFocusCards`, `LivatarExpandableCard`, `LivatarBento`, `LivatarPointer`, `LivatarOrbit`, `LivatarBeam`, `LivatarGlobe`), primitives (`LivatarAvatar`, `LivatarTabs`, `LivatarDialog`, `LivatarTooltip`, `LivatarPopover`, `LivatarSwitch`, `LivatarSlider`, `LivatarCommand`, `LivatarCalendar`, `LivatarPagination`, `LivatarAlert`) playful toys and games (`LivatarMagnetic`, `LivatarFlipCard`, `LivatarCarousel3D`, `LivatarMemory`, `LivatarSpinWheel`, `LivatarSwipeCards`, `LivatarSlotMachine`, `LivatarSpeech`, `LivatarLeaderboard`, `LivatarBuddy`, `LivatarRipple` and more) and Ant Design style (`LivatarTimeline`, `LivatarComment`, `LivatarResult`, `LivatarSegmented`, `LivatarStatistic`, `LivatarTour`).
 - **Social proof and delight.** `LivatarMarquee` (endless face scroller), `LivatarConfetti` (faces burst out), `LivatarSkeleton` (ten loading placeholders). Every animation respects `prefers-reduced-motion`, and a test keeps it that way.
 
 ## Develop

@@ -38,6 +38,11 @@ import { context, react, type ContextOptions, type LifeEvent } from './life/reac
 import { feel } from './life/feel'
 import { checkUsername, type UsernameOptions } from './username'
 
+export * from './components-effects'
+export * from './components-ui'
+export * from './components-fun'
+export * from './components-fx'
+
 export type AvatarProps = Omit<LivatarProps, 'ref'>
 type HandleRef = RefObject<AliveHandle | null>
 /** Explicit component type: keeps the emitted .d.ts small instead of expanding every prop. */
@@ -208,7 +213,7 @@ export function LivatarMeet({ participants, message, avatar, size = 96, classNam
   return h('div', { className, style: { display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', ...style }, role: 'list' },
     participants.map((p) =>
       h('div', { key: p.id, role: 'listitem', 'data-speaking': p.id === speaker || undefined, style: box() },
-        h('div', { style: { borderRadius: '50%', lineHeight: 0, padding: 3, boxShadow: p.id === speaker ? '0 0 0 3px #7f5af0' : '0 0 0 3px transparent', transition: 'box-shadow .2s' } },
+        h('div', { style: { borderRadius: '50%', lineHeight: 0, padding: 3, boxShadow: p.id === speaker ? '0 0 0 3px var(--lv-accent,#7f5af0)' : '0 0 0 3px transparent', transition: 'box-shadow .2s' } },
           h(Livatar, { seed: p.id, size, ...avatar, ...p.avatar, ref: ref(p.id) })),
         renderLabel ? renderLabel(p) : h('span', { style: { fontSize: 13, fontWeight: 600 } }, (p.name ?? p.id) + (p.muted ? ' 🔇' : p.id === speaker ? ' 🎙️' : '')),
       )))
@@ -387,7 +392,7 @@ export function LivatarPet({ pet: petOpts, controls = true, walk = true, yard = 
     h('div', { key: k, style: { display: 'grid', gridTemplateColumns: '80px 1fr 28px', gap: 8, alignItems: 'center', fontSize: 13 } },
       h('span', null, k),
       h('div', { role: 'meter', 'aria-label': k, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(v), style: { height: 8, borderRadius: 8, background: 'rgba(127,90,240,.15)', overflow: 'hidden' } },
-        h('div', { style: { width: `${v}%`, height: '100%', background: v < 25 ? '#ef476f' : '#7f5af0', transition: 'width .3s' } })),
+        h('div', { style: { width: `${v}%`, height: '100%', background: v < 25 ? '#ef476f' : 'var(--lv-accent,#7f5af0)', transition: 'width .3s' } })),
       h('span', null, Math.round(v)))
   const btn = (label: string, fn: () => void) => h('button', { key: label, type: 'button', onClick: fn }, label)
   const walking = act === 'walk' && !calm
@@ -585,7 +590,7 @@ export function LivatarChat({ messages, typing, avatar, people = {}, size = 36, 
       h(Livatar, { seed: from, size, ...avatar, ...people[from], ref, alive: { poke: false } }),
       body)
   const bubble = (text: ReactNode, me?: boolean) =>
-    h('div', { style: { maxWidth: '75%', padding: '8px 12px', borderRadius: 16, fontSize: 14, lineHeight: 1.45, background: me ? '#7f5af0' : 'rgba(127,127,127,.12)', color: me ? '#fff' : undefined, [me ? 'borderBottomRightRadius' : 'borderBottomLeftRadius']: 4 } }, text)
+    h('div', { style: { maxWidth: '75%', padding: '8px 12px', borderRadius: 16, fontSize: 14, lineHeight: 1.45, background: me ? 'var(--lv-accent,#7f5af0)' : 'rgba(127,127,127,.12)', color: me ? '#fff' : undefined, [me ? 'borderBottomRightRadius' : 'borderBottomLeftRadius']: 4 } }, text)
   return h('div', { className, role: 'log', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 10, ...style } },
     messages.map((m) => row(m.id, m.from, m.me, bubble(m.text, m.me), (x) => void refs.current.set(m.id, x))),
     typing && row('typing', typing, false, bubble(h('span', { 'aria-label': `${typing} is typing` }, '•••')), (x) => void (typer.current = x)))
@@ -730,7 +735,7 @@ export function LivatarTestimonial({ quote, name, title, className, style, ...av
 /* -------------------- themed: each with its own character -------------------- */
 
 const field: CSSProperties = { font: 'inherit', fontSize: 15, padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(127,127,127,.3)', background: 'transparent', color: 'inherit', minWidth: 0, width: '100%', boxSizing: 'border-box' }
-const primary: CSSProperties = { font: 'inherit', fontWeight: 700, padding: '11px 16px', borderRadius: 12, border: 0, background: '#7f5af0', color: '#fff', cursor: 'pointer' }
+const primary: CSSProperties = { font: 'inherit', fontWeight: 700, padding: '11px 16px', borderRadius: 12, border: 0, background: 'var(--lv-accent,#7f5af0)', color: '#fff', cursor: 'pointer' }
 
 export interface CheckoutProps {
   /** e.g. "$24.00". */
@@ -865,7 +870,7 @@ export function LivatarUpload({ onFiles, accept, multiple = true, label = 'Drop 
     onDragOver: (e: RDragEvent) => { e.preventDefault(); if (!over) { setOver(true); ref.current?.emote('surprised') } },
     onDragLeave: () => { setOver(false); ref.current?.emote('neutral') },
     onDrop: (e: RDragEvent) => { e.preventDefault(); setOver(false); take(e.dataTransfer.files) },
-    style: { ...box(style), padding: 24, borderRadius: 20, border: `2px dashed ${over ? '#7f5af0' : 'rgba(127,127,127,.35)'}`, background: over ? 'rgba(127,90,240,.08)' : undefined, cursor: 'pointer', transition: 'all .15s', minWidth: 240 },
+    style: { ...box(style), padding: 24, borderRadius: 20, border: `2px dashed ${over ? 'var(--lv-accent,#7f5af0)' : 'rgba(127,127,127,.35)'}`, background: over ? 'rgba(127,90,240,.08)' : undefined, cursor: 'pointer', transition: 'all .15s', minWidth: 240 },
   },
     h(Livatar, { variant: office, seed: 'upload', options: { kind: 'folder' }, size: 80, ...avatar, ref }),
     h('span', { style: muted, 'aria-live': 'polite' }, msg),
@@ -986,7 +991,7 @@ export function LivatarConnection({ online, avatar, className, style }: Connecti
 
 /* -------------------- inline fields: the character lives inside the input -------------------- */
 
-const shell = (focus: boolean, extra?: CSSProperties): CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px 4px 4px', borderRadius: 14, border: `1.5px solid ${focus ? '#7f5af0' : 'rgba(127,127,127,.3)'}`, boxShadow: focus ? '0 0 0 4px rgba(127,90,240,.15)' : 'none', background: 'var(--lv-card, transparent)', transition: 'border-color .15s, box-shadow .15s', ...extra })
+const shell = (focus: boolean, extra?: CSSProperties): CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px 4px 4px', borderRadius: 14, border: `1.5px solid ${focus ? 'var(--lv-accent,#7f5af0)' : 'rgba(127,127,127,.3)'}`, boxShadow: focus ? '0 0 0 4px rgba(127,90,240,.15)' : 'none', background: 'var(--lv-card, transparent)', transition: 'border-color .15s, box-shadow .15s', ...extra })
 const bare: CSSProperties = { flex: 1, minWidth: 0, border: 0, outline: 'none', background: 'transparent', color: 'inherit', font: 'inherit', fontSize: 15, padding: '8px 4px' }
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -1243,7 +1248,7 @@ export function LivatarProgress({ value, label, avatar, className, style }: Prog
       h('div', { style: { position: 'absolute', left: `calc(${v}% - ${v * 0.4}px)`, bottom: 10, transition: 'left .4s ease', lineHeight: 0 } },
         h(Livatar, { variant: vehicle, seed: 'progress', options: { kind: 'car', color: 'purple' }, size: 40, background: false, alive: { poke: false }, ...avatar, ref })),
       h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(v), 'aria-label': typeof label === 'string' ? label : 'Progress', style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 10, borderRadius: 10, background: 'rgba(127,127,127,.18)', overflow: 'hidden' } },
-        h('div', { style: { width: `${v}%`, height: '100%', borderRadius: 10, background: done ? '#22c55e' : 'linear-gradient(90deg,#a78bfa,#7f5af0)', transition: 'width .4s ease, background .3s' } }))),
+        h('div', { style: { width: `${v}%`, height: '100%', borderRadius: 10, background: done ? '#22c55e' : 'linear-gradient(90deg,var(--lv-accent-soft,#a78bfa),var(--lv-accent,#7f5af0))', transition: 'width .4s ease, background .3s' } }))),
     h('div', { style: { display: 'flex', justifyContent: 'space-between', ...muted, fontSize: 13 } }, h('span', null, label), h('span', null, done ? 'Done!' : `${Math.round(v)}%`)))
 }
 
@@ -1271,7 +1276,7 @@ export function LivatarStepper({ steps, current, avatar, className, style }: Ste
     h('div', { style: { position: 'absolute', top: done ? -40 : 8, left: `calc(20px + (100% - 40px) * ${pct / 100})`, transform: 'translateX(-50%)', transition: 'left .5s ease, top 1s cubic-bezier(.5,-0.4,.7,1), opacity 1s', opacity: done ? 0 : 1, lineHeight: 0 } },
       h(Livatar, { variant: vehicle, seed: 'launch', options: { kind: 'rocket' }, size: 48, background: false, alive: { poke: false }, ...avatar, ref })),
     h('div', { style: { position: 'relative', height: 4, borderRadius: 4, background: 'rgba(127,127,127,.2)' } },
-      h('div', { style: { position: 'absolute', inset: 0, width: `${done ? 100 : pct}%`, borderRadius: 4, background: '#7f5af0', transition: 'width .5s ease' } })),
+      h('div', { style: { position: 'absolute', inset: 0, width: `${done ? 100 : pct}%`, borderRadius: 4, background: 'var(--lv-accent,#7f5af0)', transition: 'width .5s ease' } })),
     h('ol', { style: { listStyle: 'none', margin: '10px 0 0', padding: 0, display: 'flex', justifyContent: 'space-between' } },
       steps.map((s, i) => h('li', { key: i, 'aria-current': i === current ? 'step' : undefined, style: { fontSize: 13, fontWeight: i === current ? 700 : 500, opacity: i <= current ? 1 : 0.5, textAlign: i === 0 ? 'left' : i === steps.length - 1 ? 'right' : 'center', flex: 1 } }, s))),
     done && h('div', { role: 'status', style: { textAlign: 'center', fontWeight: 800, marginTop: 12 } }, 'Liftoff! 🚀'))
@@ -1309,8 +1314,8 @@ export function LivatarPricing({ tiers, className, style }: PricingProps): React
 }
 function Tier({ t, kind }: { t: PricingTier; kind: string }): ReactElement {
   const ref = useRef<AliveHandle | null>(null)
-  return h('div', { onPointerEnter: () => { ref.current?.emote(t.popular ? 'love' : 'happy', 1500); ref.current?.nod() }, style: { position: 'relative', display: 'flex', flexDirection: 'column', gap: 10, padding: 20, borderRadius: 22, border: t.popular ? '2px solid #7f5af0' : '1px solid rgba(127,127,127,.2)', background: t.popular ? 'linear-gradient(180deg, rgba(127,90,240,.10), transparent 60%)' : 'var(--lv-card, transparent)', boxShadow: t.popular ? '0 14px 40px rgba(127,90,240,.18)' : 'none' } },
-    t.popular && h('span', { style: { position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#7f5af0', color: '#fff', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 99, letterSpacing: '.05em', textTransform: 'uppercase' } }, 'Popular'),
+  return h('div', { onPointerEnter: () => { ref.current?.emote(t.popular ? 'love' : 'happy', 1500); ref.current?.nod() }, style: { position: 'relative', display: 'flex', flexDirection: 'column', gap: 10, padding: 20, borderRadius: 22, border: t.popular ? '2px solid var(--lv-accent,#7f5af0)' : '1px solid rgba(127,127,127,.2)', background: t.popular ? 'linear-gradient(180deg, rgba(127,90,240,.10), transparent 60%)' : 'var(--lv-card, transparent)', boxShadow: t.popular ? '0 14px 40px rgba(127,90,240,.18)' : 'none' } },
+    t.popular && h('span', { style: { position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: 'var(--lv-accent,#7f5af0)', color: '#fff', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 99, letterSpacing: '.05em', textTransform: 'uppercase' } }, 'Popular'),
     h(Livatar, { variant: money, seed: 'tier-' + t.name, options: { kind, sparkle: !!t.popular }, size: 56, mood: t.popular ? 'love' : undefined, ...t.avatar, ref }),
     h('strong', { style: { fontSize: 16 } }, t.name),
     h('div', null, h('span', { style: { fontSize: 30, fontWeight: 900, letterSpacing: '-0.02em' } }, t.price), t.period && h('span', { style: muted }, ' / ' + t.period)),
@@ -1480,14 +1485,14 @@ const CALL_CSS = `
 .lv-call{--lv-tile:#1d1830;--lv-tile2:#2a2343;background:#110e1d;color:#f3f0ff;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:12px;font:inherit;box-shadow:0 30px 80px rgba(17,14,29,.35)}
 .lv-call-tiles{display:grid;gap:10px;flex:1}
 .lv-tile{position:relative;border-radius:16px;background:radial-gradient(circle at 50% 30%,var(--lv-tile2),var(--lv-tile));display:grid;place-items:center;overflow:hidden;aspect-ratio:16/10;transition:box-shadow .25s,transform .25s,opacity .25s;min-width:0}
-.lv-tile[data-speaking]{box-shadow:0 0 0 3px #a78bfa,0 0 30px rgba(167,139,250,.55)}
-.lv-tile[data-speaking]::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 3px #a78bfa;animation:lv-ring 1.4s ease-out infinite;pointer-events:none}
+.lv-tile[data-speaking]{box-shadow:0 0 0 3px var(--lv-accent-soft,#a78bfa),0 0 30px rgba(167,139,250,.55)}
+.lv-tile[data-speaking]::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 3px var(--lv-accent-soft,#a78bfa);animation:lv-ring 1.4s ease-out infinite;pointer-events:none}
 .lv-tile[data-off]{opacity:.55}
 .lv-tile .lv-av{transition:transform .3s}
 .lv-tile[data-speaking] .lv-av{transform:scale(1.06)}
 .lv-name{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);font-size:12px;font-weight:600;max-width:calc(100% - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lv-eq{display:inline-flex;gap:2px;align-items:flex-end;height:11px}
-.lv-eq i{width:3px;border-radius:2px;background:#a78bfa;animation:lv-eq .9s ease-in-out infinite}
+.lv-eq i{width:3px;border-radius:2px;background:var(--lv-accent-soft,#a78bfa);animation:lv-eq .9s ease-in-out infinite}
 .lv-eq i:nth-child(2){animation-delay:-.3s}.lv-eq i:nth-child(3){animation-delay:-.6s}
 .lv-badge{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:999px;background:#fbbf24;color:#1f1a2e;font-size:12px;font-weight:800;animation:lv-wave 1s ease-in-out infinite;transform-origin:70% 90%}
 .lv-float{position:absolute;bottom:30%;left:50%;font-size:30px;pointer-events:none;animation:lv-up 1.8s ease-out forwards}
@@ -1645,7 +1650,7 @@ export function LivatarPoll({ question, options, onVote, voted: votedProp, avata
     h('strong', { style: { fontSize: 16, marginBottom: 2 } }, question),
     list.map((o) => {
       const pct = Math.round(share(o, total) * 100)
-      return h('button', { key: o.id, type: 'button', onClick: () => pick(o.id), disabled: !!voted && o.id !== voted, 'aria-pressed': o.id === voted, style: { position: 'relative', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px 6px 6px', borderRadius: 14, border: `1.5px solid ${o.id === voted ? '#7f5af0' : 'rgba(127,127,127,.25)'}`, background: 'transparent', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: voted ? 'default' : 'pointer', overflow: 'hidden', opacity: 1 } },
+      return h('button', { key: o.id, type: 'button', onClick: () => pick(o.id), disabled: !!voted && o.id !== voted, 'aria-pressed': o.id === voted, style: { position: 'relative', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px 6px 6px', borderRadius: 14, border: `1.5px solid ${o.id === voted ? 'var(--lv-accent,#7f5af0)' : 'rgba(127,127,127,.25)'}`, background: 'transparent', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: voted ? 'default' : 'pointer', overflow: 'hidden', opacity: 1 } },
         voted && h('span', { 'aria-hidden': true, style: { position: 'absolute', inset: 0, width: pct + '%', background: o.id === voted ? 'rgba(127,90,240,.16)' : 'rgba(127,127,127,.1)', transition: 'width .6s cubic-bezier(.2,.8,.2,1)' } }),
         h('span', { style: { position: 'relative', lineHeight: 0 } }, h(Livatar, { variant: emoji, seed: 'poll-' + o.id, size: 32, mood: mood(o), ...avatar, ref: (x: AliveHandle | null) => void refs.current.set(o.id, x) })),
         h('span', { style: { position: 'relative', flex: 1, fontWeight: 600 } }, o.label),
@@ -1699,7 +1704,7 @@ export function LivatarFocusTimer({ focus = 25, rest = 5, onPhase, avatar, class
     h('div', { style: { position: 'relative', width: 120, height: 120, display: 'grid', placeItems: 'center' } },
       h('svg', { width: 120, height: 120, viewBox: '0 0 120 120', style: { position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }, 'aria-hidden': true },
         h('circle', { cx: 60, cy: 60, r, fill: 'none', stroke: 'rgba(127,127,127,.18)', strokeWidth: 7 }),
-        h('circle', { cx: 60, cy: 60, r, fill: 'none', stroke: phase === 'focus' ? '#7f5af0' : '#22c55e', strokeWidth: 7, strokeLinecap: 'round', strokeDasharray: c, strokeDashoffset: c * (1 - left / len), style: { transition: 'stroke-dashoffset 1s linear, stroke .3s' } })),
+        h('circle', { cx: 60, cy: 60, r, fill: 'none', stroke: phase === 'focus' ? 'var(--lv-accent,#7f5af0)' : '#22c55e', strokeWidth: 7, strokeLinecap: 'round', strokeDasharray: c, strokeDashoffset: c * (1 - left / len), style: { transition: 'stroke-dashoffset 1s linear, stroke .3s' } })),
       h(Livatar, { variant: home, seed: 'focus', options: { kind: 'mug' }, size: 72, background: false, mood, ...avatar, ref })),
     h('div', { role: 'timer', 'aria-label': `${phase} ${mm}:${ss}`, style: { fontSize: 28, fontWeight: 900, fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, mm, ':', ss),
     h('div', { style: { ...muted, fontSize: 12, textTransform: 'uppercase', letterSpacing: '.08em' } }, phase === 'focus' ? 'Focus' : 'Break'),
@@ -1875,17 +1880,17 @@ export function LivatarFooter({ brand = 'livatar', tagline, columns = [], wordma
 }
 
 export interface Crumb { label: ReactNode; href?: string }
-export interface BreadcrumbsProps { items: Crumb[]; avatar?: AvatarProps; className?: string; style?: CSSProperties }
+export interface BreadcrumbsProps { items: Crumb[]; /** Called on click with the crumb; call `e.preventDefault()` to handle navigation yourself (client-side routers). */ onNavigate?: (crumb: Crumb, e: { preventDefault(): void }) => void; avatar?: AvatarProps; className?: string; style?: CSSProperties }
 
 /** Breadcrumb trail; the last item is the current page and a living face sits at the start. */
-export function LivatarBreadcrumbs({ items, avatar, className, style }: BreadcrumbsProps): ReactElement {
+export function LivatarBreadcrumbs({ items, onNavigate, avatar, className, style }: BreadcrumbsProps): ReactElement {
   return h('nav', { 'aria-label': 'Breadcrumb', className, style },
     h('ol', { style: { display: 'flex', alignItems: 'center', gap: 8, listStyle: 'none', padding: 0, margin: 0, fontSize: 14, flexWrap: 'wrap', ...kitMuted } },
       h('li', { style: { lineHeight: 0 } }, h(Livatar, { seed: 'crumb', size: 22, ...avatar })),
       items.flatMap((c, i) => {
         const last = i === items.length - 1
         return [h('li', { key: 's' + i, 'aria-hidden': true }, '/'),
-          h('li', { key: i, ...(last ? { 'aria-current': 'page' } : {}) }, c.href && !last ? h('a', { href: c.href, style: { color: 'inherit' } }, c.label) : h('span', { style: last ? { color: 'var(--lv-fg, inherit)', fontWeight: 600 } : undefined }, c.label))]
+          h('li', { key: i, ...(last ? { 'aria-current': 'page' } : {}) }, c.href && !last ? h('a', { href: c.href, onClick: onNavigate ? (e: { preventDefault(): void }) => onNavigate(c, e) : undefined, style: { color: 'inherit' } }, c.label) : h('span', { style: last ? { color: 'var(--lv-fg, inherit)', fontWeight: 600 } : undefined }, c.label))]
       })))
 }
 
@@ -1925,13 +1930,13 @@ export function LivatarCarousel({ slides, autoplay = 0, avatar, className, style
     const id = setInterval(() => live.current.go(live.current.i + 1), autoplay)
     return () => clearInterval(id)
   }, [autoplay])
-  const arrow = (d: number, label: string) => h('button', { type: 'button', 'aria-label': label, onClick: () => go(i + d), style: { width: 34, height: 34, borderRadius: '50%', border: kitLine, background: 'transparent', color: 'inherit', cursor: 'pointer' } }, d < 0 ? '‹' : '›')
+  const arrow = (d: number, label: string) => h('button', { type: 'button', 'aria-label': label, onClick: () => go(i + d), style: { width: 34, height: 34, padding: 0, display: 'grid', placeItems: 'center', borderRadius: '50%', border: kitLine, background: 'transparent', color: 'inherit', cursor: 'pointer' } }, h('svg', { 'aria-hidden': true, width: 16, height: 16, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: d < 0 ? 'M10 3L5 8l5 5' : 'M6 3l5 5-5 5' })))
   return h('section', { className, 'aria-roledescription': 'carousel', style },
     h('div', { ref: track, style: { display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }, onScroll: (e) => { const t = e.currentTarget; setI(Math.round(t.scrollLeft / t.clientWidth)) } },
       slides.map((s, k) => h('div', { key: k, role: 'group', 'aria-label': `${k + 1} of ${slides.length}`, style: { flex: '0 0 100%', scrollSnapAlign: 'center', boxSizing: 'border-box', padding: '0 4px' } }, s))),
     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 12 } },
       arrow(-1, 'Previous'), h(Livatar, { seed: 'carousel', size: 32, ...avatar, ref: face }),
-      slides.map((_, k) => h('button', { key: k, type: 'button', 'aria-label': `Slide ${k + 1}`, 'aria-current': k === i, onClick: () => go(k), style: { width: k === i ? 22 : 8, height: 8, padding: 0, borderRadius: 8, border: 0, background: 'currentColor', opacity: k === i ? 0.9 : 0.25, cursor: 'pointer', transition: 'width .2s' } })),
+      slides.map((_, k) => h('button', { key: k, type: 'button', 'aria-label': `Slide ${k + 1}`, 'aria-current': k === i, onClick: () => go(k), style: { width: k === i ? 22 : 8, height: 8, padding: 0, borderRadius: 8, border: 0, color: 'inherit', background: 'currentColor', flex: 'none', opacity: k === i ? 0.9 : 0.25, cursor: 'pointer', transition: 'width .2s' } })),
       arrow(1, 'Next')))
 }
 
@@ -2121,14 +2126,30 @@ export interface MarqueeProps {
  *   <LivatarMarquee users={members.map((m) => m.id)} rows={2} />
  */
 export function LivatarMarquee({ users, size = 48, duration = 30, reverse = false, pauseOnHover = true, rows = 1, avatar, className, style }: MarqueeProps): ReactElement {
+  const root = useRef<HTMLDivElement>(null)
+  const [copies, setCopies] = useState(3)
+  // endless at any width: repeat the strip until it covers the container (plus one spare), and slide by exactly one strip
+  useEffect(() => {
+    const el = root.current
+    if (!el) return
+    const fit = () => {
+      const strip = el.querySelector('.lv-mq-strip') as HTMLElement | null
+      if (!strip || !strip.offsetWidth) return
+      setCopies(Math.max(2, Math.ceil(el.clientWidth / strip.offsetWidth) + 1))
+    }
+    fit()
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null
+    ro?.observe(el)
+    return () => ro?.disconnect()
+  }, [users.length, size, rows])
   const lane = (r: number): ReactElement => {
     const mine = users.filter((_, i) => i % rows === r % rows)
     const dir = (r % 2 === 0) !== reverse ? 'normal' : 'reverse'
-    const strip = (k: string) => h('div', { key: k, 'aria-hidden': k === 'b' || undefined, style: { display: 'flex', gap: 12, paddingRight: 12, flex: 'none' } }, mine.map((u, i) => h(Livatar, { key: u + i, seed: u, size, ...avatar, alive: { intensity: 0.6 } })))
-    return h('div', { key: r, className: 'lv-mq-lane', style: { display: 'flex', width: 'max-content', animation: `lv-mq ${duration}s linear infinite ${dir}` } }, strip('a'), strip('b'))
+    const strip = (k: number) => h('div', { key: k, className: 'lv-mq-strip', 'aria-hidden': k > 0 || undefined, style: { display: 'flex', gap: 12, paddingRight: 12, flex: 'none' } }, mine.map((u, i) => h(Livatar, { key: u + i, seed: u, size, ...avatar, alive: { intensity: 0.6 } })))
+    return h('div', { key: r, className: 'lv-mq-lane', style: { display: 'flex', width: 'max-content', ['--lv-c' as string]: copies, animation: `lv-mq ${duration}s linear infinite ${dir}` } }, Array.from({ length: copies }, (_, k) => strip(k)))
   }
-  return h('div', { className: 'lv-mq' + (pauseOnHover ? ' lv-mq-p' : '') + (className ? ' ' + className : ''), role: 'list', 'aria-label': `${users.length} people`, style: { overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, WebkitMaskImage: 'linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)', maskImage: 'linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)', ...style } },
-    h('style', null, '@keyframes lv-mq{to{transform:translateX(-50%)}}.lv-mq-p:hover .lv-mq-lane{animation-play-state:paused!important}@media (prefers-reduced-motion:reduce){.lv-mq-lane{animation:none!important}}'),
+  return h('div', { ref: root, className: 'lv-mq' + (pauseOnHover ? ' lv-mq-p' : '') + (className ? ' ' + className : ''), role: 'list', 'aria-label': `${users.length} people`, style: { overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, WebkitMaskImage: 'linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)', maskImage: 'linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)', ...style } },
+    h('style', null, '@keyframes lv-mq{to{transform:translateX(calc(-100% / var(--lv-c,2)))}}.lv-mq-p:hover .lv-mq-lane{animation-play-state:paused!important}@media (prefers-reduced-motion:reduce){.lv-mq-lane{animation:none!important}}'),
     Array.from({ length: Math.max(1, rows) }, (_, r) => lane(r)))
 }
 
@@ -2228,8 +2249,8 @@ export function LivatarPresence({ users, max = 5, size = 36, children, avatar, c
   return h('div', { className, style: { display: 'flex', flexDirection: 'column', gap: 10, ...style } }, css, stack,
     h('div', { style: { position: 'relative' } }, children,
       users.filter((u) => u.cursor).map((u) => h('div', { key: u.id, 'aria-hidden': true, style: { position: 'absolute', left: u.cursor!.x + '%', top: u.cursor!.y + '%', transition: 'left .12s linear, top .12s linear', pointerEvents: 'none', display: 'flex', alignItems: 'flex-start', gap: 2, zIndex: 10 } },
-        h('svg', { width: 16, height: 20, viewBox: '0 0 16 20' }, h('path', { d: 'M1 1l12 8-5 1-3 6z', fill: '#7f5af0', stroke: '#fff', strokeWidth: 1.5, strokeLinejoin: 'round' })),
-        h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px 2px 2px', borderRadius: 99, background: '#7f5af0', color: '#fff', fontSize: 11, fontWeight: 600, marginTop: 10 } }, h(Livatar, { seed: u.id, size: 18, alive: false, ...avatar }), u.name ?? u.id)))))
+        h('svg', { width: 16, height: 20, viewBox: '0 0 16 20' }, h('path', { d: 'M1 1l12 8-5 1-3 6z', fill: 'var(--lv-accent,#7f5af0)', stroke: '#fff', strokeWidth: 1.5, strokeLinejoin: 'round' })),
+        h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px 2px 2px', borderRadius: 99, background: 'var(--lv-accent,#7f5af0)', color: '#fff', fontSize: 11, fontWeight: 600, marginTop: 10 } }, h(Livatar, { seed: u.id, size: 18, alive: false, ...avatar }), u.name ?? u.id)))))
 }
 
 export interface PhotoProps extends AvatarProps {

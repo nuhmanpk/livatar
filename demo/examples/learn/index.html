@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fffdf6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#181b24" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kiwi Academy">
+<script>(function(){try{var i='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#3a9a1a"/><circle cx="32" cy="32" r="17" fill="#c9f09a"/><circle cx="32" cy="32" r="5" fill="#fff8d6"/></svg>');var m={name:'Kiwi Academy',short_name:'Kiwi',display:'standalone',start_url:'.',background_color:'#fffdf6',theme_color:'#3a9a1a',icons:[{src:i,sizes:'any',type:'image/svg+xml',purpose:'any'}]};var l=document.createElement('link');l.rel='manifest';l.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(m));document.head.appendChild(l)}catch(e){}})()</script>
+<title>Kiwi Academy — learn Spanish with a mascot that cares</title>
+<meta name="description" content="Kiwi Academy: a gamified Spanish learning app built with livatar. Lesson path, quizzes, streaks, hearts, leagues, achievements and a mascot shop, all running client-side.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9f1d8; --phone:#fffdf6; --card:#ffffff; --ink:#26283a; --muted:#656a7c; --line:#e3e0d2;
+  --g:#3a9a1a; --gd:#2a7311; --gl:#7ed957; --gsoft:#e6f7d6;
+  --o:#ff9a3c; --od:#c2570a; --r:#e23d3d; --rd:#a82020; --b:#2f7be8;
+  --okbg:#dbf6c2; --okfg:#1f5c0a; --badbg:#ffdede; --badfg:#9c1c1c;
+  --shadow:0 10px 40px rgba(40,60,20,.18); --fh:'Lexend',system-ui,sans-serif; --fb:'Lexend',system-ui,sans-serif;
+  --lv-accent:#2f8a12; --lv-line:#e3e0d2; --lv-surface:#f3f7e8; --lv-bg:#fffdf6; --lv-fg:#26283a; --lv-ring:#2f7be8;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1218; --phone:#181b24; --card:#222633; --ink:#f0f1f7; --muted:#a6abbd; --line:#323749;
+  --g:#3fa51f; --gd:#2a7311; --lv-accent:#7ed957; --lv-line:#323749; --lv-surface:#222633; --lv-bg:#181b24; --lv-fg:#f0f1f7; --lv-ring:#7db4ff; --gsoft:#1f3318; --okbg:#1d3a14; --okfg:#c4f5a3; --badbg:#44201f; --badfg:#ffc4c4; --shadow:0 10px 40px rgba(0,0,0,.5);
+}}
+*{box-sizing:border-box}
+html,body{margin:0;overscroll-behavior:none}
+button,a,input{touch-action:manipulation}
+.phone{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+body{background:var(--bg);color:var(--ink);letter-spacing:-.01em;font:500 15px/1.4 var(--fb);min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--b);outline-offset:2px;border-radius:10px}
+.ex-back{position:fixed;top:calc(6px + env(safe-area-inset-top));left:calc(8px + env(safe-area-inset-left));z-index:100;font:800 12px/1 var(--fb);padding:6px 10px;border-radius:99px;background:var(--card);color:var(--ink);text-decoration:none;border:1px solid var(--line);opacity:.85}
+.ex-back::before{content:'';position:absolute;inset:-8px}
+.ex-back:hover{opacity:1}
+.wrap{display:grid;grid-template-columns:1fr;max-width:1000px;margin:0 auto;gap:28px;justify-content:center;padding-top:0}
+.side{display:none}
+.phone{position:relative;width:100%;max-width:480px;margin:0 auto;background:var(--phone);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:980px){
+  .wrap{grid-template-columns:300px 480px;padding:28px 20px}
+  .side{display:flex;flex-direction:column;gap:14px;position:sticky;top:28px;align-self:start}
+  .phone{min-height:0;height:min(860px,calc(100dvh - 56px));min-height:0;border-radius:32px;box-shadow:var(--shadow);border:1px solid var(--line)}
+}
+h1,h2,h3{font-family:var(--fh);margin:0;line-height:1.1}
+.brand{display:flex;align-items:center;gap:10px;font:800 28px var(--fh)}
+.brand small{display:block;font:700 13px var(--fb);color:var(--muted)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px 16px}
+.panel h3{font-size:18px;margin-bottom:8px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.bar{height:12px;border-radius:9px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gl),var(--g));border-radius:9px;transition:width .5s}
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;gap:8px}
+@media (max-width:979px){body{padding-top:calc(38px + env(safe-area-inset-top))}.phone{height:calc(100dvh - 38px - env(safe-area-inset-top))}}
+@media (min-width:980px){.top{padding-top:14px}}
+.chip{display:inline-flex;align-items:center;gap:6px;font:800 17px var(--fh);padding:4px 8px;border-radius:12px;background:none;border:0}
+.chip svg{width:22px;height:22px}
+.chip.fl{color:var(--od)} .chip.gm{color:var(--b)} .chip.hr{color:var(--r)}
+@media (prefers-color-scheme:dark){.chip.fl{color:#ffb066}.chip.gm{color:#7db4ff}.chip.hr{color:#ff7d7d}}
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 16px 96px}
+/* bottom nav */
+.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--line);background:var(--phone);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+.nav button{min-height:56px;background:none;border:2px solid transparent;border-radius:14px;padding:4px 0 2px;display:grid;justify-items:center;gap:0;font:800 12px var(--fb);color:var(--muted)}
+.nav button[aria-current=page]{background:var(--gsoft);border-color:var(--gl);color:var(--ink)}
+.nav span.ic{line-height:0}
+/* buttons */
+.btn{min-height:50px;display:inline-flex;justify-content:center;align-items:center;gap:8px;border:0;border-radius:16px;padding:13px 22px;font:800 17px var(--fh);letter-spacing:.3px;text-transform:uppercase;background:var(--g);color:#fff;box-shadow:0 4px 0 var(--gd);transition:transform .08s,box-shadow .08s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 var(--gd)}
+.btn:disabled{background:var(--line);color:var(--muted);box-shadow:0 4px 0 var(--line);cursor:not-allowed;opacity:.9}
+.btn.ghost{background:var(--card);color:var(--b);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.bad{background:var(--r);box-shadow:0 4px 0 var(--rd)}
+.btn.full{width:100%}
+.btn.sm{min-height:44px;padding:8px 16px;font-size:14px;border-radius:12px}
+/* home */
+.hero{display:flex;align-items:flex-end;gap:4px;margin-bottom:12px}
+.goal{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 14px 10px;margin-bottom:16px}
+.goal b{font:800 16px var(--fh)}
+.unit{border-radius:18px;padding:14px 16px;color:#fff;margin:18px 0 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.unit h2{font-size:clamp(18px,5.6vw,22px)}.unit p{margin:2px 0 0;font-size:14px;opacity:.95}
+.path{display:flex;flex-direction:column;align-items:center;gap:20px;position:relative;padding:4px 0 8px}
+.node{position:relative;width:78px;height:78px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;background:var(--gl);box-shadow:0 7px 0 var(--gd);transition:transform .1s,box-shadow .1s}
+.node:active:not([data-s=locked]){transform:translateY(5px);box-shadow:0 2px 0 var(--gd)}
+.node[data-s=done]{background:#ffc83d;box-shadow:0 7px 0 #c99410}
+.node[data-s=locked]{background:var(--line);box-shadow:0 7px 0 rgba(0,0,0,.14);cursor:not-allowed}
+.node[data-s=locked] .ni{filter:grayscale(1);opacity:.45}
+.node .ni{line-height:0;background:var(--phone);border-radius:50%;padding:6px}
+.node .tick{position:absolute;right:-4px;top:-4px;width:26px;height:26px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-size:14px;border:3px solid var(--phone)}
+.node .lock{position:absolute;right:-4px;bottom:-2px;font-size:16px}
+.node[data-s=current]{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+.start{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--g);border:2px solid var(--line);border-radius:12px;padding:3px 10px;font:800 13px var(--fh);white-space:nowrap;animation:bob 1.2s ease-in-out infinite}
+.start::after{content:'';position:absolute;left:50%;bottom:-7px;width:10px;height:10px;background:var(--card);border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+@keyframes bob{50%{transform:translate(-50%,-4px)}}
+.nlabel{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);font:800 13px var(--fb);color:var(--muted);white-space:nowrap;pointer-events:none}
+.nlabel.l{left:auto;right:calc(100% + 10px)}
+.toast{position:absolute;left:16px;right:16px;bottom:84px;z-index:30;background:var(--ink);color:var(--phone);border-radius:14px;padding:10px 14px;font-weight:800;text-align:center;animation:rise .25s}
+@keyframes rise{from{transform:translateY(12px);opacity:0}}
+/* lesson */
+.lesson{position:absolute;inset:0;z-index:20;background:var(--phone);display:flex;flex-direction:column}
+.lhead{display:flex;align-items:center;gap:12px;padding:10px 16px 10px}
+
+.x{background:none;border:0;font-size:26px;color:var(--muted);width:48px;height:48px;border-radius:12px;line-height:1}
+.lbar{flex:1;height:16px;border-radius:10px;background:var(--line);overflow:hidden;position:relative}
+.lbar i{display:block;height:100%;background:var(--gl);border-radius:10px;transition:width .4s;position:relative}
+.lbar i::after{content:'';position:absolute;left:8px;right:8px;top:3px;height:4px;border-radius:4px;background:rgba(255,255,255,.4)}
+.lbody{flex:1;overflow-y:auto;padding:8px 20px 20px;display:flex;flex-direction:column;gap:16px}
+.lbody h2{font-size:clamp(20px,6vw,24px)}
+.lbody{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+input[type=range]{min-height:44px;font-size:16px}
+.phone [role=grid]{gap:0!important}.phone [role=gridcell]{min-width:44px}
+.phone [aria-label$=' month']{min-width:44px;min-height:44px}
+.slots{align-content:flex-start}
+.say{display:flex;align-items:center;gap:8px}
+.bubble{position:relative;border:2px solid var(--line);border-radius:16px;padding:10px 14px;font:800 clamp(17px,5.4vw,21px) var(--fh);background:var(--card)}
+.bubble::before{content:'';position:absolute;left:-8px;top:50%;width:12px;height:12px;background:var(--card);border-left:2px solid var(--line);border-bottom:2px solid var(--line);transform:translateY(-50%) rotate(45deg)}
+.opts{display:grid;gap:10px}
+.opt{min-height:56px;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:12px 14px;font:800 18px var(--fb)}
+.opt kbd{font:800 13px var(--fb);border:2px solid var(--line);border-radius:8px;min-width:26px;height:26px;display:grid;place-items:center;color:var(--muted)}
+@media (hover:hover){.opt:hover:not(:disabled){background:var(--gsoft)}}
+.opt[aria-pressed=true]{border-color:var(--b);background:rgba(47,123,232,.12)}
+.opt.ok{border-color:var(--g);background:var(--okbg);color:var(--okfg)}
+.opt.no{border-color:var(--r);background:var(--badbg);color:var(--badfg)}
+.slots{min-height:104px;border-top:2px solid var(--line);border-bottom:2px solid var(--line);padding:8px 0;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;background:repeating-linear-gradient(transparent 0 47px,var(--line) 47px 49px)}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:104px;align-content:flex-start}
+.tile{min-width:48px;min-height:48px;border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:var(--card);padding:8px 14px;font:800 18px var(--fb);height:48px}
+.tile.ghost{visibility:hidden}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pairs .col{display:grid;gap:10px;align-content:start}
+.pairs .opt{justify-content:center;text-align:center;min-height:54px}
+.pairs .opt.done{opacity:.35;border-color:var(--line);background:none}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.sheet{padding:16px 20px calc(18px + env(safe-area-inset-bottom));border-top:2px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.sheet.right{background:var(--okbg);color:var(--okfg);border-color:transparent}
+.sheet.wrong{background:var(--badbg);color:var(--badfg);border-color:transparent}
+.sheet .fb{display:flex;gap:12px;align-items:center}
+.sheet .fb h3{font-size:22px}.sheet .fb p{margin:2px 0 0;font-weight:700}
+.sheet.right .btn{background:var(--g)}
+.sheet.wrong .btn{background:var(--r);box-shadow:0 4px 0 var(--rd)}
+/* results */
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:36px 20px 20px;flex:1}
+.tiles{display:flex;gap:10px;width:100%;justify-content:center}
+.rt{flex:1;max-width:130px;border-radius:14px;border:2px solid;overflow:hidden;font-family:var(--fh)}
+.rt b{display:block;font-size:12px;padding:3px;color:#fff;text-transform:uppercase;letter-spacing:.5px}
+.rt span{display:block;padding:10px 4px;font:800 22px var(--fh);background:var(--card)}
+/* league */
+.lg li{position:relative}
+.lg li:nth-child(5){margin-bottom:26px}
+.lg li:nth-child(5)::after{content:'▲ Promotion zone above';position:absolute;left:0;right:0;bottom:-24px;border-top:3px dashed var(--g);padding-top:3px;text-align:center;font:800 12px var(--fb);color:var(--g)}
+.lg li:nth-child(n+9){color:var(--r)}
+.lg li:nth-child(8){margin-bottom:26px}
+.lg li:nth-child(8)::after{content:'▼ Demotion zone below';position:absolute;left:0;right:0;bottom:-24px;border-top:3px dashed var(--r);padding-top:3px;text-align:center;font:800 12px var(--fb);color:var(--r)}
+.lg li.me{background:var(--gsoft);border-radius:12px;padding:2px 6px;margin-left:-6px;margin-right:-6px}
+/* shop + profile */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.skin{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;display:grid;justify-items:center;gap:6px;text-align:center}
+.skin.on{border-color:var(--g);background:var(--gsoft)}
+.skin b{font:800 17px var(--fh)}
+.price{font:800 14px var(--fh);color:var(--b);display:inline-flex;align-items:center;gap:4px}
+.price svg{width:16px;height:16px}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.badge{display:grid;justify-items:center;gap:4px;text-align:center;font:800 11px/1.2 var(--fb);color:var(--muted)}
+.badge .bi{border-radius:50%;background:var(--card);border:3px solid var(--line);padding:6px;line-height:0}
+.badge.on .bi{border-color:#ffc83d;box-shadow:0 0 0 3px rgba(255,200,61,.3)}
+.badge.on{color:var(--ink)}
+.badge:not(.on) .bi>*{filter:grayscale(1);opacity:.4}
+.sec{font:800 20px var(--fh);margin:18px 0 10px}
+.profile-top{display:flex;align-items:center;gap:14px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.mini div{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px;text-align:center}
+.mini b{display:block;font:800 22px var(--fh)}.mini small{color:var(--muted);font-weight:800}
+.fade-in{animation:rise .3s}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (max-height:500px){
+  .lhead{padding-top:4px;padding-bottom:4px}.top{padding-top:4px}
+  .lbody{padding-top:4px;gap:10px}.lbody h2{font-size:18px}.say :is(span,svg){max-height:56px}
+  .sheet{flex-direction:row;align-items:center;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom));padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+  .sheet .fb{flex:1}.sheet .btn{width:auto;min-width:200px;flex:none}.center{padding-top:12px}
+}
+@media (max-width:380px){.opt{padding:10px;font-size:16px}.badges{grid-template-columns:repeat(3,1fr)}.btn{padding:12px 16px}}
+[role=progressbar]>div{background:linear-gradient(90deg,#ffd84d,#7ed957)!important}
+</style>
+<script type="importmap">{ "imports": { "react": "https://esm.sh/react@19.3.1", "react-dom/client": "https://esm.sh/react-dom@19.3.1/client?deps=react@19.3.1" } }</script>
+</head>
+<body>
+<a class="ex-back" href="../">← All examples</a>
+<div id="root"></div>
+<script type="module">
+import { createElement as h, useState, useEffect, useMemo, useRef, Fragment } from 'react'
+import { createRoot } from 'react-dom/client'
+import * as C from '../../../dist/components.js'
+import { Livatar } from '../../../dist/react.js'
+import { fruit, critter, animal, bean, mascot, party, magic, sport, food, vehicle } from '../../../dist/index.js'
+
+/* ---------------- content ---------------- */
+const UNITS = [
+  { id: 1, title: 'Unit 1 · Basics', desc: 'Greet people and count', color: '#2f8a12' },
+  { id: 2, title: 'Unit 2 · Food', desc: 'Order like a local', color: '#b84f08' },
+  { id: 3, title: 'Unit 3 · Travel', desc: 'Get around town', color: '#2563c9' },
+]
+const L = (id, unit, title, icon, vocab, sent) => ({ id, unit, title, icon, vocab, sent })
+const LESSONS = [
+  L(1, 1, 'Greetings', [party, { kind: 'balloon' }], [['hola', 'hello'], ['adiós', 'goodbye'], ['gracias', 'thank you'], ['por favor', 'please'], ['sí', 'yes'], ['buenos días', 'good morning']], [['Hello, my friend', 'Hola mi amigo'], ['Thank you very much', 'Muchas gracias']]),
+  L(2, 1, 'People', [party, { kind: 'partyhat' }], [['yo', 'I'], ['tú', 'you'], ['él', 'he'], ['ella', 'she'], ['amigo', 'friend'], ['niño', 'boy']], [['I am a boy', 'Yo soy un niño'], ['She is my friend', 'Ella es mi amiga']]),
+  L(3, 1, 'Numbers', [magic, { kind: 'crystal' }], [['uno', 'one'], ['dos', 'two'], ['tres', 'three'], ['cuatro', 'four'], ['cinco', 'five'], ['seis', 'six']], [['I have two cats', 'Tengo dos gatos'], ['We are five', 'Somos cinco']]),
+  L(4, 2, 'Fruit', [food, { kind: 'strawberry' }], [['manzana', 'apple'], ['naranja', 'orange'], ['plátano', 'banana'], ['uva', 'grape'], ['fresa', 'strawberry'], ['limón', 'lemon']], [['The apple is red', 'La manzana es roja'], ['I want an orange', 'Quiero una naranja']]),
+  L(5, 2, 'Drinks', [food, { kind: 'boba' }], [['agua', 'water'], ['leche', 'milk'], ['café', 'coffee'], ['té', 'tea'], ['jugo', 'juice'], ['hielo', 'ice']], [['I drink water', 'Yo bebo agua'], ['The coffee is hot', 'El café está caliente']]),
+  L(6, 2, 'Meals', [food, { kind: 'taco' }], [['pan', 'bread'], ['queso', 'cheese'], ['arroz', 'rice'], ['huevo', 'egg'], ['sopa', 'soup'], ['pollo', 'chicken']], [['I eat bread', 'Yo como pan'], ['We want soup', 'Queremos sopa']]),
+  L(7, 3, 'Places', [magic, { kind: 'scroll' }], [['casa', 'house'], ['escuela', 'school'], ['playa', 'beach'], ['ciudad', 'city'], ['parque', 'park'], ['tienda', 'store']], [['Where is the beach', 'Dónde está la playa'], ['The house is big', 'La casa es grande']]),
+  L(8, 3, 'Transport', [vehicle, { kind: 'train', color: 'teal' }], [['coche', 'car'], ['tren', 'train'], ['avión', 'plane'], ['barco', 'boat'], ['autobús', 'bus'], ['bicicleta', 'bicycle']], [['I take the train', 'Tomo el tren'], ['The bus is late', 'El autobús llega tarde']]),
+  L(9, 3, 'Colors', [vehicle, { kind: 'rocket', color: 'orange' }], [['rojo', 'red'], ['azul', 'blue'], ['verde', 'green'], ['grande', 'big'], ['pequeño', 'small'], ['feliz', 'happy']], [['The car is blue', 'El coche es azul'], ['I am happy', 'Estoy feliz']]),
+]
+const PAL = ['#e9f1d8', '#d8f0c0', '#d6ecff', '#fff3c4', '#ffe3c2', '#cdeee6']
+const FILLERS = ['el', 'la', 'un', 'yo', 'es', 'muy', 'mi', 'tu']
+const SKINS = [
+  { id: 'kiwi', name: 'Kiwi', style: fruit, options: { kind: 'kiwi' }, price: 0 },
+  { id: 'hammy', name: 'Hammy', style: critter, options: { kind: 'hamster' }, price: 30 },
+  { id: 'foxy', name: 'Foxy', style: animal, options: { species: 'fox' }, price: 60 },
+  { id: 'ninja', name: 'Ninja', style: bean, options: { kind: 'ninja' }, price: 90 },
+  { id: 'starry', name: 'Starry', style: mascot, options: { kind: 'star' }, price: 120 },
+  { id: 'llama', name: 'Llama', style: critter, options: { kind: 'llama' }, price: 150 },
+  { id: 'panda', name: 'Panda', style: animal, options: { species: 'panda' }, price: 180 },
+  { id: 'cosmo', name: 'Cosmo', style: bean, options: { kind: 'astro' }, price: 220 },
+]
+const BADGES = [
+  { id: 'first', name: 'First steps', style: party, o: { kind: 'gift' }, ok: (s) => count(s) >= 1 },
+  { id: 'streak3', name: '3-day streak', style: magic, o: { kind: 'wand' }, ok: (s) => s.streak >= 3 },
+  { id: 'streak7', name: 'Week warrior', style: magic, o: { kind: 'crystalball' }, ok: (s) => s.streak >= 7 },
+  { id: 'perfect', name: 'Flawless', style: sport, o: { kind: 'trophy' }, ok: (s) => s.perfect >= 1 },
+  { id: 'xp100', name: '100 XP', style: magic, o: { kind: 'crystal' }, ok: (s) => s.xp >= 100 },
+  { id: 'unit1', name: 'Unit 1 done', style: party, o: { kind: 'cake' }, ok: (s) => [1, 2, 3].every((i) => s.done[i]) },
+  { id: 'five', name: '5 lessons', style: sport, o: { kind: 'soccer' }, ok: (s) => count(s) >= 5 },
+  { id: 'rich', name: 'Gem hoarder', style: magic, o: { kind: 'potion' }, ok: (s) => s.gems >= 100 },
+]
+const BOTS = [['Luna', 420], ['Mateo', 380], ['Sofía', 310], ['Diego', 260], ['Valentina', 210], ['Carlos', 150], ['Isabella', 120], ['Pablo', 80], ['Camila', 40]]
+
+/* ---------------- state ---------------- */
+const KEY = 'kiwi-academy-v1'
+const pad = (n) => String(n).padStart(2, '0')
+const dkey = (off = 0) => { const d = new Date(); d.setDate(d.getDate() + off); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` }
+const count = (s) => Object.keys(s.done).length
+const fresh = () => ({ v: 1, xp: 120, gems: 60, hearts: 5, heartsDay: dkey(), streak: 3, lastDay: dkey(-1), goal: 30, skin: 'kiwi', owned: ['kiwi'], done: {}, perfect: 0, week: 60, days: { [dkey(-3)]: 40, [dkey(-2)]: 35, [dkey(-1)]: 30 } })
+function load() {
+  let s = null
+  try { const r = JSON.parse(localStorage.getItem(KEY) || 'null'); if (r && r.v === 1) s = r } catch (e) {}
+  s = s || fresh()
+  if (s.heartsDay !== dkey()) { s.hearts = 5; s.heartsDay = dkey() }
+  if (s.lastDay !== dkey() && s.lastDay !== dkey(-1)) s.streak = 0
+  return s
+}
+const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]] } return r }
+const norm = (t) => t.toLowerCase().replace(/[.,!?¿¡]/g, '').trim()
+
+function buildQuestions(l) {
+  const v = shuffle(l.vocab), mcFor = (pair, dir) => {
+    const [es, en] = pair, from = dir === 0 ? es : en, to = dir === 0 ? en : es
+    const wrong = shuffle(l.vocab.filter((p) => p !== pair)).slice(0, 3).map((p) => (dir === 0 ? p[1] : p[0]))
+    const opts = shuffle([to, ...wrong])
+    return { t: 'mc', q: dir === 0 ? 'What does this mean?' : 'How do you say this in Spanish?', term: from, opts, a: opts.indexOf(to), say: `${es} = ${en}` }
+  }
+  const build = (s) => { const words = s[1].split(' '); const extra = shuffle(FILLERS.filter((w) => !words.map(norm).includes(w))).slice(0, 2)
+    return { t: 'build', q: 'Write this in Spanish', term: s[0], tiles: shuffle([...words, ...extra]), ans: s[1] } }
+  return [mcFor(v[0], 0), mcFor(v[1], 1), { t: 'pairs', q: 'Tap the matching pairs', pairs: v.slice(0, 4) }, mcFor(v[2], 0), build(l.sent[0]), mcFor(v[3], 1), build(l.sent[1]), mcFor(v[4], 0)]
+}
+
+const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+const buzz = (p) => { try { if (navigator.vibrate && !reduce()) navigator.vibrate(p) } catch (e) {} }
+/* ---------------- bits ---------------- */
+const Flame = () => h('svg', { viewBox: '0 0 24 24', 'aria-hidden': true }, h('path', { d: 'M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 3-7 1 1 2 2 2 3 1-2 1-5 1-8z', fill: 'currentColor' }))
+const Heart = () => h('svg', { viewBox: '0 0 24 24', 'aria-hidden': true }, h('path', { d: 'M12 21s-8-5.3-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.7-8 11-8 11z', fill: 'currentColor' }))
+const Gem = () => h('svg', { viewBox: '0 0 24 24', 'aria-hidden': true }, h('path', { d: 'M6 3h12l4 6-10 12L2 9z', fill: 'currentColor' }))
+const Mascot = ({ skin, size = 64, mood }) => h('span', { 'aria-hidden': true, style: { lineHeight: 0, display: 'inline-block' } },
+  h(Livatar, { variant: skin.style, seed: 'kiwi-' + skin.id, size, options: skin.options, colors: PAL, background: false, ...(mood ? { mood } : {}) }))
+const Icon = ({ style, o, size = 40, seed = 'i' }) => h('span', { 'aria-hidden': true, style: { lineHeight: 0, display: 'inline-block' } }, h(Livatar, { variant: style, seed, size, options: o, background: false }))
+const skinOf = (s) => SKINS.find((k) => k.id === s.skin) || SKINS[0]
+const avatarOf = (skin) => ({ variant: skin.style, options: skin.options, seed: 'kiwi-' + skin.id, background: false, colors: PAL })
+
+/* ---------------- lesson ---------------- */
+function Pairs({ q, onMiss, onDone }) {
+  const left = useMemo(() => shuffle(q.pairs.map((p, i) => ({ id: i, t: p[0] }))), [q])
+  const right = useMemo(() => shuffle(q.pairs.map((p, i) => ({ id: i, t: p[1] }))), [q])
+  const [a, setA] = useState(null), [b, setB] = useState(null), [ok, setOk] = useState([]), [bad, setBad] = useState(false)
+  useEffect(() => {
+    if (a === null || b === null) return
+    if (a === b) { buzz(15); const n = [...ok, a]; setOk(n); setA(null); setB(null); if (n.length === q.pairs.length) onDone(); return }
+    setBad(true); buzz([40, 30, 40]); onMiss()
+    const t = setTimeout(() => { setBad(false); setA(null); setB(null) }, 600)
+    return () => clearTimeout(t)
+  }, [a, b])
+  const col = (items, sel, set, lang) => h('div', { className: 'col', role: 'group', 'aria-label': lang }, items.map((it) => {
+    const done = ok.includes(it.id), on = sel === it.id
+    return h('button', { key: it.id, type: 'button', disabled: done || bad, 'aria-pressed': on, className: 'opt' + (done ? ' done' : '') + (bad && on ? ' no shake' : ''), onClick: () => set(it.id) }, it.t)
+  }))
+  return h('div', { className: 'pairs' }, col(left, a, setA, 'Spanish'), col(right, b, setB, 'English'))
+}
+
+function Lesson({ lesson, s, setS, onExit, onFinish }) {
+  const skin = skinOf(s)
+  const qs = useMemo(() => buildQuestions(lesson), [lesson])
+  const [i, setI] = useState(0), [st, setSt] = useState('ask'), [ans, setAns] = useState(null), [right, setRight] = useState(0)
+  const [blip, setBlip] = useState(null), [idle, setIdle] = useState(false), [out, setOut] = useState(false), [missed, setMissed] = useState(0)
+  const heartsRef = useRef(s.hearts); heartsRef.current = s.hearts
+  const btnRef = useRef(null)
+  const q = qs[i]
+  const loseHeart = () => { setMissed((m) => m + 1); setBlip('sad'); setTimeout(() => setBlip(null), 1200); setS((p) => ({ ...p, hearts: Math.max(0, p.hearts - 1) })); if (heartsRef.current - 1 <= 0) setOut(true) }
+  useEffect(() => { setIdle(false); const t = setTimeout(() => setIdle(true), 20000); return () => clearTimeout(t) }, [i, st, ans])
+  useEffect(() => { if (st !== 'ask') btnRef.current?.focus() }, [st])
+  const can = q.t === 'mc' ? ans !== null : q.t === 'build' ? ans && ans.length > 0 : false
+  const check = () => {
+    const good = q.t === 'mc' ? ans === q.a : norm(ans.map((k) => q.tiles[k]).join(' ')) === norm(q.ans)
+    buzz(good ? 15 : [60, 40, 60]); if (good) { setRight((r) => r + 1); setSt('right') } else { setSt('wrong'); loseHeart() }
+  }
+  const next = () => {
+    if (out) return
+    if (i + 1 >= qs.length) return onFinish({ right, total: qs.length, perfect: missed === 0 })
+    setI(i + 1); setSt('ask'); setAns(null)
+  }
+  useEffect(() => {
+    const kd = (e) => {
+      if (out) return
+      if (e.key === 'Enter') { e.preventDefault(); if (st !== 'ask') next(); else if (can) check() }
+      else if (st === 'ask' && q.t === 'mc' && /^[1-4]$/.test(e.key)) setAns(+e.key - 1)
+    }
+    window.addEventListener('keydown', kd); return () => window.removeEventListener('keydown', kd)
+  })
+  const mood = out ? 'cry' : st === 'right' ? 'starstruck' : st === 'wrong' ? 'sad' : blip || (idle ? 'sleepy' : undefined)
+  if (out) return h('div', { className: 'lesson' }, h('div', { className: 'center' },
+    h(C.LivatarResult, { status: 'error', title: 'Out of hearts!', description: 'Mistakes happen. Refill with gems or come back tomorrow.', ...avatarOf(skin), extra: h('div', { style: { display: 'grid', gap: 10, marginTop: 8 } },
+      h('button', { className: 'btn', disabled: s.gems < 10, onClick: () => { setS((p) => ({ ...p, gems: p.gems - 10, hearts: 5 })); setOut(false) } }, 'Refill hearts · 10 gems'),
+      h('button', { className: 'btn ghost', onClick: onExit }, 'Quit lesson')) })))
+  const body = q.t === 'mc' ? h('div', { className: 'opts', role: 'group', 'aria-label': 'Answers' }, q.opts.map((o, k) => {
+    const cls = st === 'ask' ? '' : k === q.a ? ' ok' : k === ans ? ' no' : ''
+    return h('button', { key: k, type: 'button', className: 'opt' + cls, 'aria-pressed': ans === k, disabled: st !== 'ask', onClick: () => setAns(k) }, h('kbd', { 'aria-hidden': true }, k + 1), o)
+  })) : q.t === 'build' ? h(Fragment, null,
+    h('div', { className: 'slots', 'aria-label': 'Your answer' }, (ans || []).map((k) => h('button', { key: k, type: 'button', className: 'tile', disabled: st !== 'ask', onClick: () => setAns(ans.filter((x) => x !== k)) }, q.tiles[k]))),
+    h('div', { className: 'bank', 'aria-label': 'Word bank' }, q.tiles.map((w, k) => h('button', { key: k, type: 'button', className: 'tile' + ((ans || []).includes(k) ? ' ghost' : ''), disabled: st !== 'ask' || (ans || []).includes(k), onClick: () => setAns([...(ans || []), k]) }, w))))
+    : h(Pairs, { key: i, q, onMiss: loseHeart, onDone: () => { setRight((r) => r + 1); setSt('right') } })
+  const answerText = q.t === 'mc' ? q.opts[q.a] : q.t === 'build' ? q.ans : ''
+  return h('div', { className: 'lesson fade-in', role: 'dialog', 'aria-label': `Lesson: ${lesson.title}` },
+    h('div', { className: 'lhead' },
+      h('button', { className: 'x', 'aria-label': 'Quit lesson', onClick: onExit }, '✕'),
+      h('div', { className: 'lbar', role: 'progressbar', 'aria-label': 'Lesson progress', 'aria-valuemin': 0, 'aria-valuemax': qs.length, 'aria-valuenow': i + (st === 'ask' ? 0 : 1) }, h('i', { style: { width: `${((i + (st === 'ask' ? 0 : 1)) / qs.length) * 100}%` } })),
+      h('span', { className: 'chip hr', 'aria-label': `${s.hearts} hearts` }, h(Heart), s.hearts)),
+    h('div', { className: 'lbody' },
+      h('h2', null, q.q),
+      q.t !== 'pairs' && h('div', { className: 'say' }, h(Mascot, { skin, size: 88, mood }), h('div', { className: 'bubble' }, q.term)),
+      q.t === 'pairs' && h('div', { className: 'say' }, h(Mascot, { skin, size: 72, mood }), h('span', { style: { color: 'var(--muted)' } }, 'Match each Spanish word with its English twin.')),
+      body),
+    st === 'ask' ? h('div', { className: 'sheet' }, h('button', { className: 'btn full', disabled: !can, onClick: check }, q.t === 'pairs' ? 'Match all pairs' : 'Check'))
+      : h('div', { className: 'sheet ' + st, role: 'status', 'aria-live': 'polite' },
+        h('div', { className: 'fb' }, h(Mascot, { skin, size: 56, mood }), h('div', null,
+          h('h3', null, st === 'right' ? ['Excellent!', '¡Muy bien!', 'Nailed it!', '¡Perfecto!'][i % 4] : 'Not quite'),
+          st === 'wrong' && h('p', null, 'Correct answer: ' + answerText))),
+        h('button', { ref: btnRef, className: 'btn full', onClick: next }, i + 1 >= qs.length ? 'Finish' : 'Continue')))
+}
+
+function Results({ r, gained, s, onDone }) {
+  const [fire, setFire] = useState(0)
+  useEffect(() => { const t = setTimeout(() => setFire(1), 300); const t2 = setTimeout(() => setFire(2), 1000); return () => { clearTimeout(t); clearTimeout(t2) } }, [])
+  const skin = skinOf(s), acc = Math.round((r.right / r.total) * 100)
+  const t = (label, val, color) => h('div', { className: 'rt', style: { borderColor: color } }, h('b', { style: { background: color } }, label), h('span', { style: { color } }, val))
+  return h('div', { className: 'lesson fade-in' }, h('div', { className: 'center' },
+    h(C.LivatarConfetti, { fire, count: matchMedia('(max-width: 600px)').matches ? 12 : 22, spread: 170, size: 30, avatar: { variant: skin.style, options: skin.options, colors: PAL } },
+      h(C.LivatarResult, { status: 'success', title: r.perfect ? 'Flawless lesson!' : 'Lesson complete!', description: r.perfect ? 'Not a single mistake. Bonus unlocked.' : 'Keep that streak burning.', ...avatarOf(skin) })),
+    h('div', { className: 'tiles' }, t('Total XP', '+' + gained.xp, '#c2570a'), t('Accuracy', acc + '%', '#2f8a12'), t('Gems', '+' + gained.gems, '#2563c9')),
+    h('p', { style: { color: 'var(--muted)', margin: 0 } }, `Streak: ${s.streak} day${s.streak === 1 ? '' : 's'} · ${s.hearts} hearts left`),
+    h('button', { className: 'btn full', style: { marginTop: 12 }, onClick: onDone, autoFocus: true }, 'Continue')))
+}
+
+/* ---------------- tabs ---------------- */
+function Learn({ s, setS, start, skin }) {
+  const [idle, setIdle] = useState(false), [toast, setToast] = useState('')
+  useEffect(() => {
+    setIdle(false); const t = setTimeout(() => setIdle(true), 30000)
+    const wake = () => { setIdle(false); clearTimeout(t) }
+    window.addEventListener('pointerdown', wake, { once: true }); return () => { clearTimeout(t); window.removeEventListener('pointerdown', wake) }
+  }, [idle])
+  const dayXp = s.days[dkey()] || 0, cur = LESSONS.find((l) => !s.done[l.id])
+  const hint = idle ? 'Zzz… tap a lesson to wake me up.' : s.hearts === 0 ? 'No hearts left. Visit the shop to refill!' : dayXp >= s.goal ? '¡Meta cumplida! Daily goal reached.' : cur ? `Next up: ${cur.title}. “${cur.vocab[0][0]}” means “${cur.vocab[0][1]}”.` : 'You finished the whole path. ¡Increíble!'
+  const tap = (l, state) => { if (state === 'locked') { setToast('Finish the previous lesson to unlock “' + l.title + '”.'); setTimeout(() => setToast(''), 2200) } else start(l) }
+  return h('div', { className: 'scroll' },
+    h(C.LivatarSpeech, { key: hint, text: hint, speed: 22, ...avatarOf(skin), ...(idle ? { mood: 'sleepy' } : {}), style: { marginBottom: 12 } }),
+    h('div', { className: 'goal' },
+      h('b', null, dayXp >= s.goal ? 'Daily goal complete!' : `Daily goal · ${dayXp}/${s.goal} XP`),
+      h(C.LivatarProgress, { value: (dayXp / s.goal) * 100, label: 'Daily XP', avatar: { options: { kind: 'car', color: 'green' }, colors: PAL }, style: { minWidth: 0 } })),
+    UNITS.map((u) => h(Fragment, { key: u.id },
+      h('div', { className: 'unit', style: { background: u.color } }, h('div', null, h('h2', null, u.title), h('p', null, u.desc)), h(Icon, { style: u.id === 1 ? party : u.id === 2 ? food : vehicle, o: u.id === 1 ? { kind: 'cake' } : u.id === 2 ? { kind: 'sushi' } : { kind: 'plane' }, size: 48, seed: 'u' + u.id })),
+      h('div', { className: 'path' }, LESSONS.filter((l) => l.unit === u.id).map((l) => {
+        const idx = l.id - 1, state = s.done[l.id] ? 'done' : cur && cur.id === l.id ? 'current' : idx === 0 || s.done[l.id - 1] ? 'open' : 'locked'
+        const dx = Math.round(Math.sin(idx * 1.1) * 62)
+        return h('button', { key: l.id, className: 'node', 'data-s': state, 'aria-label': `${l.title}: ${state === 'done' ? 'completed, practice again' : state === 'locked' ? 'locked' : 'start'}`, style: { transform: `translateX(${dx}px)` }, onClick: () => tap(l, state) },
+          state === 'current' && h('span', { className: 'start', 'aria-hidden': true }, 'START'),
+          h('span', { className: 'ni' }, h(Icon, { style: l.icon[0], o: l.icon[1], size: 52, seed: 'n' + l.id })),
+          state === 'done' && h('span', { className: 'tick', 'aria-hidden': true }, '✓'),
+          state === 'locked' && h('span', { className: 'lock', 'aria-hidden': true }, '🔒'),
+          h('span', { className: 'nlabel' + (dx > 0 ? ' l' : ''), 'aria-hidden': true }, l.title))
+      })))),
+    toast && h('div', { className: 'toast', role: 'status' }, toast))
+}
+
+function League({ s, skin }) {
+  const rows = [...BOTS.map(([n, sc]) => ({ id: n.toLowerCase(), name: n, score: sc + Math.round(s.week * 0.1) % 7 })), { id: 'kiwi-' + skin.id, name: 'You', score: s.week }]
+  const rank = [...rows].sort((a, b) => b.score - a.score).findIndex((r) => r.name === 'You') + 1
+  return h('div', { className: 'scroll fade-in' },
+    h('h1', { style: { fontSize: 30 } }, 'Emerald League'), h('p', { style: { color: 'var(--muted)', margin: '4px 0 16px' } }, `You are #${rank} this week. Top 5 move up to Ruby.`),
+    h('div', { className: 'lg' }, h(C.LivatarLeaderboard, { rows, className: 'lg-list', avatar: { colors: PAL } })),
+    h(LgStyle, { rows }))
+}
+/* highlight the "You" row without touching the library markup */
+function LgStyle({ rows }) {
+  useEffect(() => { document.querySelectorAll('.lg li').forEach((li) => li.classList.toggle('me', /^\s*(\d|🥇|🥈|🥉)?\s*You/.test(li.textContent.replace(/\s+/g, ' ').replace(/^\W*/, '')) || li.querySelector('b')?.textContent === 'You')) })
+  return null
+}
+
+function Shop({ s, setS, skin }) {
+  const [msg, setMsg] = useState('')
+  const say = (m) => { setMsg(m); setTimeout(() => setMsg(''), 2200) }
+  const act = (k) => {
+    if (s.owned.includes(k.id)) { setS((p) => ({ ...p, skin: k.id })); return say(`${k.name} is your buddy now!`) }
+    if (s.gems < k.price) return say('Not enough gems. Finish lessons to earn more!')
+    setS((p) => ({ ...p, gems: p.gems - k.price, owned: [...p.owned, k.id], skin: k.id })); say(`Bought ${k.name}!`)
+  }
+  return h('div', { className: 'scroll fade-in' },
+    h('h1', { style: { fontSize: 30 } }, 'Shop'), h('p', { style: { color: 'var(--muted)', margin: '4px 0 14px' } }, 'Spend gems on a new study buddy or top up your hearts.'),
+    h('div', { className: 'panel', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 16 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } }, h('span', { className: 'chip hr', style: { padding: 0 } }, h(Heart)), h('div', null, h('b', null, 'Refill hearts'), h('div', { style: { color: 'var(--muted)', fontSize: 13 } }, `${s.hearts}/5 hearts`))),
+      h('button', { className: 'btn sm', disabled: s.hearts >= 5 || s.gems < 10, onClick: () => { setS((p) => ({ ...p, hearts: 5, gems: p.gems - 10 })); say('Hearts refilled!') } }, '10 gems')),
+    h('div', { className: 'grid2' }, SKINS.map((k) => {
+      const own = s.owned.includes(k.id), on = s.skin === k.id
+      return h('div', { key: k.id, className: 'skin' + (on ? ' on' : '') }, h(Mascot, { skin: k, size: 84, mood: on ? 'happy' : undefined }), h('b', null, k.name),
+        own ? h('button', { className: 'btn sm ' + (on ? '' : 'ghost'), disabled: on, onClick: () => act(k) }, on ? 'Equipped' : 'Equip')
+          : h('button', { className: 'btn sm', 'aria-label': `Buy ${k.name} for ${k.price} gems`, onClick: () => act(k) }, h(Gem), k.price))
+    })),
+    msg && h('div', { className: 'toast', role: 'status' }, msg))
+}
+
+function Profile({ s, setS, skin, reset }) {
+  const unlocked = BADGES.filter((b) => b.ok(s)).length
+  const marks = useMemo(() => Object.fromEntries(Object.entries(s.days).filter(([, v]) => v > 0).map(([k]) => [k, ['kiwi']])), [s.days])
+  return h('div', { className: 'scroll fade-in' },
+    h('div', { className: 'profile-top' }, h(Mascot, { skin, size: 96, mood: 'happy' }), h('div', null, h('h1', { style: { fontSize: 30 } }, 'Alex Rivera'), h('div', { style: { color: 'var(--muted)' } }, `Learning Spanish · ${s.xp} XP`))),
+    h('div', { className: 'mini' }, h('div', null, h('b', null, s.streak), h('small', null, 'Day streak')), h('div', null, h('b', null, count(s)), h('small', null, 'Lessons')), h('div', null, h('b', null, `${unlocked}/${BADGES.length}`), h('small', null, 'Badges'))),
+    h('h2', { className: 'sec' }, 'Achievements'),
+    h('div', { className: 'badges' }, BADGES.map((b) => { const on = b.ok(s)
+      return h('div', { key: b.id, className: 'badge' + (on ? ' on' : ''), 'aria-label': `${b.name}: ${on ? 'unlocked' : 'locked'}` }, h('span', { className: 'bi' }, h(Icon, { style: b.style, o: b.o, size: 48, seed: b.id })), b.name) })),
+    h('h2', { className: 'sec' }, 'Streak calendar'),
+    h(C.LivatarCalendar, { marks, fill: false, size: 24, value: new Date(), avatar: { variant: fruit, options: { kind: 'kiwi' }, colors: PAL }, style: { width: '100%', padding: 6 } }),
+    h('h2', { className: 'sec' }, 'Daily goal'),
+    h('div', { className: 'panel' }, h('div', { style: { display: 'flex', justifyContent: 'space-between' } }, h('b', null, `${s.goal} XP per day`), h('span', { style: { color: 'var(--muted)' } }, s.goal <= 20 ? 'Casual' : s.goal <= 40 ? 'Regular' : s.goal <= 70 ? 'Serious' : 'Insane')),
+      h(C.LivatarSlider, { value: s.goal, min: 10, max: 100, step: 10, label: 'Daily XP goal', onChange: (v) => setS((p) => ({ ...p, goal: v })), moods: ['sleepy', 'neutral', 'happy', 'starstruck'], ...avatarOf(skin) })),
+    h('div', { style: { margin: '22px 0 0', textAlign: 'center' } }, h('button', { className: 'btn ghost sm', onClick: reset }, 'Reset progress')))
+}
+
+/* ---------------- app ---------------- */
+function App() {
+  const [s, setS] = useState(load)
+  const [tab, setTab] = useState('learn'), [lesson, setLesson] = useState(null), [res, setRes] = useState(null), [outHearts, setOutHearts] = useState(false)
+  useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(s)) } catch (e) {} }, [s])
+  const skin = skinOf(s), dayXp = s.days[dkey()] || 0
+  const start = (l) => { if (s.hearts <= 0) setOutHearts(true); else setLesson(l) }
+  const finish = (r) => {
+    const xp = 10 + r.right * 2 + (r.perfect ? 5 : 0), gems = 3 + (r.perfect ? 5 : 0), today = dkey()
+    setS((p) => ({ ...p, xp: p.xp + xp, week: p.week + xp, gems: p.gems + gems, perfect: p.perfect + (r.perfect ? 1 : 0), done: { ...p.done, [lesson.id]: true },
+      days: { ...p.days, [today]: (p.days[today] || 0) + xp }, streak: p.lastDay === today ? p.streak : p.lastDay === dkey(-1) ? p.streak + 1 : 1, lastDay: today }))
+    setRes({ r, gained: { xp, gems } }); setLesson(null)
+  }
+  const reset = () => { if (confirm('Reset all progress?')) { try { localStorage.removeItem(KEY) } catch (e) {} setS(fresh()) ; setTab('learn') } }
+  const tabs = [['learn', 'Learn', magic, { kind: 'spellbook' }], ['league', 'League', sport, { kind: 'trophy' }], ['shop', 'Shop', party, { kind: 'gift' }], ['me', 'Profile', skin.style, skin.options]]
+  const nextDays = 7 - (s.streak % 7)
+  return h('div', { className: 'wrap' },
+    h('aside', { className: 'side' },
+      h('div', { className: 'brand' }, h(Icon, { style: fruit, o: { kind: 'kiwi' }, size: 56, seed: 'brand' }), h('div', null, 'Kiwi Academy', h('small', null, 'Spanish, one bite at a time'))),
+      h('div', { className: 'panel' }, h('h3', null, 'Your stats'),
+        h('div', { className: 'stat-row' }, h('span', { className: 'chip fl', style: { padding: 0 } }, h(Flame), `${s.streak}-day streak`), h('small', { style: { color: 'var(--muted)' } }, `${nextDays} to a week`)),
+        h('div', { className: 'stat-row' }, h('span', { className: 'chip gm', style: { padding: 0 } }, h(Gem), `${s.gems} gems`), h('span', null, `${s.xp} XP`)),
+        h('div', { className: 'stat-row' }, h('span', { className: 'chip hr', style: { padding: 0 } }, h(Heart), `${s.hearts}/5 hearts`))),
+      h('div', { className: 'panel' }, h('h3', null, 'Today'), h('div', { className: 'bar' }, h('i', { style: { width: Math.min(100, (dayXp / s.goal) * 100) + '%' } })),
+        h('div', { style: { color: 'var(--muted)', fontSize: 14, marginTop: 6 } }, `${dayXp} of ${s.goal} XP daily goal`)),
+      h('div', { className: 'panel', style: { display: 'flex', gap: 12, alignItems: 'center' } }, h(Mascot, { skin, size: 64 }), h('div', null, h('b', null, `${skin.name} is your buddy`), h('div', { style: { color: 'var(--muted)', fontSize: 14 } }, 'Swap skins in the shop.')))),
+    h('main', { className: 'phone' },
+      h('div', { className: 'top' },
+        h('span', { className: 'chip fl', 'aria-label': `${s.streak} day streak` }, h(Flame), s.streak),
+        h('span', { className: 'chip gm', 'aria-label': `${s.gems} gems` }, h(Gem), s.gems),
+        h('span', { className: 'chip hr', 'aria-label': `${s.hearts} hearts` }, h(Heart), s.hearts)),
+      tab === 'learn' && h(Learn, { s, setS, start, skin }), tab === 'league' && h(League, { s, skin }), tab === 'shop' && h(Shop, { s, setS, skin }), tab === 'me' && h(Profile, { s, setS, skin, reset }),
+      h('nav', { className: 'nav', 'aria-label': 'Main' }, tabs.map(([id, label, st, o]) => h('button', { key: id, type: 'button', 'aria-current': tab === id ? 'page' : undefined, onClick: () => setTab(id) }, h('span', { className: 'ic' }, h(Icon, { style: st, o, size: 30, seed: 'nav' + id })), label))),
+      lesson && h(Lesson, { key: lesson.id + ':' + (s.done[lesson.id] ? 1 : 0), lesson, s, setS, onExit: () => setLesson(null), onFinish: finish }),
+      res && h(Results, { r: res.r, gained: res.gained, s, onDone: () => setRes(null) }),
+      outHearts && h('div', { className: 'lesson' }, h('div', { className: 'center' },
+        h(C.LivatarResult, { status: 'error', title: 'No hearts left', description: 'Refill for 10 gems or return tomorrow.', ...avatarOf(skin), extra: h('div', { style: { display: 'grid', gap: 10, marginTop: 8 } },
+          h('button', { className: 'btn', disabled: s.gems < 10, onClick: () => { setS((p) => ({ ...p, hearts: 5, gems: p.gems - 10 })); setOutHearts(false) } }, 'Refill · 10 gems'),
+          h('button', { className: 'btn ghost', onClick: () => setOutHearts(false) }, 'Not now')) })))))
+}
+createRoot(document.getElementById('root')).render(h(App))
+</script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<script>if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)</script>
+<script>try{var t=localStorage.getItem('pulse-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+<title>Pulse Analytics — livatar dashboard example</title>
+<meta name="description" content="Pulse Analytics: a full admin dashboard built with livatar components — KPIs, charts, sortable customer table, globe, leaderboard, calendar, command palette and dark mode.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script type="importmap">{ "imports": { "react": "https://esm.sh/react@19.3.1", "react-dom/client": "https://esm.sh/react-dom@19.3.1/client?deps=react@19.3.1" } }</script>
+<style>
+:root{--bg:#f6f3ee;--panel:#fffdf9;--panel2:#efeae1;--fg:#1c1a17;--mut:#6b6459;--line:#ddd5c7;--acc:#b36b00;--accb:#f5a524;--acc2:#0f9488;--acc3:#e5503c;--acc-fg:#1c1a17;--good:#0f8a5f;--bad:#d03b2a;--shadow:0 1px 0 rgba(28,26,23,.04),0 6px 18px -12px rgba(28,26,23,.22);
+--lv-bg:#fffdf9;--lv-fg:#1c1a17;--lv-line:#ddd5c7;--lv-surface:#efeae1;--lv-accent:#b36b00;--lv-ring:#f5a524;--lv-skel:#e8e1d3;--lv-skel-hi:#f4efe6}
+:root[data-theme=dark]{--bg:#141210;--panel:#1c1a17;--panel2:#26231f;--fg:#f3efe8;--mut:#a69f94;--line:#35312b;--acc:#ffc53d;--accb:#f5a524;--acc2:#14b8a6;--acc3:#ff6b57;--acc-fg:#1c1a17;--good:#4fd1a1;--bad:#ff7b6b;--shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px -14px rgba(0,0,0,.7);
+--lv-bg:#1c1a17;--lv-fg:#f3efe8;--lv-line:#35312b;--lv-surface:#26231f;--lv-accent:#ffc53d;--lv-ring:#ffc53d;--lv-skel:#2c2823;--lv-skel-hi:#3b362f}
+@media (prefers-color-scheme:dark){:root[data-theme=auto]{--bg:#141210;--panel:#1c1a17;--panel2:#26231f;--fg:#f3efe8;--mut:#a69f94;--line:#35312b;--acc:#ffc53d;--accb:#f5a524;--acc2:#14b8a6;--acc3:#ff6b57;--acc-fg:#1c1a17;--good:#4fd1a1;--bad:#ff7b6b;--shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px -14px rgba(0,0,0,.7);--lv-bg:#1c1a17;--lv-fg:#f3efe8;--lv-line:#35312b;--lv-surface:#26231f;--lv-accent:#ffc53d;--lv-ring:#ffc53d;--lv-skel:#2c2823;--lv-skel-hi:#3b362f}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:14px/1.5 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accb);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.app{display:grid;grid-template-columns:var(--sw,244px) minmax(0,1fr);min-height:100vh;transition:grid-template-columns .25s}
+.app.collapsed{--sw:76px}
+aside.side{position:sticky;top:0;height:100vh;background:var(--panel);border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:6px;z-index:40;overflow:hidden}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px;font-weight:800;font-size:18px;letter-spacing:-.02em;white-space:nowrap}
+.brand .logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accb),var(--acc3));display:grid;place-items:center;flex:none}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;color:var(--mut);text-decoration:none;font-weight:600;white-space:nowrap;transition:.15s}
+.nav a:hover{background:var(--panel2);color:var(--fg)}
+.nav a[aria-current=page]{background:color-mix(in srgb,var(--acc) 14%,transparent);color:var(--acc);box-shadow:inset 3px 0 var(--accb)}
+.nav svg,.ico{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.collapsed .nav span,.collapsed .brand b,.collapsed .sidecard,.collapsed .navh{display:none}
+.navh{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);padding:14px 10px 4px}
+.sidecard{margin-top:auto;border:1px solid var(--line);background:var(--panel2);border-radius:14px;padding:12px;font-size:13px}
+.sidecard p{margin:6px 0 0;color:var(--mut)}
+.iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;flex:none;padding:0;transition:.15s}
+.iconbtn:hover{border-color:var(--acc);color:var(--acc)}
+header.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:12px 24px;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.search{flex:1;max-width:420px;display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;border:1px solid var(--line);background:var(--panel);border-radius:10px;color:var(--mut);text-align:left}
+.search:hover{border-color:var(--acc)}.search kbd{margin-left:auto;font:500 11px 'IBM Plex Mono',monospace;border:1px solid var(--line);border-radius:6px;padding:1px 6px;background:var(--panel2)}
+.spacer{flex:1}
+.pop{position:relative}
+.panel{position:absolute;right:0;top:46px;width:min(340px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow),0 20px 40px -20px rgba(0,0,0,.35);padding:8px;z-index:50;animation:pin .15s}
+@keyframes pin{from{opacity:0;transform:translateY(-6px)}}
+.panel h3{margin:6px 8px;font-size:13px}
+.panel .row{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;width:100%;border:0;background:none;text-align:left}
+.panel .row:hover{background:var(--panel2)}.panel small{color:var(--mut);display:block}
+.userbtn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 12px 3px 3px;font-weight:600}
+main{padding:24px;max-width:1500px;width:100%;margin:0 auto}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:20px}
+h1,.card h2,.brand,.kpis [style*='font-size: 26px'],.kpis div div{font-family:Sora,sans-serif}h1{margin:0;font-size:26px;letter-spacing:-.03em}.head p{margin:2px 0 0;color:var(--mut)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 14px;font-weight:600}
+.btn.pri{background:var(--acc);color:var(--acc-fg);border-color:transparent}.btn:hover{filter:brightness(1.06)}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.card h2{margin:0 0 2px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut)}.card .sub{color:var(--mut);font-size:12.5px;margin-bottom:12px}
+.card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.kpis>*{min-width:0;transition:transform .2s}.kpis>*:hover{transform:translateY(-3px)}
+.kpis [style*=display]{width:100%}
+.row2{grid-template-columns:minmax(0,2fr) minmax(0,1fr);margin-bottom:16px}
+.row3{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:16px}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{fill:var(--mut);font-size:11px}.chart .gl{stroke:var(--line);stroke-dasharray:3 4}
+.chart .area{animation:fade .6s}@keyframes fade{from{opacity:0}}
+.chart .bar{transition:height .4s,y .4s,fill .15s}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);padding:6px 10px;border-radius:8px;font-size:12px;white-space:nowrap;transform:translate(-50%,-120%);z-index:5}
+.legend{display:flex;gap:14px;color:var(--mut);font-size:12px;margin-top:8px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tools input,.tools select{height:36px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:10px;padding:0 12px;font:inherit}
+.tools input{flex:1;min-width:140px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+.tbl .lv-table-scroll{border:0!important}
+table.cust td:nth-child(n+4){font-family:'IBM Plex Mono',monospace}table.cust{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+.cust th,.cust td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.cust th{color:var(--mut);font-size:12px;font-weight:600;background:var(--panel2)}
+.cust th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}.cust th button:focus-visible{outline:2px solid var(--acc)}
+.cust tr:last-child td{border:0}.cust tbody tr:hover{background:var(--panel2)}
+.pill{padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+.pill.Active{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.pill.Trial{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc)}
+.pill.Churned{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.tfoot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap;color:var(--mut);font-size:13px}
+.tfoot nav button{background:var(--panel2)!important;color:var(--fg)!important;border:1px solid var(--line)!important}
+.tfoot nav button[aria-current=page]{background:var(--acc)!important;color:var(--acc-fg)!important}
+.globewrap{display:grid;place-items:center;padding:6px 0;overflow:hidden;border-radius:12px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--acc) 12%,transparent),transparent 70%)}
+.regions{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.regions li{display:grid;grid-template-columns:90px 1fr 44px;gap:8px;align-items:center;font-size:13px}
+.regions .bar{height:6px;border-radius:4px;background:var(--panel2);overflow:hidden}.regions .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accb),var(--acc2));transition:width .5s}
+.feed{max-height:420px;overflow:auto;padding-right:4px}
+.feed li b,.feed li small{color:var(--fg)}
+.ex-back{position:fixed;right:14px;bottom:14px;z-index:90;background:var(--fg);color:var(--bg);text-decoration:none;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;box-shadow:var(--shadow);opacity:.85}
+.ex-back:hover{opacity:1}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:95;display:grid;gap:8px;width:min(380px,calc(100vw - 24px))}
+.scrim{position:fixed;inset:0;background:rgba(10,8,5,.55);z-index:80;display:flex;justify-content:center;align-items:flex-start;padding:12vh 12px 0;animation:fade .15s;backdrop-filter:blur(3px)}
+.scrim input{min-height:44px!important}.scrim{font-size:16px}.scrim>div{width:min(460px,100%)}
+.scrim .lv-cmd,.scrim>div>div{width:100%!important}
+.menuBtn{display:none}
+.bar-m{display:none}
+.skel-wrap>*{margin-bottom:16px}
+.calwrap{display:flex;justify-content:center;overflow:hidden}
+.calwrap>div{width:100%!important}
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.row2,.row3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){
+ .app{grid-template-columns:minmax(0,1fr)}
+ aside.side{position:fixed;left:0;top:0;width:260px;transform:translateX(-100%);transition:transform .25s;box-shadow:var(--shadow)}
+ .app.open aside.side{transform:none}.app.collapsed{--sw:244px}
+ .app.collapsed .nav span,.app.collapsed .brand b,.app.collapsed .sidecard,.app.collapsed .navh{display:revert}
+ .menuBtn{display:grid}.hideM{display:none}
+ .scrimNav{position:fixed;inset:0;background:rgba(10,8,5,.5);z-index:35}
+ header.top{padding:10px 14px}main{padding:16px 14px 70px}
+ .search kbd,.search span{display:none}.search{flex:none;width:38px;padding:0;justify-content:center}
+ .userbtn span{display:none}.userbtn{padding:3px}
+}
+@media (max-width:520px){.kpis{grid-template-columns:minmax(0,1fr)}.regions li{grid-template-columns:76px 1fr 40px}h1{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,a,[role=radio],[role=option],input,select{touch-action:manipulation}
+aside.side{height:100vh;height:100dvh;overscroll-behavior:contain;padding-bottom:calc(16px + env(safe-area-inset-bottom));overflow-y:auto}
+.panel,.feed,#lv-cmd,.tbl,.scrim{overscroll-behavior:contain}
+.chart{touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.tools input,.tools select{font-size:16px}
+.ex-back{right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));display:inline-flex;align-items:center;min-height:44px;padding:0 16px}
+.toasts{bottom:calc(72px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(20px,5.2vw,26px)}
+.row3>.card,#customers,.row2+.row2>.card{content-visibility:auto;contain-intrinsic-size:auto 460px}
+.cust td:nth-child(2){position:sticky;left:0;background:var(--panel);z-index:1}
+@media (max-width:820px),(pointer:coarse){
+ .nav a{min-height:44px;margin-bottom:2px}
+ .iconbtn{width:44px;height:44px}
+ .btn,.search,.userbtn,.panel .row{min-height:44px}
+ .search{width:44px}.userbtn{padding:3px 12px 3px 3px}
+ .tools{gap:10px}.tools input,.tools select{height:44px}
+ .card-h [role=radio],.cust th button,.calwrap button{min-height:44px!important}.calwrap>div>div:first-child button{min-width:44px!important}
+ .card-h [role=radio]{min-width:44px!important;justify-content:center}
+ .cust th{padding:0 12px}.cust th button{min-width:44px}
+ .tfoot nav{gap:8px!important;flex-wrap:wrap}
+ .tfoot nav button{min-width:44px;min-height:44px}
+ [role=listbox] li,[role=option]{min-height:44px}
+ .scrim{padding-top:calc(8vh + env(safe-area-inset-top))}
+ .toasts button{min-width:44px;min-height:44px}
+}
+@media (max-width:820px){.userbtn span{display:none}.userbtn{padding:0;width:44px;justify-content:center}.userbtn svg,.userbtn>span{margin:0}
+ aside.side{padding-top:calc(16px + env(safe-area-inset-top));padding-left:calc(12px + env(safe-area-inset-left))}
+ header.top{padding-top:calc(10px + env(safe-area-inset-top))}main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}}
+@media (max-height:480px) and (orientation:landscape){.scrim{padding-top:8px}.globewrap{max-height:260px}}
+@media (max-width:360px){main{padding:14px 10px 84px}.card{padding:12px}.head .btn{width:100%}}
+@media (max-width:1180px) and (min-width:521px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<a class="ex-back" href="../">← All examples</a>
+<noscript>Pulse Analytics needs JavaScript.</noscript>
+<script type="module">
+import { createElement as h, useState, useEffect, useMemo, useRef, Fragment } from 'react'
+import { createRoot } from 'react-dom/client'
+import * as C from '../../../dist/components.js'
+import { Livatar } from '../../../dist/react.js'
+import * as S from '../../../dist/index.js'
+
+/* ---------- deterministic data ---------- */
+const PAL = ['#f5d9a0','#ffe3a3','#e8dcc8','#a8e0d6','#f7c9b8','#f3ecdc']
+const rng = (s) => () => { s |= 0; s = (s + 0x6d2b79f5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
+const FIRST = ['Ava','Liam','Noah','Mia','Zoe','Kai','Ines','Omar','Yuki','Leo','Nora','Ravi','Sofia','Tomas','Amara','Jonas','Lena','Mateo','Priya','Hugo','Elif','Diego','Maya','Finn']
+const LAST = ['Chen','Okafor','Silva','Novak','Ito','Haddad','Larsen','Patel','Moreau','Kim','Rossi','Dubois','Costa','Nair','Meyer','Ortiz']
+const PLANS = ['Starter','Growth','Scale','Enterprise']
+const PRICE = { Starter: 29, Growth: 99, Scale: 299, Enterprise: 899 }
+const CUSTOMERS = (() => { const r = rng(42); return Array.from({ length: 64 }, (_, i) => { const f = FIRST[i % FIRST.length], l = LAST[Math.floor(r() * LAST.length)], plan = PLANS[Math.floor(r() * 4)], st = r() < .68 ? 'Active' : r() < .6 ? 'Trial' : 'Churned'; return { id: `cust-${i}-${f.toLowerCase()}`, name: `${f} ${l}`, email: `${f}.${l}@${['acme.io','northwind.co','globex.dev','initech.app'][i % 4]}`.toLowerCase(), plan, status: st, mrr: PRICE[plan] + Math.round(r() * 40), joined: new Date(2026, 10 - Math.floor(r() * 14), 1 + Math.floor(r() * 27)) } }) })()
+const RANGES = { '7d': 7, '30d': 30, '90d': 90 }
+const series = (days, seed, base, amp) => { const r = rng(seed); let v = base; return Array.from({ length: days }, (_, i) => { v += (r() - .45) * amp * .6; return Math.max(base * .4, v + Math.sin(i / 3) * amp * .3) }) }
+const dateLabel = (daysAgo) => { const d = new Date(2026, 10, 18); d.setDate(d.getDate() - daysAgo); return d.toLocaleDateString('en', { month: 'short', day: 'numeric' }) }
+const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(Math.round(n))
+const REGIONS = [['North America', 38], ['Europe', 29], ['Asia Pacific', 21], ['Latin America', 8], ['Africa', 4]]
+const TEAM = [['mara','Mara Quinn',148200],['dev','Dev Rao',131900],['sven','Sven Aalto',117400],['lucia','Lucia Pérez',98600],['theo','Theo Banks',74300]]
+const PEOPLE = [['nyc','New York'],['ldn','London'],['tok','Tokyo'],['sao','São Paulo'],['syd','Sydney'],['blr','Bengaluru']].map(([id, name]) => ({ id, name }))
+const GLOBE_PINS = [{ id: 'nyc', name: 'New York', lat: 40.7, lon: -74 }, { id: 'ldn', name: 'London', lat: 51.5, lon: -0.1 }, { id: 'tok', name: 'Tokyo', lat: 35.7, lon: 139.7 }, { id: 'sao', name: 'São Paulo', lat: -23.5, lon: -46.6 }, { id: 'syd', name: 'Sydney', lat: -33.9, lon: 151.2 }, { id: 'blr', name: 'Bengaluru', lat: 12.9, lon: 77.6 }]
+
+const I = (d) => h('svg', { className: 'ico', viewBox: '0 0 24 24', 'aria-hidden': true }, ...[].concat(d).map((p, i) => h('path', { key: i, d: p })))
+const ICONS = { home: 'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10', chart: ['M4 20V4','M4 20h16','M8 16v-5','M13 16V8','M18 16v-9'], users: ['M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2','M9 11a4 4 0 100-8 4 4 0 000 8','M22 21v-2a4 4 0 00-3-3.9','M16 3.1a4 4 0 010 7.8'], globe: ['M12 21a9 9 0 100-18 9 9 0 000 18','M3 12h18','M12 3a14 14 0 010 18M12 3a14 14 0 000 18'], cal: ['M4 6h16v14H4z','M4 10h16','M8 3v4M16 3v4'], gear: ['M12 15a3 3 0 100-6 3 3 0 000 6','M19 12a7 7 0 00-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 00-2-1.2L14 3h-4l-.4 2.6a7 7 0 00-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 000 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 002 1.2L10 21h4l.4-2.6a7 7 0 002-1.2l2.4 1 2-3.4-2-1.6c.1-.4.2-.8.2-1.2z'], menu: 'M4 6h16M4 12h16M4 18h16', search: ['M11 19a8 8 0 100-16 8 8 0 000 16','M21 21l-4.3-4.3'], sun: ['M12 16a4 4 0 100-8 4 4 0 000 8','M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'], moon: 'M21 13A9 9 0 1111 3a7 7 0 0010 10z', panel: ['M3 4h18v16H3z','M9 4v16'], up: 'M7 14l5-5 5 5', down: 'M7 10l5 5 5-5', dl: ['M12 3v12','M7 10l5 5 5-5','M4 21h16'] }
+const ic = (k) => I(ICONS[k])
+
+function Lazy({ children, h: ht = 240 }) {
+  const ref = useRef(null), [on, setOn] = useState(false)
+  useEffect(() => { const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), { rootMargin: '80px' }); io.observe(ref.current); return () => io.disconnect() }, [])
+  return h('div', { ref, style: { minHeight: ht, display: 'grid', placeItems: 'center' } }, on ? children : null)
+}
+/* ---------- toast host ---------- */
+function useToasts() {
+  const [items, set] = useState([])
+  const push = (t) => { const id = Math.random(); set((s) => [...s, { id, ...t }]) }
+  const view = h('div', { className: 'toasts', role: 'status', 'aria-live': 'polite' }, items.map((t) => h(C.LivatarToast, { key: t.id, type: t.type || 'success', title: t.title, description: t.description, seed: t.seed || 'pulse', colors: PAL, size: 40, onClose: () => set((s) => s.filter((x) => x.id !== t.id)) })))
+  return [push, view]
+}
+
+/* ---------- charts ---------- */
+function AreaChart({ data, labels, color }) {
+  const [hov, setHov] = useState(null), W = 640, H = 230, P = { l: 38, r: 10, t: 10, b: 24 }
+  const max = Math.max(...data) * 1.12, x = (i) => P.l + (i / (data.length - 1)) * (W - P.l - P.r), y = (v) => P.t + (1 - v / max) * (H - P.t - P.b)
+  const pts = data.map((v, i) => [x(i), y(v)])
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')
+  const ticks = [0, .25, .5, .75, 1].map((t) => t * max)
+  const step = Math.ceil(data.length / 6)
+  const onMove = (e) => { const r = e.currentTarget.getBoundingClientRect(); const px = ((e.clientX - r.left) / r.width) * W; setHov(Math.max(0, Math.min(data.length - 1, Math.round(((px - P.l) / (W - P.l - P.r)) * (data.length - 1))))) }
+  return h('div', { style: { position: 'relative' } },
+    h('svg', { className: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `Revenue trend, latest ${fmt(data.at(-1))} dollars`, onPointerDown: onMove, onPointerMove: onMove, onPointerLeave: () => setHov(null) },
+      h('defs', null, h('linearGradient', { id: 'ag', x1: 0, x2: 0, y1: 0, y2: 1 }, h('stop', { offset: 0, stopColor: color, stopOpacity: .35 }), h('stop', { offset: 1, stopColor: color, stopOpacity: 0 }))),
+      ticks.map((t) => h('g', { key: t }, h('line', { className: 'gl', x1: P.l, x2: W - P.r, y1: y(t), y2: y(t) }), h('text', { x: P.l - 6, y: y(t) + 4, textAnchor: 'end' }, '$' + fmt(t)))),
+      labels.map((l, i) => i % step === 0 && h('text', { key: i, x: x(i), y: H - 6, textAnchor: 'middle' }, l)),
+      h('g', { className: 'area', key: data.length + color }, h('path', { d: line + `L${x(data.length - 1)} ${y(0)}L${x(0)} ${y(0)}Z`, fill: 'url(#ag)' }), h('path', { d: line, fill: 'none', stroke: color, strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' })),
+      hov != null && h('g', null, h('line', { x1: x(hov), x2: x(hov), y1: P.t, y2: H - P.b, stroke: color, strokeOpacity: .5 }), h('circle', { cx: x(hov), cy: y(data[hov]), r: 5, fill: color, stroke: 'var(--panel)', strokeWidth: 2 }))),
+    hov != null && h('div', { className: 'tip', style: { left: `${(x(hov) / W) * 100}%`, top: `${(y(data[hov]) / H) * 100}%` } }, `${labels[hov]} · $${Math.round(data[hov]).toLocaleString('en')}`))
+}
+function BarChart({ data, labels, color }) {
+  const W = 400, H = 200, P = { l: 30, b: 22, t: 8 }, max = Math.max(...data) * 1.15, bw = (W - P.l) / data.length
+  const [sel, setSel] = useState(null)
+  return h('svg', { className: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Signups per bucket' },
+    [0, .5, 1].map((t) => h('g', { key: t }, h('line', { className: 'gl', x1: P.l, x2: W, y1: P.t + (1 - t) * (H - P.t - P.b), y2: P.t + (1 - t) * (H - P.t - P.b) }), h('text', { x: P.l - 5, y: P.t + (1 - t) * (H - P.t - P.b) + 4, textAnchor: 'end' }, fmt(t * max)))),
+    data.map((v, i) => { const bh = (v / max) * (H - P.t - P.b); return h('g', { key: i, onPointerDown: () => setSel(i), onPointerEnter: () => setSel(i), onPointerLeave: (e) => e.pointerType === 'mouse' && setSel(null) },
+      h('rect', { className: 'bar', x: P.l + i * bw + bw * .18, width: bw * .64, y: H - P.b - bh, height: bh, rx: 4, fill: sel === i ? 'var(--acc2)' : color, opacity: sel == null || sel === i ? 1 : .55 }),
+      sel === i && h('text', { x: P.l + i * bw + bw / 2, y: H - P.b - bh - 5, textAnchor: 'middle', style: { fill: 'var(--fg)', fontWeight: 700 } }, v),
+      h('text', { x: P.l + i * bw + bw / 2, y: H - 6, textAnchor: 'middle' }, labels[i])) }))
+}
+
+/* ---------- customers table ---------- */
+function Customers({ toast }) {
+  const [q, setQ] = useState(''), [plan, setPlan] = useState('All'), [sort, setSort] = useState({ k: 'mrr', dir: -1 }), [page, setPage] = useState(1)
+  const rows = useMemo(() => {
+    const f = CUSTOMERS.filter((c) => (plan === 'All' || c.plan === plan) && (c.name + c.email).toLowerCase().includes(q.toLowerCase()))
+    return f.sort((a, b) => { const x = a[sort.k], y = b[sort.k]; return (x > y ? 1 : x < y ? -1 : 0) * sort.dir })
+  }, [q, plan, sort])
+  const per = 6, pages = Math.max(1, Math.ceil(rows.length / per)), cur = Math.min(page, pages), slice = rows.slice((cur - 1) * per, cur * per)
+  const th = (k, label, align) => h('th', { scope: 'col', 'aria-sort': sort.k === k ? (sort.dir > 0 ? 'ascending' : 'descending') : 'none', style: { textAlign: align } }, h('button', { onClick: () => setSort((s) => ({ k, dir: s.k === k ? -s.dir : 1 })) }, label, sort.k === k && (sort.dir > 0 ? ic('up') : ic('down'))))
+  const columns = [{ key: 'name', header: 'Customer' }]
+  const exportCsv = () => { const csv = ['name,email,plan,status,mrr', ...rows.map((r) => [r.name, r.email, r.plan, r.status, r.mrr].join(','))].join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'customers.csv'; a.click(); toast({ title: 'Export ready', description: `${rows.length} customers saved to customers.csv`, seed: 'export' }) }
+  return h('section', { className: 'card', 'aria-labelledby': 'cust-h', id: 'customers' },
+    h('div', { className: 'card-h' }, h('div', null, h('h2', { id: 'cust-h' }, 'Customers'), h('div', { className: 'sub' }, `${rows.length} accounts match`)), h('button', { className: 'btn', onClick: exportCsv }, 'Export CSV')),
+    h('div', { className: 'tools' },
+      h('input', { type: 'search', inputMode: 'search', enterKeyHint: 'search', autoComplete: 'off', placeholder: 'Filter by name or email…', 'aria-label': 'Filter customers', value: q, onChange: (e) => { setQ(e.target.value); setPage(1) } }),
+      h('select', { 'aria-label': 'Plan', value: plan, onChange: (e) => { setPlan(e.target.value); setPage(1) } }, ['All', ...PLANS].map((p) => h('option', { key: p }, p)))),
+    h('div', { className: 'tbl' }, h('table', { className: 'cust' },
+      h('thead', null, h('tr', null, h('th', { 'aria-label': 'Avatar', style: { width: 52 } }), th('name', 'Customer'), th('plan', 'Plan'), th('status', 'Status'), th('mrr', 'MRR', 'right'), th('joined', 'Joined'))),
+      h('tbody', null, slice.length ? slice.map((c) => h('tr', { key: c.id },
+        h('td', { style: { lineHeight: 0 } }, h(Livatar, { variant: S.human, colors: PAL, seed: c.id, size: 34 })),
+        h('td', null, h('b', null, c.name), h('div', { style: { color: 'var(--mut)', fontSize: 12 } }, c.email)),
+        h('td', null, c.plan), h('td', null, h('span', { className: 'pill ' + c.status }, c.status)),
+        h('td', { style: { textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, '$' + c.mrr), h('td', null, c.joined.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' }))))
+        : h('tr', null, h('td', { colSpan: 6, style: { textAlign: 'center', padding: 28 } }, h(Livatar, { seed: 'empty', colors: PAL, size: 56, mood: 'confused' }), h('div', null, 'No customers match your filters')))))),
+    h('div', { className: 'tfoot' }, h('span', null, `Page ${cur} of ${pages}`), h(C.LivatarPagination, { page: cur, pages, onChange: setPage, seed: 'pager', colors: PAL })))
+}
+
+/* ---------- app ---------- */
+const NAV = [['home', 'Overview', '#top'], ['chart', 'Revenue', '#revenue'], ['users', 'Customers', '#customers'], ['globe', 'Regions', '#regions'], ['cal', 'Calendar', '#calendar'], ['gear', 'Settings', '#settings']]
+function App() {
+  const [loading, setLoading] = useState(true), [range, setRange] = useState('30d'), [collapsed, setCollapsed] = useState(false), [open, setOpen] = useState(false)
+  const [theme, setTheme] = useState(document.documentElement.dataset.theme || 'auto'), [cmd, setCmd] = useState(false), [bell, setBell] = useState(false), [user, setUser] = useState(false)
+  const [unread, setUnread] = useState(3), [date, setDate] = useState(new Date(2026, 10, 18)), [active, setActive] = useState('Overview'), [goal, setGoal] = useState(72)
+  const [toast, toasts] = useToasts()
+  useEffect(() => { const t = setTimeout(() => setLoading(false), (navigator.connection?.saveData || matchMedia('(max-width:820px)').matches) ? 350 : 1400); return () => clearTimeout(t) }, [])
+  useEffect(() => { document.documentElement.dataset.theme = theme; try { localStorage.setItem('pulse-theme', theme) } catch {} }, [theme])
+  useEffect(() => { const lock = cmd || (open && matchMedia('(max-width:820px)').matches); document.body.style.overflow = lock ? 'hidden' : ''; return () => { document.body.style.overflow = '' } }, [cmd, open])
+  useEffect(() => { const k = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setCmd((c) => !c) } else if (e.key === 'Escape') { setCmd(false); setBell(false); setUser(false); setOpen(false) } }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [])
+  const isDark = theme === 'dark' || (theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
+  const days = RANGES[range]
+  const rev = useMemo(() => series(days, 7 + days, 4200, 900).map((v) => v * 1.0), [days])
+  const labels = useMemo(() => Array.from({ length: days }, (_, i) => dateLabel(days - 1 - i)), [days])
+  const buckets = days === 7 ? 7 : 10, signups = useMemo(() => { const r = rng(days * 3); return Array.from({ length: buckets }, () => Math.round(40 + r() * 120 * (days / 30 + .4))) }, [days])
+  const bl = useMemo(() => Array.from({ length: buckets }, (_, i) => days === 7 ? dateLabel(6 - i).split(' ')[1] : 'W' + (i + 1)), [days])
+  const total = rev.reduce((a, b) => a + b, 0), mult = days / 30
+  const kpis = [['Revenue', Math.round(total), '$', '', 12.4, 'kpi-rev'], ['Active users', Math.round(18420 * (.6 + mult * .15)), '', '', 5.2, 'kpi-usr'], ['Conversion', 4.82, '', '%', -1.3, 'kpi-cvr'], ['Churn', 2.1, '', '%', 0.0 + (days === 90 ? -0.4 : 0.8), 'kpi-chn']]
+  const go = (label, href) => { setActive(label); setOpen(false); if (href === '#settings') { toast({ type: 'info', title: 'Settings', description: 'Workspace settings are not part of this demo.', seed: 'gear' }); return } document.querySelector(href === '#top' ? 'main' : href)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth', block: 'start' }) }
+  const cmdItems = [...NAV.slice(0, 5).map(([, l, href]) => ({ id: 'go-' + l, label: 'Go to ' + l, hint: 'navigate', onSelect: () => go(l, href) })), { id: 'theme', label: 'Toggle dark mode', hint: 'appearance', onSelect: () => setTheme(isDark ? 'light' : 'dark') }, ...['7d', '30d', '90d'].map((r) => ({ id: 'r' + r, label: 'Show last ' + r, hint: 'date range', onSelect: () => setRange(r) })), { id: 'goal', label: 'Celebrate the goal', hint: 'fun', onSelect: () => { setGoal(100); toast({ title: 'Goal reached!', description: 'Quarterly revenue target hit.', seed: 'goal' }) } }, ...CUSTOMERS.slice(0, 5).map((c) => ({ id: c.id, label: c.name, hint: 'customer · ' + c.plan, avatar: { variant: S.human, colors: PAL, seed: c.id } }))]
+  const notes = [['inv-1', 'Acme upgraded to Scale', '+$299 MRR · 2m ago'], ['inv-2', 'Northwind trial ends tomorrow', 'Send a nudge · 1h ago'], ['inv-3', 'Weekly report is ready', 'Revenue up 12.4% · 3h ago']]
+  const feed = [['mara', 'Mara closed Globex', 'Enterprise · $899/mo', '4m'], ['dev', 'Dev shipped a pricing experiment', 'Variant B converting +9%', '22m'], ['sven', 'Sven resolved 12 tickets', 'Median reply 6 min', '1h'], ['lucia', 'Lucia invited 4 teammates', 'Initech workspace', '3h'], ['theo', 'Theo imported 2,300 contacts', 'CSV · no errors', '5h']].map(([id, title, body, time]) => ({ id, title, body, time: time + ' ago', avatar: { variant: S.human, colors: PAL } }))
+  const marks = { '2026-11-20': ['rep-a'], '2026-11-24': ['rep-b'], '2026-11-27': ['rep-c'], '2026-11-12': ['rep-d'] }
+
+  const skeleton = h('div', { className: 'skel-wrap', 'aria-busy': true, 'aria-label': 'Loading dashboard' },
+    h('div', { className: 'grid kpis' }, [0, 1, 2, 3].map((i) => h('div', { className: 'card', key: i }, h(C.LivatarSkeleton, { kind: 'text', count: 3 })))),
+    h('div', { className: 'grid row2' }, h('div', { className: 'card' }, h(C.LivatarSkeleton, { kind: 'text', count: 8 })), h('div', { className: 'card' }, h(C.LivatarSkeleton, { kind: 'list', count: 4 }))),
+    h('div', { className: 'card' }, h(C.LivatarSkeleton, { kind: 'table', count: 5 })))
+
+  const content = h(Fragment, null,
+    h('div', { className: 'grid kpis' }, kpis.map(([title, value, prefix, suffix, trend, seed]) => h(C.LivatarStatistic, { key: title, title, value, prefix, suffix, trend: title === 'Churn' ? -trend : trend, seed, variant: S.blob, colors: PAL }))),
+    h('div', { className: 'grid row2' },
+      h('section', { className: 'card', id: 'revenue', 'aria-labelledby': 'rev-h' }, h('div', { className: 'card-h' }, h('div', null, h('h2', { id: 'rev-h' }, 'Revenue'), h('div', { className: 'sub' }, `$${Math.round(total).toLocaleString('en')} over the last ${days} days`)),
+        h(C.LivatarSegmented, { value: range, onChange: setRange, size: 22, avatar: { colors: PAL }, options: Object.keys(RANGES).map((r) => ({ value: r, label: r })) })), h(AreaChart, { data: rev, labels, color: 'var(--accb)' })),
+      h('section', { className: 'card', 'aria-labelledby': 'su-h' }, h('h2', { id: 'su-h' }, 'New signups'), h('div', { className: 'sub' }, `${signups.reduce((a, b) => a + b, 0).toLocaleString('en')} in range`), h(BarChart, { data: signups, labels: bl, color: 'var(--acc3)' }), h('div', { className: 'legend' }, h('span', null, h('i', { style: { background: 'var(--acc3)' } }), 'Signups'), h('span', null, h('i', { style: { background: 'var(--acc2)' } }), 'Hovered')))),
+    h('div', { className: 'grid row2' }, h(Customers, { toast }),
+      h('section', { className: 'card', 'aria-labelledby': 'act-h' }, h('div', { className: 'card-h' }, h('h2', { id: 'act-h' }, 'Activity'), h(C.LivatarPresence, { users: [{ id: 'mara', status: 'online' }, { id: 'dev', status: 'online', typing: true }, { id: 'sven', status: 'away' }, { id: 'lucia', status: 'busy' }, { id: 'theo', status: 'offline' }], size: 28, max: 4, avatar: { variant: S.human, colors: PAL } })), h('div', { className: 'sub' }, '2 teammates online'), h('div', { className: 'feed' }, h(C.LivatarTimeline, { items: feed, size: 36 })))),
+    h('div', { className: 'grid row3' },
+      h('section', { className: 'card', id: 'regions', 'aria-labelledby': 'reg-h' }, h('h2', { id: 'reg-h' }, 'Regions'), h('div', { className: 'sub' }, 'Where your customers live'),
+        h('div', { className: 'globewrap' }, h(Lazy, { h: 230 }, h(C.LivatarGlobe, { people: GLOBE_PINS, size: 230, pin: 28, ocean: isDark ? ['#3a3228', '#0d0b08'] : ['#e9b04e', '#4a3a1c'], avatar: { variant: S.human, colors: PAL }, speed: matchMedia('(max-width:820px)').matches ? .07 : .15 }))),
+        h('ul', { className: 'regions' }, REGIONS.map(([n, v]) => h('li', { key: n }, h('span', null, n), h('div', { className: 'bar' }, h('i', { style: { width: v * 2.2 + '%' } })), h('b', null, v + '%'))))),
+      h('section', { className: 'card', 'aria-labelledby': 'lb-h' }, h('h2', { id: 'lb-h' }, 'Team leaderboard'), h('div', { className: 'sub' }, 'Closed revenue this quarter'), h(C.LivatarLeaderboard, { rows: TEAM.map(([id, name, score]) => ({ id, name, score })), avatar: { variant: S.human, colors: PAL } }),
+        h('div', { style: { marginTop: 22 } }, h('h2', null, 'Quarterly goal'), h('div', { className: 'sub' }, '$1.2M target'), h(C.LivatarProgress, { value: goal, label: goal >= 100 ? 'Goal reached 🎉' : `$${Math.round(goal * 12000).toLocaleString('en')} of $1,200,000` }),
+          h('button', { className: 'btn', style: { marginTop: 10 }, onClick: () => { const n = Math.min(100, goal + 7); setGoal(n); toast({ title: n >= 100 ? 'Goal reached!' : 'Deal logged', description: n >= 100 ? 'Everyone gets cake.' : '+$84,000 added to the quarter', seed: n >= 100 ? 'party' : 'deal' }) } }, '+ Log a deal'))),
+      h('section', { className: 'card', id: 'calendar', 'aria-labelledby': 'cal-h' }, h('h2', { id: 'cal-h' }, 'Calendar'), h('div', { className: 'sub' }, `Selected: ${date.toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })}`),
+        h('div', { className: 'calwrap' }, h(C.LivatarCalendar, { value: date, onChange: (d) => { setDate(d); toast({ type: 'info', title: 'Report scheduled', description: d.toLocaleDateString('en', { dateStyle: 'medium' }) + ' · 9:00 AM', seed: 'cal' }) }, marks, fill: false, size: 28, avatar: { variant: S.human, colors: PAL } })))))
+
+  return h('div', { className: 'app' + (collapsed ? ' collapsed' : '') + (open ? ' open' : '') },
+    open && h('div', { className: 'scrimNav', onClick: () => setOpen(false) }),
+    h('aside', { className: 'side', 'aria-label': 'Primary', id: 'sidebar' },
+      h('div', { className: 'brand' }, h('span', { className: 'logo', 'aria-hidden': true }, h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: '#fff', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: 'M2 12h4l3-8 5 16 3-8h5' }))), h('b', null, 'Pulse')),
+      h('nav', { className: 'nav', 'aria-label': 'Sections' }, h('div', { className: 'navh' }, 'Workspace'), NAV.map(([k, l, href]) => h('a', { key: l, href, title: l, 'aria-current': active === l ? 'page' : undefined, onClick: (e) => { e.preventDefault(); go(l, href) } }, ic(k), h('span', null, l)))),
+      h('div', { className: 'sidecard' }, h(Livatar, { variant: S.ui, colors: PAL, seed: 'pro', size: 44, kind: 'bell' }), h('b', { style: { display: 'block', marginTop: 6 } }, 'Pulse Pro'), h('p', null, 'Unlock forecasting and unlimited seats.'))),
+    h('div', { style: { minWidth: 0 } },
+      h('header', { className: 'top' },
+        h('button', { className: 'iconbtn menuBtn', 'aria-label': 'Open menu', 'aria-expanded': open, 'aria-controls': 'sidebar', onClick: () => setOpen(true) }, ic('menu')),
+        h('button', { className: 'iconbtn hideM', 'aria-label': collapsed ? 'Expand sidebar' : 'Collapse sidebar', 'aria-pressed': collapsed, onClick: () => setCollapsed(!collapsed) }, ic('panel')),
+        h('button', { className: 'search', 'aria-label': 'Search or run a command', onClick: () => setCmd(true) }, ic('search'), h('span', null, 'Search customers, pages…'), h('kbd', null, /Mac/.test(navigator.platform) ? '⌘K' : 'Ctrl K')),
+        h('div', { className: 'spacer' }),
+        h('button', { className: 'iconbtn', 'aria-label': `Switch to ${isDark ? 'light' : 'dark'} theme`, onClick: () => setTheme(isDark ? 'light' : 'dark') }, ic(isDark ? 'sun' : 'moon')),
+        h('div', { className: 'pop' }, h('div', { 'aria-label': `Notifications, ${unread} unread`, role: 'group', style: { lineHeight: 0 } }, h(C.LivatarBell, { count: unread, onClick: () => { setBell(!bell); setUser(false) }, avatar: { size: 44, colors: PAL } })),
+          bell && h('div', { className: 'panel', role: 'dialog', 'aria-label': 'Notifications' }, h('h3', null, 'Notifications'), notes.map(([id, t, s], i) => h('button', { key: id, className: 'row', style: { opacity: i < unread ? 1 : .55 } }, h(Livatar, { variant: S.human, colors: PAL, seed: id, size: 34 }), h('span', null, h('b', null, t), h('small', null, s)))),
+            h('button', { className: 'btn', style: { width: '100%', marginTop: 6 }, onClick: () => { setUnread(0); setBell(false); toast({ title: 'All caught up', description: 'Marked 3 notifications as read.', seed: 'bell' }) } }, 'Mark all as read'))),
+        h('div', { className: 'pop' }, h('button', { className: 'userbtn', 'aria-haspopup': 'menu', 'aria-expanded': user, onClick: () => { setUser(!user); setBell(false) } }, h(Livatar, { variant: S.human, colors: PAL, seed: 'you-nuhman', size: 32 }), h('span', null, 'Jordan')),
+          user && h('div', { className: 'panel', role: 'menu', style: { width: 220 } }, h('h3', null, 'jordan@pulse.app'), ['Profile', 'Billing', 'Invite teammates'].map((l) => h('button', { key: l, role: 'menuitem', className: 'row', onClick: () => { setUser(false); toast({ type: 'info', title: l, description: 'Opened from the user menu.', seed: l }) } }, l)), h('button', { role: 'menuitem', className: 'row', onClick: () => { setUser(false); toast({ type: 'warning', title: 'Signed out (pretend)', description: 'This is a demo, nothing changed.', seed: 'out' }) } }, 'Sign out')))),
+      h('main', { id: 'main' },
+        h('div', { className: 'head' }, h('div', null, h('h1', null, 'Good morning, Jordan'), h('p', null, 'Here is how Pulse is performing today, Nov 18.')),
+          h('button', { className: 'btn pri', onClick: () => toast({ title: 'Report sent', description: 'Weekly summary delivered to 6 teammates.', seed: 'report' }) }, 'Share report')),
+        loading ? skeleton : content)),
+    cmd && h('div', { className: 'scrim', role: 'dialog', 'aria-modal': true, 'aria-label': 'Command palette', onPointerDown: (e) => e.target === e.currentTarget && setCmd(false) }, h('div', null, h(C.LivatarCommand, { items: cmdItems, placeholder: 'Type a command or search customers…', onSelect: () => setCmd(false), avatar: { variant: S.blob, colors: PAL } }))),
+    toasts)
+}
+createRoot(document.getElementById('root')).render(h(App))
+</script>
+</body>
+</html>

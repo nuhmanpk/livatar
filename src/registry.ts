@@ -44,9 +44,21 @@ import { magic } from './styles/magic'
 import { party } from './styles/party'
 import { season } from './styles/season'
 import { tool } from './styles/tool'
+import { bean } from './styles/bean'
+import { hero } from './styles/hero'
+import { fantasy } from './styles/fantasy'
+import { pirate } from './styles/pirate'
+import { job } from './styles/job'
+import { creature } from './styles/creature'
+import { spooky } from './styles/spooky'
+import { kid } from './styles/kid'
+import { critter } from './styles/critter'
+import { mascot } from './styles/mascot'
+import { scifi } from './styles/scifi'
+import { myth } from './styles/myth'
 
 /**
  * All built-in styles keyed by name. Importing this pulls every style into
  * your bundle. The key order is part of the livatar code format: append only.
  */
-export const styles: Record<string, AvatarStyle<any>> = { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai, weather, sport, music, sea, bug, magic, party, season, tool, anime, notion, chibi, flat, lowpoly, sketch, retro, toon }
+export const styles: Record<string, AvatarStyle<any>> = { blob, buddy, bot, pixel, animal, monster, ghost, emoji, initials, food, plant, dino, alien, planet, clay, memoji, ui, device, fruit, drink, vehicle, tech, money, home, office, dev, human, ai, weather, sport, music, sea, bug, magic, party, season, tool, anime, notion, chibi, flat, lowpoly, sketch, retro, toon, bean, hero, fantasy, pirate, job, creature, spooky, kid, critter, mascot, scifi, myth }

@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f2ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14131a" media="(prefers-color-scheme: dark)">
+<title>Sprinto — Sprint board with friendly faces</title>
+<meta name="description" content="Sprinto, a Kanban sprint board built with livatar: drag and drop cards, assignee filters, task dialogs, burndown chart, calendar and timeline views, confetti when work ships.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="importmap">{ "imports": { "react": "https://esm.sh/react@19.3.1", "react-dom/client": "https://esm.sh/react-dom@19.3.1/client?deps=react@19.3.1" } }</script>
+<style>
+:root{
+  --bg:#f5f2ec;--surface:#fff;--surface2:#faf8f4;--col:#ece8df;--ink:#1d1b26;--muted:#5f5b6e;--line:#e0dbd0;
+  --accent:#d93a17;--accent-ink:#fff;--accent-soft:#fde8e1;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;
+  --shadow:0 1px 2px rgba(30,20,10,.08),0 4px 14px rgba(30,20,10,.06);
+  --lv-bg:var(--surface);--lv-fg:var(--ink);--lv-card:var(--surface);--lv-line:var(--line);--lv-accent:var(--accent);--lv-ring:var(--surface);--lv-surface:var(--surface2);--lv-ring:var(--surface);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#14131a;--surface:#1e1c26;--surface2:#24222e;--col:#1a1922;--ink:#f1eef7;--muted:#a7a2b8;--line:#33303f;
+  --accent:#ff7a59;--accent-ink:#1a0d08;--accent-soft:#3a2119;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.3);color-scheme:dark}}
+[style*="rgb(127, 90, 240)"],[style*="#7f5af0"]{background:var(--accent)!important;color:var(--accent-ink)!important}
+.wip [role=progressbar]>div{background:var(--accent)!important}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 'Plus Jakarta Sans',system-ui,sans-serif;padding-bottom:64px;overflow-x:hidden}
+h1,h2,h3{font-family:Outfit,'Plus Jakarta Sans',sans-serif;margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.ex-back{position:fixed;left:12px;bottom:12px;z-index:900;padding:6px 12px;border-radius:99px;background:var(--ink);color:var(--bg);font:600 12px 'Plus Jakarta Sans',sans-serif;text-decoration:none;box-shadow:var(--shadow);opacity:.85}
+.ex-back:hover{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.app{max-width:1500px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0 10px}
+.brand{display:flex;align-items:center;gap:8px;font:800 22px Outfit,sans-serif;letter-spacing:-.03em}
+.brand svg{width:30px;height:30px}
+.proj{position:relative}
+.proj>button,.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;font-weight:600}
+.btn:hover,.proj>button:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.danger{color:var(--bad)}
+.menu{position:absolute;z-index:50;min-width:190px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:5px;display:grid;gap:2px}
+.menu button{all:unset;cursor:pointer;padding:7px 10px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:8px}
+.menu button:hover,.menu button:focus-visible{background:var(--accent-soft)}
+.menu button[aria-checked=true]{font-weight:700}
+.search{flex:1;min-width:160px;max-width:340px;margin-left:auto;position:relative}
+.search input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px 8px 34px}
+.search svg{position:absolute;left:11px;top:10px;width:15px;height:15px;color:var(--muted)}
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 0 14px;border-bottom:1px solid var(--line)}
+.bar>[role=radiogroup]{max-width:100%;overflow-x:auto}
+.team{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap}
+.team .lbl{color:var(--muted);font-size:12px;margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:2px 10px 2px 2px;font-size:12px;font-weight:500}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip i{font-style:normal;opacity:.7}
+.chip span.av{display:grid;border-radius:50%;overflow:hidden;line-height:0}
+.hello{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:16px 0 4px}
+.hello h1{font-size:26px}.hello p{margin:0;color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(4,minmax(272px,1fr));gap:14px;overflow-x:auto;padding:14px 2px 18px;scroll-snap-type:x proximity}
+.col{background:var(--col);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:260px;scroll-snap-align:start;border:2px solid transparent;transition:border-color .15s,background .15s}
+.col.over{border-color:var(--accent);background:var(--accent-soft)}
+.col header{display:flex;align-items:center;gap:8px;padding:2px 4px}
+.col h2{font-size:15px}
+.count{background:var(--surface);border-radius:99px;padding:0 8px;font-size:12px;font-weight:600;color:var(--muted)}
+.limit{font-size:11px;font-weight:600;color:var(--bad);margin-left:auto}
+.col .wip{padding:0 4px}
+.col .wip>div{min-width:0!important}
+.cards{display:flex;flex-direction:column;gap:9px;flex:1;min-height:40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px;box-shadow:var(--shadow);display:grid;gap:8px;position:relative;cursor:grab;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px)}
+.card.drag{opacity:.4}
+.card h3{font:600 14px/1.35 'Plus Jakarta Sans',sans-serif;letter-spacing:0}
+.card .title{all:unset;cursor:pointer;font-weight:600;line-height:1.35;display:block;flex:1}
+.card .title:hover{text-decoration:underline}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row.sb{justify-content:space-between}
+.tag{border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--c) 16%,transparent);color:color-mix(in srgb,var(--c) 70%,var(--ink))}
+.pri{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+.pri b{width:8px;height:8px;border-radius:2px;background:var(--c);transform:rotate(45deg)}
+.due{font-size:12px;color:var(--muted);display:inline-flex;gap:4px;align-items:center}
+.due.late{color:var(--bad);font-weight:600}
+.mv{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:7px;color:var(--muted);font-weight:700}
+.mv:hover,.mv:focus-visible{background:var(--accent-soft);color:var(--accent)}
+.sub{font-size:11px;color:var(--muted)}
+.empty{border:2px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);font-size:13px}
+.insights{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.panel h2{font-size:17px;margin-bottom:2px}.panel .hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+.stats{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.stat{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat b{font:800 26px Outfit,sans-serif;display:block}.stat span{color:var(--muted);font-size:12px}
+svg.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:10px;font-family:'Plus Jakarta Sans'}
+table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:14px;overflow:hidden;font-size:13px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:14px;box-shadow:var(--shadow)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--surface2)}
+tr:last-child td{border-bottom:0}
+td .title{all:unset;cursor:pointer;font-weight:600}td .title:hover{text-decoration:underline}
+.split{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:16px;margin-top:14px;align-items:start}
+.dayl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.dayl li{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface2)}
+.gantt{margin-top:14px;overflow-x:auto}
+.g{min-width:720px;display:grid;grid-template-columns:200px 1fr;gap:6px 10px;align-items:center}
+.g .name{all:unset;cursor:pointer;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g .track{position:relative;height:26px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px calc(100%/28));border-radius:6px}
+.g .bar2{position:absolute;top:3px;height:20px;border-radius:99px;background:var(--c);display:flex;align-items:center;justify-content:flex-end;padding-right:3px;min-width:26px}
+.g .today{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--accent)}
+.toasts{position:fixed;right:14px;bottom:14px;z-index:1200;display:grid;gap:8px;width:min(340px,calc(100vw - 28px))}
+.modal{position:fixed;inset:0;z-index:1000;background:rgba(10,8,20,.5);display:grid;place-items:center;padding:14px}
+.modal>div{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;width:min(520px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.fld{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.fld input,.fld select,.fld textarea{border:1px solid var(--line);background:var(--surface2);border-radius:9px;padding:8px 10px;font-weight:400;color:var(--ink);width:100%}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail{width:100%;text-align:left;display:grid;gap:16px;font-size:14px;opacity:1!important}
+.detail h4{margin:0 0 6px;font:700 12px 'Plus Jakarta Sans';text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.detail .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.detail textarea{width:100%;min-height:70px;border:1px solid var(--line);background:var(--surface2);border-radius:9px;padding:8px 10px;resize:vertical}
+.cm{display:flex;gap:8px;margin-top:8px}.cm input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface2);border-radius:9px;padding:8px 10px}
+.detail select{border:1px solid var(--line);background:var(--surface2);border-radius:9px;padding:6px 8px;width:100%}
+.detail [role=dialog]{}
+
+html{-webkit-tap-highlight-color:transparent}
+a,button,[role=radio],[role=gridcell],select,summary{touch-action:manipulation}
+.menu,.detail,[role=dialog],.modal>div{overscroll-behavior:contain}
+.menu{max-height:min(70dvh,420px);overflow:auto}
+.card{-webkit-touch-callout:none}
+.card.drag,.ghost{user-select:none;-webkit-user-select:none}
+.ghost{position:fixed;z-index:1250;pointer-events:none;background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:12px;font-weight:600;box-shadow:0 14px 34px rgba(0,0,0,.35);transform:rotate(2.5deg) scale(1.03)}
+.board{position:relative}
+.board.dragging{scroll-snap-type:none}
+.coltabs{display:none}
+.panel,tbody tr{content-visibility:auto;contain-intrinsic-size:auto 180px}
+.hello h1{font-size:clamp(20px,5.5vw,26px)}
+.ex-back{left:calc(12px + env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom));display:inline-flex;align-items:center}
+.toasts{right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom))}
+body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+.app{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+@media (hover:none){.card:hover{transform:none}}
+@media (max-width:700px),(pointer:coarse){
+  input,select,textarea{font-size:16px!important}
+  input:not([type=checkbox]),select{min-height:44px}
+  .btn,.proj>button,.chip,.coltab,.title,.g .name,.ex-back,.toasts button,.menu button,.bar [role=radio],[aria-label="Previous month"],[aria-label="Next month"]{min-height:44px!important}
+  .btn,.proj>button{padding:0 14px!important}
+  .chip{padding-right:14px}
+  .detail .chip{min-width:44px;justify-content:center;padding:0!important}
+  .mv{width:44px;height:44px}
+  .title{display:flex!important;align-items:center}
+  .menu button{padding:0 12px}
+  .toasts button,[aria-label="Previous month"],[aria-label="Next month"]{min-width:44px}
+  .ex-back{padding:0 16px;font-size:13px}
+  .detail input[type=checkbox]{width:24px;height:24px;margin:10px}
+}
+@media (max-width:700px){
+  .app{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .tipwrap{display:none}
+  .team{flex-wrap:nowrap;overflow-x:auto;width:100%;gap:8px;padding-bottom:2px;scrollbar-width:none}.team .lbl{display:none}.chip{flex:none}
+  .bar>[role=radiogroup]{width:100%}.bar [role=radio]{flex:1;justify-content:center;padding:4px 8px!important}
+  .top{gap:10px}.top .btn.primary{margin-left:auto}
+  .board{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:84%;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scroll-padding:0 2px;padding-top:6px}
+  .col{scroll-snap-stop:always}
+  .coltabs{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+  .coltab{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:0 14px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+  .coltab[aria-current=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .coltab small{opacity:.7}
+  .menu.mvmenu{position:fixed!important;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom));z-index:1300;box-shadow:0 -6px 40px rgba(0,0,0,.4);padding:8px}
+  .modal{align-items:end;padding:0}
+  .modal>div{width:100%;max-height:92dvh;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+  div:has(>[role=dialog][aria-modal]):not(.modal){align-items:end!important;padding:0!important}
+  div:has(>[role=dialog][aria-modal]):not(.modal)>[role=dialog]{width:100%!important;max-height:92dvh!important;border-radius:20px 20px 0 0!important;padding:18px 16px calc(18px + env(safe-area-inset-bottom))!important}
+  .fgrid{grid-template-columns:1fr}
+  .tw{border:0;box-shadow:none;overflow:visible;background:none}
+  table,tbody,tr,td{display:block;width:100%}thead{display:none}
+  table{background:none}tr{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  td{display:flex;justify-content:space-between;align-items:center;gap:12px;border:0;padding:6px 0;white-space:normal}
+  td::before{content:attr(data-label);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+  td:first-child::before{display:none}td:first-child{display:block}
+  .g{min-width:560px;grid-template-columns:140px 1fr}
+  .insights .stats{grid-template-columns:1fr 1fr}
+}
+@media (max-width:360px){.brand{font-size:19px}.stat b{font-size:22px}}
+@media (max-height:450px) and (orientation:landscape){.modal>div,[role=dialog]{max-height:96dvh!important}}
+@media (max-width:860px){.insights,.split{grid-template-columns:1fr}.team{margin-left:0}.search{max-width:none;margin-left:0;order:5;flex-basis:100%}.hello h1{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<a class="ex-back" href="../">← All examples</a>
+<div id="root"></div>
+<script type="module">
+import { createElement as h, useState, useEffect, useMemo, useRef, Fragment } from 'react'
+import { createRoot } from 'react-dom/client'
+import * as C from '../../../dist/components.js'
+import { Livatar } from '../../../dist/react.js'
+import { memoji, clay, human, toon, anime, chibi, bot } from '../../../dist/index.js'
+
+/* ---------- data ---------- */
+const PEOPLE = {
+  ana:   { name: 'Ana Ruiz',    role: 'Product lead',   style: memoji, opts: { skin: '#e2a87e', hairColor: '#3b2a22' } },
+  ben:   { name: 'Ben Okafor',  role: 'iOS engineer',   style: human, opts: { skin: 'tan', hairColor: 'brown', eyes: 'brown' } },
+  chloe: { name: 'Chloe Wang',  role: 'Designer',       style: anime, opts: { skin: '#f6c9a4', hairColor: '#b8462e', shirt: '#2ec4b6', eyeColor: '#4a3426' } },
+  dev:   { name: 'Dev Patel',   role: 'Backend',        style: toon, opts: { skin: '#c68658', hairColor: '#3b2a22', shirt: '#ff7a8a' } },
+  eli:   { name: 'Eli Novak',   role: 'QA',             style: chibi, opts: { skin: '#f6c9a4', hairColor: '#6b4429', outfit: '#ffb347' } },
+}
+const IDS = Object.keys(PEOPLE)
+const PAL = ['#ffd9cf', '#f3e3c3', '#ffe2b8', '#cdeedd', '#fff1b8']
+const av = (id) => ({ seed: id, variant: PEOPLE[id].style, colors: PAL, options: PEOPLE[id].opts })
+const Face = ({ id, size = 28, mood }) => h(Livatar, { ...av(id), size, mood, alive: false })
+const COLS = [
+  { id: 'backlog', name: 'Backlog', limit: 6 },
+  { id: 'progress', name: 'In progress', limit: 4 },
+  { id: 'review', name: 'In review', limit: 3 },
+  { id: 'done', name: 'Done', limit: 8 },
+]
+const LABELS = { design: '#db2777', bug: '#dc2626', feature: '#0d9488', infra: '#d97706', research: '#2563eb' }
+const PRI = { urgent: ['Urgent', '#dc2626'], high: ['High', '#ea580c'], med: ['Medium', '#ca8a04'], low: ['Low', '#64748b'] }
+const PROJECTS = [{ id: 'lumen', name: 'Lumen Mobile', emoji: '◐' }, { id: 'atlas', name: 'Atlas API v3', emoji: '▲' }, { id: 'web', name: 'Website revamp', emoji: '■' }]
+
+const COARSE = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const off = (n) => { const d = new Date(); d.setHours(12); d.setDate(d.getDate() + n); return iso(d) }
+const parse = (s) => new Date(s + 'T12:00:00')
+const days = (s) => Math.round((parse(s) - parse(off(0))) / 864e5)
+const fmtDue = (s) => { const n = days(s); return n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : n === -1 ? 'Yesterday' : parse(s).toLocaleDateString('en', { month: 'short', day: 'numeric' }) }
+const uid = () => Math.random().toString(36).slice(2, 9)
+const T = (id, title, col, pri, labels, who, due, start, pts, desc, subs = [], comments = []) => ({
+  id, title, col, pri, labels, who, due: off(due), start: off(start), pts, desc,
+  subs: subs.map((s, i) => ({ id: id + 's' + i, text: s[0], done: s[1] })),
+  comments: comments.map((c, i) => ({ id: id + 'c' + i, who: c[0], text: c[1], t: c[2] })),
+  log: [{ id: id + 'l0', who: who[0] || 'ana', text: 'created this task', t: 'Last week' }],
+})
+const seed = () => ({
+  lumen: [
+    T('t1', 'Onboarding flow: welcome carousel', 'done', 'med', ['design'], ['chloe'], -3, -9, 3, 'Three-step carousel with skip. Motion spec in Figma.', [['Illustrations', true], ['Motion spec', true]], [['ana', 'Love the bouncy easing.', '3d ago']]),
+    T('t2', 'Fix crash on Android 12 share sheet', 'done', 'urgent', ['bug'], ['ben', 'eli'], -2, -6, 2, 'Null intent extras on cold start.', [['Repro', true], ['Patch', true]]),
+    T('t3', 'Push notification permissions prompt', 'review', 'high', ['feature'], ['ben'], 1, -5, 5, 'Pre-permission primer screen before the system dialog. Track opt-in rate.', [['Primer screen', true], ['Analytics events', true], ['A/B flag', false]], [['chloe', 'Copy needs one more pass, left notes in Figma.', 'Yesterday'], ['ben', 'On it, will update the PR.', 'Yesterday']]),
+    T('t4', 'Dark mode color audit', 'review', 'med', ['design'], ['chloe', 'ana'], 2, -4, 3, 'Check contrast of all tokens against WCAG AA.', [['Tokens', true], ['Screens', false]]),
+    T('t5', 'Offline sync for saved items', 'progress', 'urgent', ['feature', 'infra'], ['dev', 'ben'], 3, -4, 8, 'Queue mutations locally and replay with conflict resolution. Needs backend idempotency keys.', [['Local queue', true], ['Idempotency keys', false], ['Conflict UI', false], ['Soak test', false]], [['dev', 'Idempotency keys land in staging tomorrow.', '2h ago']]),
+    T('t6', 'Profile screen skeleton loaders', 'progress', 'low', ['design'], ['chloe'], 4, -2, 2, 'Replace spinners with skeletons.', [['Header', true], ['List', false]]),
+    T('t7', 'Crash-free rate dashboard', 'progress', 'med', ['infra'], ['eli'], 5, -1, 3, 'Surface crash-free sessions per release.', []),
+    T('t8', 'In-app review prompt timing', 'backlog', 'low', ['research'], ['ana'], 8, 0, 2, 'Find the happiest moment to ask for a rating.', []),
+    T('t9', 'Widget for home screen (iOS)', 'backlog', 'high', ['feature'], ['ben'], 9, 0, 5, 'Small + medium widgets with the next task due.', [['Spec', false]]),
+    T('t10', 'Accessibility pass: VoiceOver labels', 'backlog', 'high', ['bug'], ['eli', 'chloe'], 6, 0, 3, 'Missing labels on icon buttons across 14 screens.', []),
+    T('t11', 'Migrate image CDN', 'backlog', 'med', ['infra'], ['dev'], 10, 0, 5, 'Switch to AVIF with on-the-fly resizing.', []),
+  ],
+  atlas: [
+    T('a1', 'Rate limiter v2', 'progress', 'high', ['infra'], ['dev'], 3, -3, 5, 'Token bucket per API key.'),
+    T('a2', 'OpenAPI spec cleanup', 'backlog', 'low', ['research'], ['ana'], 7, 0, 2, 'Remove deprecated endpoints.'),
+    T('a3', 'Webhook retries', 'review', 'med', ['feature'], ['dev', 'eli'], 2, -4, 3, 'Exponential backoff with jitter.'),
+    T('a4', 'Auth token rotation', 'done', 'urgent', ['infra'], ['dev'], -1, -7, 5, 'Rotate signing keys every 30 days.'),
+  ],
+  web: [
+    T('w1', 'Hero illustration', 'progress', 'high', ['design'], ['chloe'], 2, -2, 3, 'New hero with the friendly faces.'),
+    T('w2', 'Pricing page copy', 'backlog', 'med', ['research'], ['ana'], 6, 0, 2, 'Three tiers, one toggle.'),
+    T('w3', 'Core Web Vitals', 'review', 'med', ['infra'], ['ben'], 4, -3, 3, 'LCP under 2s on mobile.'),
+  ],
+})
+const KEY = 'sprinto-board-v1'
+const load = () => { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.boards) return s } catch {} return null }
+
+/* ---------- small UI pieces ---------- */
+const Ic = (d, w = 16) => h('svg', { width: w, height: w, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, h('path', { d }))
+const Logo = () => h('svg', { viewBox: '0 0 32 32', 'aria-hidden': true }, h('rect', { width: 32, height: 32, rx: 9, fill: 'var(--accent)' }), h('path', { d: 'M9 20.5l5-4.5 3.5 3L23 11', stroke: 'var(--accent-ink)', strokeWidth: 3, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }), h('circle', { cx: 23, cy: 11, r: 2.2, fill: 'var(--accent-ink)' }))
+const Tag = ({ l }) => h('span', { className: 'tag', style: { '--c': LABELS[l] } }, l)
+const Due = ({ t }) => { const late = t.col !== 'done' && days(t.due) < 0; return h('span', { className: 'due' + (late ? ' late' : '') }, Ic('M8 2v4M16 2v4M3 9h18M5 4h14a2 2 0 012 2v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z', 13), fmtDue(t.due)) }
+const Pri = ({ p }) => h('span', { className: 'pri', style: { '--c': PRI[p][1] } }, h('b'), PRI[p][0])
+const stackUsers = (t) => t.who.map((id) => ({ id, name: PEOPLE[id].name, avatar: av(id) }))
+
+function MoveMenu({ t, move }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!open) return
+    ref.current?.querySelector('button')?.focus()
+    const close = (e) => { if (e.key === 'Escape') setOpen(false); if (e.type === 'pointerdown' && !ref.current?.parentNode.contains(e.target)) setOpen(false) }
+    addEventListener('keydown', close); addEventListener('pointerdown', close)
+    return () => { removeEventListener('keydown', close); removeEventListener('pointerdown', close) }
+  }, [open])
+  return h('span', { style: { position: 'relative' } },
+    h('button', { className: 'mv', 'aria-haspopup': 'menu', 'aria-expanded': open, 'aria-label': `Move "${t.title}" to another column`, onClick: () => setOpen(!open) }, '⋯'),
+    open && h('div', { className: 'menu mvmenu', role: 'menu', ref, style: { right: 0, top: 30 } },
+      h('small', { style: { padding: '4px 10px', color: 'var(--muted)' } }, 'Move to…'),
+      COLS.map((c) => h('button', { key: c.id, role: 'menuitem', 'aria-checked': c.id === t.col, onClick: () => { setOpen(false); if (c.id !== t.col) move(t.id, c.id) } }, c.id === t.col ? '✓ ' : '', c.name))))
+}
+
+function KCard({ t, move, openTask, drag, setDrag, setOver, onPD }) {
+  const done = t.subs.filter((s) => s.done).length
+  return h('article', {
+    className: 'card' + (drag === t.id ? ' drag' : ''), draggable: !COARSE, 'data-card': t.id, 'aria-label': t.title, onPointerDown: (e) => onPD && onPD(e, t), onContextMenu: COARSE ? (e) => e.preventDefault() : undefined,
+    onDragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', t.id); setDrag(t.id) },
+    onDragEnd: () => { setDrag(null); setOver(null) },
+    onDragOver: (e) => { if (drag) { e.preventDefault(); e.stopPropagation(); setOver(t.col) } },
+    onDrop: (e) => { e.preventDefault(); e.stopPropagation(); if (drag && drag !== t.id) move(drag, t.col, t.id); setDrag(null); setOver(null) },
+  },
+    h('div', { className: 'row' }, h('button', { className: 'title', onClick: () => openTask(t.id) }, t.title), h(MoveMenu, { t, move })),
+    t.labels.length > 0 && h('div', { className: 'row' }, t.labels.map((l) => h(Tag, { key: l, l }))),
+    h('div', { className: 'row sb' }, h('div', { className: 'row' }, h(Pri, { p: t.pri }), h(Due, { t })),
+      h(C.LivatarStack, { users: stackUsers(t), size: 26, max: 3 })),
+    t.subs.length > 0 && h('div', { className: 'sub' }, `${done}/${t.subs.length} subtasks · ${t.pts} pts`))
+}
+
+function Burndown({ tasks }) {
+  const total = tasks.reduce((a, t) => a + t.pts, 0) || 1
+  const left = tasks.filter((t) => t.col !== 'done').reduce((a, t) => a + t.pts, 0)
+  const N = 10, today = 6, hist = [1, 1, .93, .86, .75, .7]
+  const actual = hist.map((f) => f * total).concat(left)
+  const W = 520, H = 220, p = { l: 34, r: 12, t: 12, b: 26 }
+  const x = (i) => p.l + (i / N) * (W - p.l - p.r), y = (v) => p.t + (1 - v / total) * (H - p.t - p.b)
+  const pts = actual.map((v, i) => `${x(i)},${y(v)}`).join(' ')
+  return h('svg', { className: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `Sprint burndown: ${left} of ${total} points remaining on day 7 of 10` },
+    [0, .5, 1].map((f) => h('g', { key: f }, h('line', { x1: p.l, x2: W - p.r, y1: y(total * f), y2: y(total * f), stroke: 'var(--line)' }), h('text', { x: p.l - 6, y: y(total * f) + 3, textAnchor: 'end' }, Math.round(total * f)))),
+    Array.from({ length: N + 1 }, (_, i) => h('text', { key: i, x: x(i), y: H - 8, textAnchor: 'middle' }, i % 2 ? '' : 'D' + (i + 1))),
+    h('line', { x1: x(0), y1: y(total), x2: x(N), y2: y(0), stroke: 'var(--muted)', strokeDasharray: '5 5' }),
+    h('polyline', { points: pts, fill: 'none', stroke: 'var(--accent)', strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+    h('circle', { cx: x(today), cy: y(left), r: 5, fill: 'var(--accent)' }),
+    h('text', { x: x(today) + 8, y: y(left) - 8, style: { fill: 'var(--ink)', fontWeight: 600 } }, left + ' pts left'),
+    h('text', { x: W - p.r, y: y(total) + 12, textAnchor: 'end' }, '- - ideal'))
+}
+
+function Detail({ t, onClose, patch, move, del }) {
+  const [c, setC] = useState('')
+  const [me] = useState('ana')
+  const addLog = (text) => ({ log: [{ id: uid(), who: me, text, t: 'Just now' }, ...t.log] })
+  const addComment = (e) => { e.preventDefault(); if (!c.trim()) return; patch(t.id, { comments: [...t.comments, { id: uid(), who: me, text: c.trim(), t: 'Just now' }], ...addLog('commented') }); setC('') }
+  return h(C.LivatarDialog, {
+    open: true, onClose, title: t.title, tone: t.col === 'done' ? 'success' : 'info', variant: bot, seed: t.id, size: 64, colors: PAL,
+    style: { width: 'min(720px,100%)', maxHeight: '92vh', overflow: 'auto', textAlign: 'left', justifyItems: 'stretch', background: 'var(--surface)' },
+    actions: h(Fragment, null, h('button', { className: 'btn danger', onClick: () => del(t.id) }, 'Delete task'), h('button', { className: 'btn primary', onClick: onClose, autoFocus: true }, 'Done')),
+  },
+    h('div', { className: 'detail' },
+      h('div', { className: 'meta' },
+        h('label', { className: 'fld' }, 'Status', h('select', { value: t.col, onChange: (e) => move(t.id, e.target.value) }, COLS.map((x) => h('option', { key: x.id, value: x.id }, x.name)))),
+        h('label', { className: 'fld' }, 'Priority', h('select', { value: t.pri, onChange: (e) => patch(t.id, { pri: e.target.value, ...addLog('set priority to ' + PRI[e.target.value][0]) }) }, Object.entries(PRI).map(([k, v]) => h('option', { key: k, value: k }, v[0])))),
+        h('label', { className: 'fld' }, 'Due', h('input', { type: 'date', value: t.due, onChange: (e) => e.target.value && patch(t.id, { due: e.target.value }) })),
+        h('div', { className: 'fld' }, 'Assignees', h('div', { className: 'row' }, IDS.map((id) => h('button', { key: id, className: 'chip', 'aria-pressed': t.who.includes(id), 'aria-label': PEOPLE[id].name, style: { padding: 2 }, onClick: () => patch(t.id, { who: t.who.includes(id) ? t.who.filter((w) => w !== id) : [...t.who, id] }) }, h('span', { className: 'av' }, h(Face, { id, size: 24 }))))))),
+      h('div', null, h('h4', null, 'Description'), h('textarea', { 'aria-label': 'Description', value: t.desc, onChange: (e) => patch(t.id, { desc: e.target.value }) })),
+      h('div', null, h('h4', null, 'Subtasks'),
+        h(C.LivatarTodoList, { title: ' ', items: t.subs.map((s) => ({ ...s })), onChange: (items) => patch(t.id, { subs: items.map((s) => ({ id: s.id, text: s.text, done: !!s.done })) }), avatar: { colors: PAL }, style: { width: '100%' } })),
+      h('div', null, h('h4', null, `Comments (${t.comments.length})`),
+        t.comments.length ? h(C.LivatarComment, { comments: t.comments.map((x) => ({ id: x.id, author: PEOPLE[x.who].name, time: x.t, body: x.text, avatar: av(x.who) })) }) : h('p', { className: 'sub' }, 'No comments yet. Say something nice.'),
+        h('form', { className: 'cm', onSubmit: addComment }, h('input', { enterKeyHint: 'send', autoCapitalize: 'sentences', 'aria-label': 'Add a comment', placeholder: 'Write a comment…', value: c, onChange: (e) => setC(e.target.value) }), h('button', { className: 'btn' }, 'Send'))),
+      h('div', null, h('h4', null, 'Activity'),
+        h(C.LivatarTimeline, { size: 30, items: t.log.slice(0, 6).map((l) => ({ id: l.id, title: PEOPLE[l.who].name.split(' ')[0], time: l.t, body: l.text, avatar: av(l.who) })) }))))
+}
+
+function NewTask({ onClose, onAdd, defCol }) {
+  useEffect(() => { const k = (e) => e.key === 'Escape' && onClose(); addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [onClose])
+  return h('div', { className: 'modal', onClick: onClose },
+    h('div', { role: 'dialog', 'aria-modal': true, 'aria-labelledby': 'nt', onClick: (e) => e.stopPropagation() },
+      h('h2', { id: 'nt', style: { marginBottom: 12 } }, 'New task'),
+      h(C.LivatarForm, { placement: matchMedia('(max-width:600px)').matches ? 'top' : 'left', avatar: { variant: clay, seed: 'newtask', size: matchMedia('(max-width:600px)').matches ? 56 : 72, colors: PAL }, onSubmit: (fd) => { onAdd(fd); setTimeout(onClose, 900) } },
+        h('label', { className: 'fld' }, 'Title', h('input', { name: 'title', required: true, enterKeyHint: 'done', autoCapitalize: 'sentences', autoFocus: !COARSE, placeholder: 'e.g. Ship dark mode' })),
+        h('label', { className: 'fld' }, 'Description', h('textarea', { name: 'desc', rows: 2 })),
+        h('div', { className: 'fgrid' },
+          h('label', { className: 'fld' }, 'Column', h('select', { name: 'col', defaultValue: defCol }, COLS.map((c) => h('option', { key: c.id, value: c.id }, c.name)))),
+          h('label', { className: 'fld' }, 'Priority', h('select', { name: 'pri', defaultValue: 'med' }, Object.entries(PRI).map(([k, v]) => h('option', { key: k, value: k }, v[0])))),
+          h('label', { className: 'fld' }, 'Assignee', h('select', { name: 'who', defaultValue: 'ana' }, IDS.map((id) => h('option', { key: id, value: id }, PEOPLE[id].name)))),
+          h('label', { className: 'fld' }, 'Due', h('input', { name: 'due', type: 'date', required: true, defaultValue: off(5) })),
+          h('label', { className: 'fld' }, 'Label', h('select', { name: 'label', defaultValue: 'feature' }, Object.keys(LABELS).map((l) => h('option', { key: l }, l)))),
+          h('label', { className: 'fld' }, 'Points', h('input', { name: 'pts', type: 'number', min: 1, max: 13, defaultValue: 3 }))),
+        h('div', { className: 'row', style: { justifyContent: 'flex-end' } }, h('button', { type: 'button', className: 'btn', onClick: onClose }, 'Cancel'), h('button', { className: 'btn primary' }, 'Create task')))))
+}
+
+/* ---------- app ---------- */
+function App() {
+  const saved = useMemo(load, [])
+  const [boards, setBoards] = useState(() => saved?.boards ?? seed())
+  const [proj, setProj] = useState(saved?.proj ?? 'lumen')
+  const [view, setView] = useState('board')
+  const [q, setQ] = useState('')
+  const [who, setWho] = useState(null)
+  const [openId, setOpenId] = useState(null)
+  const [drag, setDrag] = useState(null)
+  const [over, setOver] = useState(null)
+  const [newCol, setNewCol] = useState(null)
+  const [pm, setPm] = useState(false)
+  const [toasts, setToasts] = useState([])
+  const [fire, setFire] = useState(0)
+  const [ghost, setGhost] = useState(null)
+  const [activeCol, setActiveCol] = useState(0)
+  const pd = useRef(null), boardRef = useRef(null), lastDrag = useRef(0)
+  const [day, setDay] = useState(() => parse(off(3)))
+  const tasks = boards[proj]
+  useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify({ boards, proj })) } catch {} }, [boards, proj])
+  useEffect(() => { if (!pm) return; const k = (e) => e.key === 'Escape' && setPm(false); addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [pm])
+  const setTasks = (fn) => setBoards((b) => ({ ...b, [proj]: fn(b[proj]) }))
+  const toast = (type, title, description) => { const id = uid(); setToasts((t) => [...t, { id, type, title, description }].slice(-3)) }
+  const patch = (id, p) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, ...p } : t)))
+  const move = (id, col, before) => {
+    const t = tasks.find((x) => x.id === id); if (!t) return
+    const log = t.col !== col ? [{ id: uid(), who: 'ana', text: `moved from ${COLS.find((c) => c.id === t.col).name} to ${COLS.find((c) => c.id === col).name}`, t: 'Just now' }, ...t.log] : t.log
+    const nt = { ...t, col, log }
+    setTasks((ts) => { const rest = ts.filter((x) => x.id !== id); const i = before ? rest.findIndex((x) => x.id === before) : -1; if (i < 0) rest.push(nt); else rest.splice(i, 0, nt); return rest })
+    if (col === 'done' && t.col !== 'done') { setFire((n) => n + 1); toast('success', 'Shipped!', `"${t.title}" is done. Nice work.`) }
+    else if (t.col !== col) toast('info', 'Moved', `${t.title} → ${COLS.find((c) => c.id === col).name}`)
+  }
+  const del = (id) => { setTasks((ts) => ts.filter((t) => t.id !== id)); setOpenId(null); toast('warning', 'Task deleted') }
+  const add = (fd) => {
+    const w = fd.get('who')
+    const t = T(uid(), String(fd.get('title')).trim(), fd.get('col'), fd.get('pri'), [fd.get('label')], [w], 0, 0, +fd.get('pts') || 1, String(fd.get('desc') || ''))
+    t.due = fd.get('due'); t.log = [{ id: uid(), who: w, text: 'created this task', t: 'Just now' }]
+    setTasks((ts) => [...ts, t]); toast('success', 'Task created', t.title)
+  }
+
+  useEffect(() => { document.body.style.overflow = openId || newCol ? 'hidden' : ''; return () => { document.body.style.overflow = '' } }, [openId, newCol])
+  useEffect(() => { const f = (e) => { if (pd.current?.active && e.cancelable) e.preventDefault() }; addEventListener('touchmove', f, { passive: false }); return () => removeEventListener('touchmove', f) }, [])
+  const openCard = (id) => { if (Date.now() - lastDrag.current > 450) setOpenId(id) }
+  const onPD = (e, t) => {
+    if (e.pointerType === 'mouse' || e.button > 0 || e.target.closest('.mv')) return
+    const el = e.currentTarget, st = { id: t.id, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, active: false, col: null, before: null, raf: 0 }
+    pd.current = st
+    const probe = () => {
+      const hit = document.elementFromPoint(st.x, st.y)
+      const card = hit?.closest('[data-card]')
+      st.col = hit?.closest('[data-col]')?.dataset.col ?? null
+      st.before = card && card.dataset.card !== st.id ? card.dataset.card : null
+      setOver(st.col)
+    }
+    const loop = () => {
+      if (!st.active || pd.current !== st) return
+      const b = boardRef.current
+      if (b) { const r = b.getBoundingClientRect(); if (st.x < r.left + 56) b.scrollLeft -= 14; else if (st.x > r.right - 56) b.scrollLeft += 14 }
+      if (st.y < 80) scrollBy(0, -12); else if (st.y > innerHeight - 80) scrollBy(0, 12)
+      probe(); st.raf = requestAnimationFrame(loop)
+    }
+    const end = (commit) => {
+      clearTimeout(st.timer); cancelAnimationFrame(st.raf)
+      removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', cancel)
+      if (pd.current === st) pd.current = null
+      if (st.active) { lastDrag.current = Date.now(); if (commit && st.col) move(st.id, st.col, st.before); setDrag(null); setOver(null); setGhost(null) }
+    }
+    const mv = (ev) => { st.x = ev.clientX; st.y = ev.clientY; if (!st.active) { if (Math.hypot(st.x - st.sx, st.y - st.sy) > 10) end(false) } else setGhost((g) => g && { ...g, x: st.x - st.dx, y: st.y - st.dy }) }
+    const up = () => end(true), cancel = () => end(false)
+    st.timer = setTimeout(() => {
+      st.active = true; navigator.vibrate?.(12)
+      const r = el.getBoundingClientRect(); st.dx = st.sx - r.left; st.dy = st.sy - r.top
+      setDrag(t.id); setGhost({ x: st.x - st.dx, y: st.y - st.dy, w: r.width, title: t.title }); loop()
+    }, 380)
+    addEventListener('pointermove', mv); addEventListener('pointerup', up); addEventListener('pointercancel', cancel)
+  }
+  const onBoardScroll = (e) => { const b = e.currentTarget, c = b.querySelector('[data-col]'); if (c) setActiveCol(Math.min(COLS.length - 1, Math.round(b.scrollLeft / (c.offsetWidth + 14)))) }
+  const goCol = (i) => { const b = boardRef.current, c = b?.querySelectorAll('[data-col]')[i]; if (c) b.scrollTo({ left: c.offsetLeft - b.offsetLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }) }
+  const vis = tasks.filter((t) => (!who || t.who.includes(who)) && (!q || (t.title + ' ' + t.labels.join(' ')).toLowerCase().includes(q.toLowerCase())))
+  const open = tasks.find((t) => t.id === openId)
+  const left = tasks.filter((t) => t.col !== 'done'), doneN = tasks.length - left.length
+  const velocity = tasks.filter((t) => t.col === 'done').reduce((a, t) => a + t.pts, 0)
+  const Title = (t) => h('button', { className: 'title', onClick: () => setOpenId(t.id) }, t.title)
+  const Who = (t) => h(C.LivatarStack, { users: stackUsers(t), size: 24, max: 3 })
+
+  const board = h('div', { className: 'board' + (drag ? ' dragging' : ''), ref: boardRef, onScroll: onBoardScroll, role: 'region', 'aria-label': 'Kanban board', tabIndex: 0 },
+    COLS.map((c) => {
+      const items = vis.filter((t) => t.col === c.id), n = tasks.filter((t) => t.col === c.id).length
+      return h('section', { key: c.id, 'data-col': c.id, className: 'col' + (over === c.id && drag ? ' over' : ''), 'aria-label': c.name,
+        onDragOver: (e) => { if (drag) { e.preventDefault(); setOver(c.id) } }, onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOver(null) },
+        onDrop: (e) => { e.preventDefault(); if (drag) move(drag, c.id); setDrag(null); setOver(null) } },
+        h('header', null, h('h2', null, c.name), h('span', { className: 'count' }, n), n > c.limit && c.id !== 'done' && h('span', { className: 'limit' }, 'Over WIP limit'),
+          h('button', { className: 'mv', style: { marginLeft: n > c.limit ? 0 : 'auto' }, 'aria-label': `Add task to ${c.name}`, onClick: () => setNewCol(c.id) }, '+')),
+        h('div', { className: 'wip' }, h(C.LivatarProgress, { value: Math.min(100, (n / c.limit) * 100), label: c.id === 'done' ? `${n} shipped` : `${n} / ${c.limit} WIP limit`, avatar: { colors: PAL, alive: false, options: { kind: 'car', color: n > c.limit ? 'red' : 'teal' } } })),
+        h('div', { className: 'cards' }, items.length ? items.map((t) => h(KCard, { key: t.id, t, move, openTask: openCard, drag, setDrag, setOver, onPD })) : h('div', { className: 'empty' }, drag ? 'Drop here' : who || q ? 'No matching tasks' : 'Nothing here yet')))
+    }))
+
+  const insights = h('div', { className: 'insights' },
+    h('section', { className: 'panel', 'aria-labelledby': 'bd' }, h('h2', { id: 'bd' }, 'Sprint burndown'), h('p', { className: 'hint' }, 'Day 7 of 10 · story points remaining vs the ideal line'), h(Burndown, { tasks })),
+    h('section', { className: 'panel', 'aria-label': 'Sprint stats' }, h('h2', null, 'This sprint'), h('p', { className: 'hint' }, 'Live from the board'),
+      h('div', { className: 'stats' },
+        h('div', { className: 'stat' }, h('b', null, velocity), h('span', null, 'points shipped')),
+        h('div', { className: 'stat' }, h('b', null, left.length), h('span', null, 'tasks open')),
+        h('div', { className: 'stat' }, h('b', null, Math.round((doneN / (tasks.length || 1)) * 100) + '%'), h('span', null, 'complete')),
+        h('div', { className: 'stat' }, h('b', null, left.filter((t) => days(t.due) < 0).length), h('span', null, 'overdue')))))
+
+  const list = h('div', { className: 'tw' }, h('table', null,
+    h('thead', null, h('tr', null, ['Task', 'Status', 'Priority', 'Assignees', 'Due', 'Pts'].map((x) => h('th', { key: x, scope: 'col' }, x)))),
+    h('tbody', null, vis.length ? vis.map((t) => h('tr', { key: t.id }, h('td', null, Title(t)), h('td', { 'data-label': 'Status' }, COLS.find((c) => c.id === t.col).name), h('td', { 'data-label': 'Priority' }, h(Pri, { p: t.pri })), h('td', { 'data-label': 'Assignees' }, Who(t)), h('td', { 'data-label': 'Due' }, h(Due, { t })), h('td', { 'data-label': 'Points' }, t.pts)))
+      : h('tr', null, h('td', { colSpan: 6, style: { textAlign: 'center', padding: 30 } }, 'No tasks match.')))))
+
+  const marks = {}; vis.forEach((t) => { (marks[t.due] ||= []).push(...t.who.slice(0, 1)) })
+  const dayTasks = vis.filter((t) => t.due === iso(day))
+  const calendar = h('div', { className: 'split' },
+    h(C.LivatarCalendar, { value: day, onChange: setDay, marks, fill: false, size: 24, avatar: { variant: toon, colors: PAL }, style: { width: '100%' } }),
+    h('section', { className: 'panel' }, h('h2', null, day.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })), h('p', { className: 'hint' }, dayTasks.length ? `${dayTasks.length} due` : 'Nothing due. Enjoy the quiet.'),
+      h('ul', { className: 'dayl' }, dayTasks.map((t) => h('li', { key: t.id }, h(Who, t), Title(t), h('span', { style: { marginLeft: 'auto' } }, h(Pri, { p: t.pri })))))))
+
+  const gs = -7, span = 28
+  const gantt = h('section', { className: 'panel gantt', 'aria-label': 'Timeline' }, h('div', { className: 'g' },
+    h('span'), h('div', { className: 'row sb sub', 'aria-hidden': true, style: { position: 'relative' } }, h('span', null, fmtDue(off(gs))), h('span', { style: { position: 'absolute', left: (-gs / span) * 100 + '%', transform: 'translateX(-50%)', color: 'var(--accent)', fontWeight: 600 } }, 'Today'), h('span', null, fmtDue(off(gs + span)))),
+    vis.map((t) => {
+      const a = Math.max(0, days(t.start) - gs), b = Math.min(span, Math.max(a + 1, days(t.due) - gs + 1))
+      return h(Fragment, { key: t.id }, Title(t) && h('button', { className: 'name', onClick: () => setOpenId(t.id), title: t.title }, t.title),
+        h('div', { className: 'track' }, -gs <= span && h('i', { className: 'today', style: { left: (-gs / span) * 100 + '%' } }),
+          h('div', { className: 'bar2', style: { '--c': t.col === 'done' ? 'var(--ok)' : PRI[t.pri][1], left: (a / span) * 100 + '%', width: ((b - a) / span) * 100 + '%' } }, h(Face, { id: t.who[0], size: 20 }))))
+    })))
+
+  return h(Fragment, null,
+    h('div', { className: 'app' },
+      h('header', { className: 'top' },
+        h('div', { className: 'brand' }, h(Logo), 'Sprinto'),
+        h('div', { className: 'proj' }, h('button', { 'aria-haspopup': 'menu', 'aria-expanded': pm, onClick: () => setPm(!pm) }, PROJECTS.find((p) => p.id === proj).emoji + ' ' + PROJECTS.find((p) => p.id === proj).name, ' ▾'),
+          pm && h('div', { className: 'menu', role: 'menu', style: { top: 42 } }, PROJECTS.map((p) => h('button', { key: p.id, role: 'menuitemradio', 'aria-checked': p.id === proj, autoFocus: p.id === proj, onClick: () => { setProj(p.id); setPm(false); setWho(null); setQ('') } }, p.emoji + ' ' + p.name)))),
+        h('div', { className: 'search' }, Ic('M21 21l-4.3-4.3M11 18a7 7 0 110-14 7 7 0 010 14z', 15), h('input', { type: 'search', enterKeyHint: 'search', autoCapitalize: 'off', autoComplete: 'off', 'aria-label': 'Search tasks', placeholder: 'Search tasks or labels…', value: q, onChange: (e) => setQ(e.target.value) })),
+        h('button', { className: 'btn primary', onClick: () => setNewCol('backlog') }, '+ New task')),
+      h('div', { className: 'bar' },
+        h(C.LivatarSegmented, { value: view, onChange: setView, size: 22, avatar: { colors: PAL }, options: [{ value: 'board', label: 'Board', seed: 'v-board' }, { value: 'list', label: 'List', seed: 'v-list' }, { value: 'calendar', label: 'Calendar', seed: 'v-cal' }, { value: 'timeline', label: 'Timeline', seed: 'v-time' }] }),
+        h('div', { className: 'team', role: 'group', 'aria-label': 'Filter by teammate' }, h('span', { className: 'lbl' }, 'Team'),
+          IDS.map((id) => h('button', { key: id, className: 'chip', 'aria-pressed': who === id, title: PEOPLE[id].name + ', ' + PEOPLE[id].role, onClick: () => setWho(who === id ? null : id) },
+            h('span', { className: 'av' }, h(Face, { id, size: 26, mood: who === id ? 'happy' : undefined })), PEOPLE[id].name.split(' ')[0], h('i', null, tasks.filter((t) => t.who.includes(id) && t.col !== 'done').length))),
+          who && h('button', { className: 'btn', style: { padding: '3px 10px', fontSize: 12 }, onClick: () => setWho(null) }, 'Clear'))),
+      h('main', null,
+        h('div', { className: 'hello' }, h('h1', null, PROJECTS.find((p) => p.id === proj).name), h('p', null, `Sprint 14 · ${left.length} open, ${doneN} done`, who ? ` · filtered to ${PEOPLE[who].name}` : ''),
+          h('div', { className: 'tipwrap', style: { marginLeft: 'auto' } }, h(C.LivatarAnimatedTooltip, { size: 34, people: IDS.map((id) => ({ id, name: PEOPLE[id].name, role: PEOPLE[id].role, avatar: av(id) })) }))),
+        view === 'board' && h(Fragment, null, h('div', { className: 'coltabs', role: 'group', 'aria-label': 'Jump to column' }, COLS.map((c, i) => h('button', { key: c.id, className: 'coltab', 'aria-current': activeCol === i, onClick: () => goCol(i) }, c.name, h('small', null, vis.filter((t) => t.col === c.id).length)))), board, insights),
+        view === 'list' && list, view === 'calendar' && calendar, view === 'timeline' && gantt)),
+    open && h(Detail, { t: open, onClose: () => setOpenId(null), patch, move, del }),
+    newCol && h(NewTask, { defCol: newCol, onClose: () => setNewCol(null), onAdd: add }),
+    ghost && h('div', { className: 'ghost', 'aria-hidden': true, style: { left: ghost.x, top: ghost.y, width: ghost.w } }, ghost.title),
+    h(C.LivatarConfetti, { fire, count: 22, spread: 220, size: 34, avatar: { alive: false, colors: PAL }, style: { position: 'fixed', left: '50%', top: '38%', zIndex: 1300 } }),
+    h('div', { className: 'toasts', 'aria-live': 'polite' }, toasts.map((t) => h(C.LivatarToast, { key: t.id, type: t.type, title: t.title, description: t.description, size: 40, variant: PEOPLE.ana.style, seed: 'ana', colors: PAL, onClose: () => setToasts((x) => x.filter((y) => y.id !== t.id)) }))))
+}
+createRoot(document.getElementById('root')).render(h(App))
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fff7ee" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1d1216" media="(prefers-color-scheme: dark)" />
+<title>Huddle - a friendly social feed</title>
+<meta name="description" content="Huddle, a working social network built with livatar: stories, a composer that reacts to your words, polls, likes, threaded comments, follow suggestions and swipeable people cards." />
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500..700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+<script>if (!location.pathname.endsWith('/') && !location.pathname.endsWith('.html')) location.replace(location.pathname + '/' + location.search + location.hash)</script>
+<script type="importmap">{ "imports": { "react": "https://esm.sh/react@19.3.1", "react-dom/client": "https://esm.sh/react-dom@19.3.1/client?deps=react@19.3.1" } }</script>
+<style>
+:root{
+  --bg:#fff7ee;--card:#ffffff;--fg:#2a1a20;--muted:#7a5f68;--line:#2a1a20;--soft:#ffe9f1;
+  --brand:#ff3d81;--brand2:#ffd23f;--brand3:#38bdf8;--on-brand:#fff;--ok:#15803d;--ink:#2a1a20;
+  --grad:linear-gradient(135deg,#ff3d81,#ffd23f);
+  --shadow:4px 4px 0 var(--ink);
+  --lv-card:#fff;--lv-bg:#fff;--lv-fg:#2a1a20;--lv-ring:#fff;--lv-line:#2a1a20;--lv-accent:#ff3d81;--lv-surface:#ffe9f1;--lv-muted:#7a5f68;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#1d1216;--card:#2a1b21;--fg:#fff1e6;--muted:#d1aeb8;--line:#fff1e6;--soft:#3a2530;--ink:#0d0709;
+  --brand:#ff5c97;--on-brand:#1d1216;--ok:#4ade80;--shadow:4px 4px 0 #ff5c97;
+  --lv-card:#2a1b21;--lv-bg:#2a1b21;--lv-fg:#fff1e6;--lv-ring:#2a1b21;--lv-line:#fff1e6;--lv-accent:#ff5c97;--lv-surface:#3a2530;--lv-muted:#d1aeb8;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button,a,input,textarea{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 'Nunito',system-ui,sans-serif;overflow-x:hidden;
+  background-image:radial-gradient(#ffd23f55 2px,transparent 2.5px);background-size:26px 26px}
+h1,h2,h3,.brand{font-family:'Fredoka',system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--brand)}
+:focus-visible{outline:3px solid var(--brand3);outline-offset:2px;border-radius:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ex-back{display:inline-flex;align-items:center;min-height:44px;position:fixed;top:calc(env(safe-area-inset-top) + 6px);right:calc(env(safe-area-inset-right) + 10px);z-index:900;font:800 13px 'Nunito',sans-serif;text-decoration:none;color:var(--fg);background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(8px);border:2px solid var(--line);padding:0 14px;border-radius:999px;box-shadow:2px 2px 0 var(--line)}
+.ex-back:hover{border-color:var(--brand)}
+.app{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr) 320px;gap:22px;padding:18px 16px 40px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:800;padding:4px 6px}
+.brand i{width:38px;height:38px;border-radius:12px;background:var(--brand2);border:2px solid var(--line);box-shadow:2px 2px 0 var(--line);display:grid;place-items:center;color:#2a1a20;font-style:normal;font-size:20px;transform:rotate(-6deg)}
+.side{position:sticky;top:18px;align-self:start;display:grid;gap:14px}
+.nav{display:grid;gap:4px;padding:8px}
+.nav button{all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;padding:11px 14px;border-radius:14px;font-weight:700;cursor:pointer}
+.nav button:hover{background:var(--soft)}
+.nav button[aria-current=page]{background:var(--brand2);color:#2a1a20;border:2px solid var(--ink)}
+.nav button:focus-visible{outline:3px solid var(--brand3)}
+.nav .ic{font-size:18px;width:22px;text-align:center}
+.me{padding:16px;display:grid;gap:10px;justify-items:start}
+.me .row{display:flex;gap:12px;align-items:center}
+.me b{font-family:'Fredoka';font-size:17px;display:block}
+.stats{display:flex;gap:16px;font-size:13px;color:var(--muted)}.stats b{font-size:15px;color:var(--fg);display:inline}
+.muted{color:var(--muted)}
+.btn{border:0;border-radius:999px;padding:9px 18px;font-weight:700;background:var(--brand);transition:transform .15s,filter .15s;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);color:#2a1a20}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:var(--card);color:var(--fg);border:2px solid var(--line);box-shadow:2px 2px 0 var(--line)}
+.btn.ghost.on{background:var(--brand2);color:#2a1a20}
+.btn.sm{padding:6px 14px;font-size:13px}
+.feed{display:grid;gap:16px;min-width:0;align-content:start}
+.stories{display:flex;gap:14px;overflow-x:auto;padding:14px 16px;scrollbar-width:thin}
+.story{all:unset;box-sizing:border-box;flex:none;width:68px;text-align:center;cursor:pointer;font-size:12px;font-weight:600}
+.story:focus-visible{outline:3px solid var(--brand3);border-radius:14px}
+.ring{width:68px;height:68px;border-radius:50%;padding:3px;background:var(--grad);display:block;transition:transform .2s}
+.story:hover .ring{transform:scale(1.07) rotate(-4deg)}
+.story.seen .ring{background:#bba}
+.ring span{display:block;border-radius:50%;background:var(--card);padding:2px;line-height:0}
+.story small{display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.composer{padding:16px;display:grid;gap:12px}
+.composer .top{display:flex;gap:12px}
+.composer .face{flex:none;line-height:0}
+.composer textarea{flex:1;min-width:0;resize:none;border:2px solid var(--line);background:var(--soft);border-radius:16px;padding:12px 14px;font:inherit;color:inherit;min-height:74px}
+.composer textarea::placeholder{color:var(--muted)}
+.composer .bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.composer .feel{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.count{font-size:12px;color:var(--muted)}.count.warn{color:var(--brand2);font-weight:700}
+.post:nth-of-type(odd){transform:rotate(-.15deg)}.post{padding:16px;display:grid;gap:12px;animation:pop .45s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.post header{display:flex;gap:12px;align-items:center}
+.post header .who{flex:1;min-width:0}
+.post header b{font-family:'Fredoka';font-size:16px}
+.post header small{display:block;color:var(--muted)}
+.post p{margin:0;font-size:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.tag{color:var(--brand);font-weight:800}
+.linkface{all:unset;cursor:pointer;line-height:0;border-radius:50%}
+.linkface:focus-visible{outline:3px solid var(--brand3)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:2px dashed var(--line);padding-top:12px}
+.chip{display:inline-flex;gap:6px;align-items:center;border:2px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;transition:transform .15s,background .15s}
+.chip:hover{background:var(--soft)}.chip:active{transform:scale(.93)}
+.chip[aria-pressed=true]{background:var(--brand2);color:#2a1a20;box-shadow:2px 2px 0 var(--line)}
+.chip .e{display:inline-block;transition:transform .25s cubic-bezier(.3,1.8,.5,1)}.chip[aria-pressed=true] .e{transform:scale(1.3) rotate(-8deg)}
+.spacer{flex:1}
+[role=radiogroup] button,[role=radiogroup] button>span,[role=radiogroup] button>span>svg,.person .linkface,.post header .linkface,.me .row>span,.composer .face>span{overflow:hidden!important;border-radius:50%!important}
+.composer .bar>span:last-child{margin-left:auto}
+.thread{border-top:2px dashed var(--line);padding-top:12px;display:grid;gap:8px}
+.thread form{display:flex;gap:8px}
+.thread input{flex:1;min-width:0;border:2px solid var(--line);background:var(--soft);color:inherit;border-radius:999px;padding:9px 14px;font:inherit}
+.replying{font-size:12px;color:var(--brand);font-weight:700;display:flex;gap:8px;align-items:center}
+.replying button{all:unset;cursor:pointer;opacity:.7}
+.thread li small{font-size:12px}
+.thread li button{color:var(--muted)}
+.more{display:grid;gap:12px;justify-items:center}
+.right{position:sticky;top:18px;align-self:start;display:grid;gap:14px;max-height:calc(100vh - 36px);overflow-y:auto;padding:2px;scrollbar-width:none}
+.panel{padding:16px;display:grid;gap:12px}
+.panel h2{font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.person{display:flex;align-items:center;gap:10px}
+.person .meta{flex:1;min-width:0}
+.person b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.person small{color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trend{all:unset;box-sizing:border-box;display:block;cursor:pointer;padding:6px 8px;border-radius:12px;width:100%}
+.trend:hover{background:var(--brand2);color:#2a1a20}.trend:hover b,.trend:hover small{color:#2a1a20}.trend b{display:block;color:var(--brand)}.trend small{color:var(--muted)}
+.swipe{display:grid;justify-items:center;overflow:hidden}
+.swipe>div{max-width:100%}
+.live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ok);font-weight:700}
+.live::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.35;transform:scale(1.5)}}
+.tabbar{display:none}
+.toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:1200;width:min(380px,calc(100vw - 24px));display:grid;gap:8px;pointer-events:none}
+.toasts>*{pointer-events:auto;width:100%;min-width:0!important}
+.viewer{position:fixed;inset:0;z-index:1100;display:grid;place-items:center;background:rgba(42,26,32,.85);backdrop-filter:blur(6px);padding:12px}
+.vcard{position:relative;width:min(400px,100%);height:min(720px,calc(100dvh - 24px));border-radius:28px;overflow:hidden;color:#fff;display:grid;grid-template-rows:auto 1fr auto;padding:16px;gap:12px;touch-action:manipulation}
+.vbars{display:flex;gap:4px}
+.vbars i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
+.vbars i b{display:block;height:100%;background:#fff;width:0}
+.vbars i.done b{width:100%}
+.vbars i.cur b{animation:fill var(--dur,4s) linear forwards}
+@keyframes fill{to{width:100%}}
+.vhead{display:flex;align-items:center;gap:10px;margin-top:8px}
+.vhead .vt{flex:1}.vhead small{opacity:.8;display:block}.vhead>span:first-child{border-radius:50%;overflow:hidden}
+.vx{all:unset;cursor:pointer;font-size:26px;line-height:1;padding:4px 8px}
+.vx:focus-visible{outline:3px solid #fff}
+.vbody{display:grid;place-items:center;align-content:center;gap:14px;text-align:center;position:relative}
+.vbody p{font:700 26px/1.15 'Fredoka';margin:0;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+.vtap{position:absolute;top:70px;bottom:70px;width:40%;all:unset;cursor:pointer;z-index:2}
+.vtap:focus-visible{outline:3px solid #fff}
+.vfoot{display:flex;gap:8px;z-index:3}
+.vfoot button{flex:1;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.14);color:#fff;border-radius:999px;padding:10px;font-weight:700}
+.vfoot button:hover{background:rgba(255,255,255,.28)}
+.pc-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pcwrap>div{width:100%}
+@media (max-width:1100px){.app{grid-template-columns:76px minmax(0,1fr) 300px}.side .label,.side .me,.brand span{display:none}.nav button{justify-content:center;padding:12px 0}.brand{justify-content:center}}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr);padding:calc(52px + env(safe-area-inset-top)) 12px calc(88px + env(safe-area-inset-bottom))}
+  .side{display:none}.right{position:static;max-height:none;overflow:visible}
+  .right{padding-top:4px}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:800;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(12px);border-top:2px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  .tabbar button{all:unset;display:grid;justify-items:center;align-content:center;min-height:48px;gap:0;padding:4px 0;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-radius:12px}
+  .tabbar button:focus-visible{outline:3px solid var(--brand3)}
+  .tabbar button[aria-current=page]{color:var(--brand)}.tabbar .ic{font-size:20px}
+  
+  .toasts{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .mobhead{display:flex!important}
+}
+.mobhead{display:none;align-items:center;justify-content:space-between;padding:0 0 4px}
+@media (max-width:400px){.post{padding:14px}.composer .top{flex-direction:column}.composer .face{display:none}}
+/* touch */
+.btn,.chip,.trend,.nav button,.vfoot button,.acts button,.thread li button,.swipe button,.replying button{min-height:44px}
+.btn.sm{min-height:44px;padding:0 18px}
+.chip{padding:0 14px}
+.thread li button{min-width:44px;min-height:44px!important;padding:0 10px!important;display:inline-flex!important;align-items:center}
+.swipe button{min-width:44px}
+.linkface{padding:2px;min-width:44px;min-height:44px;display:grid;place-items:center}
+.replying button{min-width:44px;display:grid;place-items:center}
+.vx{min-width:44px;min-height:44px;display:grid;place-items:center}
+.stories{scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.story{scroll-snap-align:start;min-height:44px}
+.post{content-visibility:auto;contain-intrinsic-size:auto 420px}
+.viewer{overscroll-behavior:contain;touch-action:none;padding:calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 8px) calc(env(safe-area-inset-bottom) + 8px) calc(env(safe-area-inset-left) + 8px)}
+.vcard{touch-action:none;user-select:none;-webkit-user-select:none;height:min(720px,calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))}
+.vcard.paused .vbars i.cur b{animation-play-state:paused}
+.vfoot{padding-bottom:0}
+.post p{font-size:clamp(15px,4.2vw,16px)}
+.composer textarea,.thread input{font-size:16px}
+@media (max-height:520px){.vcard{width:min(340px,100%);padding:10px;gap:6px}.vbody p{font-size:20px}.vhead{margin-top:2px}}
+@media (max-width:360px){.app{padding-left:8px;padding-right:8px}.post,.composer,.panel{padding:12px}.brand{font-size:22px}.acts{gap:6px}.chip{padding:0 10px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<a class="ex-back" href="../">← All examples</a>
+<div id="root"></div>
+<script type="module">
+import { createElement as h, useState, useEffect, useMemo, useRef, Fragment } from 'react'
+import { createRoot } from 'react-dom/client'
+import * as C from '../../../dist/components.js'
+import { Livatar as L0 } from '../../../dist/react.js'
+import { memoji, clay, human, toon, anime, chibi, fantasy, pirate, job, kid, critter, hero } from '../../../dist/index.js'
+
+const PAL = ['#ffd6e5', '#fff0b3', '#cfeeff', '#d4f5df', '#ffe8d1', '#ffc2d6']
+const Livatar = (p) => h(L0, { colors: PAL, ...p })
+/* ---------- people ---------- */
+const P = {
+  you:   { id: 'you',   name: 'Alex Rivera',  handle: 'alex',   v: memoji,  o: {}, bio: 'Building cozy corners of the internet.' },
+  maya:  { id: 'maya',  name: 'Maya Chen',    handle: 'mayac',  v: clay,    o: {}, bio: 'Ceramics, cold brew and tiny websites.' },
+  jonas: { id: 'jonas', name: 'Jonas Weber',  handle: 'jonas',  v: toon,    o: {}, bio: 'Climbing things. Mostly stairs.' },
+  priya: { id: 'priya', name: 'Priya Nair',   handle: 'priya',  v: anime,   o: {}, bio: 'Sketchbooks, synths and spicy noodles.' },
+  omar:  { id: 'omar',  name: 'Chef Omar',    handle: 'omar',   v: job,     o: { kind: 'chef' }, bio: 'Sunday dinners for 12, no notice.' },
+  luna:  { id: 'luna',  name: 'Luna Park',    handle: 'luna',   v: fantasy, o: { kind: 'fairy' }, bio: 'Night owl. Plant mum. D&D dungeon master.' },
+  ravi:  { id: 'ravi',  name: 'Captain Ravi', handle: 'ravi',   v: pirate,  o: { kind: 'explorer' }, bio: 'Trail maps and bad puns.' },
+  tess:  { id: 'tess',  name: 'Tess Okafor',  handle: 'tess',   v: human,   o: { age: 'adult', gender: 'girl', hair: 'braids' }, bio: 'Product designer. Plays the cello badly.' },
+  gran:  { id: 'gran',  name: 'Gran Ines',    handle: 'gran',   v: kid,     o: { kind: 'grandma' }, bio: 'Knitting a scarf for the whole city.' },
+  pip:   { id: 'pip',   name: 'Pip',          handle: 'pip',    v: critter, o: { kind: 'otter' }, bio: 'An otter with opinions about snacks.' },
+  kai:   { id: 'kai',   name: 'Kai Nakamura', handle: 'kai',    v: chibi,   o: {}, bio: 'Skate, sketch, repeat.' },
+  zed:   { id: 'zed',   name: 'Zed',          handle: 'zed',    v: hero,    o: { kind: 'bolt' }, bio: 'Fast reviewer of slow code.' },
+}
+const NAMEMAP = Object.fromEntries(Object.values(P).map((p) => [p.name, p]))
+const MOBILE = matchMedia('(max-width: 860px)').matches
+const Face = ({ p, size = 44, mood, alive = MOBILE ? false : undefined }) => h(Livatar, { variant: p.v, seed: p.id, size, mood, options: p.o, alive })
+const avFor = (p, extra) => ({ colors: PAL, variant: p.v, seed: p.id, options: p.o, ...extra })
+
+/* ---------- seed content ---------- */
+const POOL = [
+  ['maya', 'Finished my first glazed mug and it only leaks a little. #wip #pottery', 'happy'],
+  ['jonas', 'Day 12 of taking the stairs. My knees file a formal complaint every morning.', 'laugh'],
+  ['priya', 'Poll time: what do you listen to while you work?', 'happy', { q: 'Work soundtrack?', o: [['Lo-fi', 14], ['Synthwave', 9], ['Silence', 6], ['Podcasts', 4]] }],
+  ['omar', 'Made 40 dumplings before noon. Neighbors are suddenly very friendly. #sundaydinner', 'love'],
+  ['luna', 'Your plants can tell when you are stressed. Mine just sighed at me. #plantmum', 'sleepy'],
+  ['ravi', 'Reached the summit at sunrise. Worth every blister. #trails', 'starstruck'],
+  ['tess', 'Hot take: a good empty state is the best part of any app.', 'neutral', { q: 'Best part of an app?', o: [['Empty states', 11], ['Dark mode', 17], ['Animations', 8]] }],
+  ['gran', 'The scarf is now 3 meters long. Send help, or more wool. #knitting', 'laugh'],
+  ['pip', 'Found a really good rock. Not sharing. Maybe sharing. #snacks', 'happy'],
+  ['kai', 'Landed my first kickflip today. The neighbors cheered. Then the dog barked. #skate', 'starstruck'],
+  ['zed', 'PR review speedrun: 14 files, 3 nits, 1 existential question.', 'confused'],
+]
+const CMT = [
+  { id: 'c1', author: 'Jonas Weber', body: 'This made my day.', time: '2m', replies: [{ id: 'c1a', author: 'Priya Nair', body: 'Same!', time: '1m' }] },
+  { id: 'c2', author: 'Gran Ines', body: 'Lovely, dear. Keep going.', time: '8m' },
+]
+const mkPost = (i, extra = {}) => {
+  const [who, text, mood, poll] = POOL[i % POOL.length]
+  return { id: 'p' + i + '-' + Math.random().toString(36).slice(2, 6), who, text, mood, poll, time: (i * 7 + 3) + 'm', likes: 8 + ((i * 13) % 40), reacts: { '🔥': 2 + (i % 5), '😂': 1 + ((i * 3) % 6) }, mine: {}, liked: false,
+    comments: i % 3 === 0 ? JSON.parse(JSON.stringify(CMT)) : i % 3 === 1 ? [CMT[1]] : [], open: false, ...extra }
+}
+const STORIES = [
+  { who: 'maya', text: 'New mug, who dis?', mood: 'love', bg: 'linear-gradient(160deg,#ff3d81,#ffd23f)' },
+  { who: 'ravi', text: 'Summit unlocked. Sunrise hits different.', mood: 'starstruck', bg: 'linear-gradient(160deg,#38bdf8,#22c55e)' },
+  { who: 'omar', text: '40 dumplings. Zero regrets.', mood: 'happy', bg: 'linear-gradient(160deg,#f97316,#ec4899)' },
+  { who: 'luna', text: 'Midnight repotting session.', mood: 'sleepy', bg: 'linear-gradient(160deg,#be185d,#0f766e)' },
+  { who: 'pip', text: 'I have a rock.', mood: 'surprised', bg: 'linear-gradient(160deg,#14b8a6,#3b82f6)' },
+  { who: 'kai', text: 'Kickflip. Finally.', mood: 'laugh', bg: 'linear-gradient(160deg,#f43f5e,#f59e0b)' },
+  { who: 'zed', text: 'Reviewing at light speed.', mood: 'happy', bg: 'linear-gradient(160deg,#eab308,#ff3d81)' },
+]
+const TRENDS = [['#sundaydinner', '2.4k posts'], ['#plantmum', '1.1k posts'], ['#kickflip', '864 posts'], ['#wip', '12k posts'], ['#snacks', '540 posts']]
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/* ---------- small pieces ---------- */
+function Rich({ text }) {
+  return h(Fragment, null, text.split(/(#\w+)/g).map((s, i) => (s.startsWith('#') ? h('span', { key: i, className: 'tag' }, s) : s)))
+}
+
+function Stories({ seen, onOpen }) {
+  return h('section', { className: 'card stories', 'aria-label': 'Stories' },
+    STORIES.map((s, i) => {
+      const p = P[s.who]
+      return h('button', { key: i, className: 'story' + (seen.has(i) ? ' seen' : ''), onClick: () => onOpen(i), 'aria-label': `Open ${p.name}'s story${seen.has(i) ? ' (seen)' : ''}` },
+        h('span', { className: 'ring' }, h('span', null, h(Face, { p, size: 56, alive: false }))),
+        h('small', null, p.name.split(' ').pop() === 'Omar' ? 'Omar' : p.name.split(' ')[0]))
+    }))
+}
+
+function StoryViewer({ start, onClose, onSeen, toast }) {
+  const [i, setI] = useState(start)
+  const [reply, setReply] = useState(false)
+  const s = STORIES[i], p = P[s.who]
+  const dur = 5
+  const rm = reducedMotion()
+  const [paused, setPaused] = useState(false)
+  const [dy, setDy] = useState(0)
+  const g = useRef({ y: 0, t: 0, held: false, down: false, timer: 0 })
+  const small = innerHeight < 520
+  const next = () => (i < STORIES.length - 1 ? setI(i + 1) : onClose())
+  const prev = () => setI(Math.max(0, i - 1))
+  useEffect(() => {
+    onSeen(i)
+    if (!rm) return
+    const t = setTimeout(next, dur * 1000)
+    return () => clearTimeout(t)
+  }, [i])
+  const down = (e) => { if (e.target.closest('.vfoot,.vx')) return; const r = g.current; r.down = true; r.y = e.clientY; r.t = Date.now(); r.held = false; clearTimeout(r.timer); r.timer = setTimeout(() => { r.held = true; setPaused(true) }, 220) }
+  const move = (e) => { const r = g.current; if (!r.down) return; const d = e.clientY - r.y; if (d > 12) { clearTimeout(r.timer); setPaused(true); setDy(d) } }
+  const up = () => { const r = g.current; if (!r.down) return; r.down = false; clearTimeout(r.timer); setPaused(false); if (dy > 110) onClose(); else setDy(0) }
+  const tap = (fn) => () => { if (g.current.held || dy > 12) { g.current.held = false; return } fn() }
+  useEffect(() => {
+    const k = (e) => { if (e.key === 'Escape') onClose(); if (e.key === 'ArrowRight') next(); if (e.key === 'ArrowLeft') prev() }
+    addEventListener('keydown', k); return () => removeEventListener('keydown', k)
+  })
+  const closeRef = useRef(null)
+  useEffect(() => { closeRef.current?.focus() }, [])
+  return h('div', { className: 'viewer', onClick: onClose },
+    h('div', { className: 'vcard' + (paused ? ' paused' : ''), onPointerDown: down, onPointerMove: move, onPointerUp: up, onPointerCancel: up, role: 'dialog', 'aria-modal': true, 'aria-label': `${p.name}'s story`, style: { background: s.bg, '--dur': dur + 's', transform: dy ? `translateY(${dy}px)` : undefined, opacity: dy ? Math.max(.4, 1 - dy / 400) : 1, transition: dy ? 'none' : 'transform .2s' }, onClick: (e) => e.stopPropagation() },
+      h('div', null,
+        h('div', { className: 'vbars', 'aria-hidden': true }, STORIES.map((_, k) => h('i', { key: k + '-' + i, className: k < i || (rm && k === i) ? 'done' : k === i ? 'cur' : '' }, h('b', { onAnimationEnd: k === i && !rm ? next : undefined })))),
+        h('div', { className: 'vhead' }, h(Face, { p, size: 40 }), h('span', { className: 'vt' }, h('b', null, p.name), h('small', null, `${i + 1} of ${STORIES.length} · ${i + 1}h ago`)),
+          h('button', { ref: closeRef, className: 'vx', onClick: onClose, 'aria-label': 'Close story' }, '×'))),
+      h('div', { className: 'vbody' },
+        h('button', { className: 'vtap', style: { left: 0 }, onClick: tap(prev), 'aria-label': 'Previous story' }),
+        h('button', { className: 'vtap', style: { right: 0 }, onClick: tap(next), 'aria-label': 'Next story' }),
+        h(Livatar, { key: i, variant: p.v, seed: p.id, options: p.o, size: small ? 96 : innerHeight < 700 ? 150 : 200, mood: s.mood }),
+        h('p', null, s.text)),
+      h('div', { className: 'vfoot' },
+        h('button', { onClick: () => { toast({ type: 'success', title: 'Sent a heart', description: `${p.name} will see it.` }) } }, '♥ Send love'),
+        h('button', { onClick: () => { setReply(true); toast({ type: 'info', title: 'Reply sent', description: 'Your message is in their inbox.' }) } }, reply ? 'Replied ✓' : 'Reply'))))
+}
+
+function Composer({ onPost, mood, setMood }) {
+  const [text, setText] = useState('')
+  const left = 280 - text.length
+  const submit = (e) => { e.preventDefault(); if (!text.trim() || left < 0) return; onPost(text.trim(), mood); setText('') }
+  return h('form', { className: 'card composer', onSubmit: submit, 'aria-label': 'Create a post' },
+    h('div', { className: 'top' },
+      h('div', { className: 'face' }, h(C.LivatarReaction, { ...avFor(P.you), size: 52, text, hold: false })),
+      h('label', { style: { flex: 1, display: 'flex', minWidth: 0 } }, h('span', { className: 'sr' }, 'What is on your mind?'),
+        h('textarea', { value: text, onChange: (e) => setText(e.target.value), placeholder: "What's happening, Alex? Try typing something happy or sad...", maxLength: 400, rows: 3, enterKeyHint: 'enter', autoCapitalize: 'sentences', inputMode: 'text' }))),
+    h('div', { className: 'bar' },
+      h('div', { className: 'feel' }, h('span', null, 'Feeling'), h(C.LivatarMoodPicker, { ...avFor(P.you), size: 38, value: mood, onChange: setMood, moods: ['sad', 'confused', 'neutral', 'happy', 'laugh', 'love'] })),
+      h('span', { style: { display: 'flex', gap: 12, alignItems: 'center' } },
+        h('span', { className: 'count' + (left < 20 ? ' warn' : ''), 'aria-live': 'polite' }, left),
+        h('button', { className: 'btn', type: 'submit', disabled: !text.trim() || left < 0 }, 'Post'))))
+}
+
+function Post({ post, update, onProfile, toast }) {
+  const p = P[post.who]
+  const [draft, setDraft] = useState('')
+  const [replyTo, setReplyTo] = useState(null)
+  const url = `https://huddle.example/${p.handle}/p/${post.id.split('-')[0]}`
+  const nComments = post.comments.reduce((a, c) => a + 1 + (c.replies?.length || 0), 0)
+  const toggleReact = (k) => update(post.id, (x) => { const on = !x.mine[k]; return { ...x, mine: { ...x.mine, [k]: on }, reacts: { ...x.reacts, [k]: x.reacts[k] + (on ? 1 : -1) } } })
+  const addComment = (e) => {
+    e.preventDefault(); if (!draft.trim()) return
+    const c = { id: 'c' + Date.now(), author: P.you.name, body: draft.trim(), time: 'now' }
+    update(post.id, (x) => ({ ...x, comments: replyTo ? x.comments.map((k) => (k.id === replyTo.id || k.replies?.some((r) => r.id === replyTo.id) ? { ...k, replies: [...(k.replies || []), c] } : k)) : [...x.comments, c] }))
+    setDraft(''); setReplyTo(null)
+  }
+  return h('article', { className: 'card post', 'aria-label': `Post by ${p.name}` },
+    h('header', null,
+      h('button', { className: 'linkface', onClick: () => onProfile(p.id), 'aria-label': `View ${p.name}'s profile` }, h(Face, { p, size: 48, mood: post.mood })),
+      h('div', { className: 'who' }, h('b', null, p.name), h('small', null, `@${p.handle} · ${post.time === 'now' ? 'just now' : post.time + ' ago'}`))),
+    h('p', null, h(Rich, { text: post.text })),
+    post.poll && h(C.LivatarPoll, { question: post.poll.q, options: post.poll.o, avatar: { colors: PAL, variant: p.v, options: p.o, seed: p.id }, onVote: () => toast({ type: 'success', title: 'Vote counted', description: 'Thanks for weighing in.' }), style: { minWidth: 0 } }),
+    h('div', { className: 'acts' },
+      h(C.LivatarLike, { liked: post.liked, count: post.likes, onChange: (v) => update(post.id, (x) => ({ ...x, liked: v })), avatar: { colors: PAL, background: false } }),
+      Object.keys(post.reacts).map((k) => h('button', { key: k, className: 'chip', 'aria-pressed': !!post.mine[k], 'aria-label': `React ${k}`, onClick: () => toggleReact(k) }, h('span', { className: 'e' }, k), post.reacts[k])),
+      h('button', { className: 'chip', 'aria-expanded': post.open, onClick: () => update(post.id, (x) => ({ ...x, open: !x.open })) }, '💬 ', nComments, h('span', { className: 'sr' }, ' comments')),
+      h('span', { className: 'spacer' }),
+      h(C.LivatarCopyButton, { text: url, label: 'Share link', avatar: { colors: PAL, variant: P.you.v, seed: 'you' } })),
+    post.open && h('div', { className: 'thread' },
+      post.comments.length ? h(C.LivatarComment, { comments: post.comments, avatar: { colors: PAL, variant: memoji }, onReply: (c) => setReplyTo(c) }) : h('span', { className: 'muted' }, 'No comments yet. Be the first!'),
+      replyTo && h('div', { className: 'replying' }, `Replying to ${replyTo.author}`, h('button', { onClick: () => setReplyTo(null), 'aria-label': 'Cancel reply' }, '×')),
+      h('form', { onSubmit: addComment },
+        h('input', { value: draft, onChange: (e) => setDraft(e.target.value), placeholder: replyTo ? 'Write a reply...' : 'Add a comment...', 'aria-label': 'Add a comment', enterKeyHint: 'send', autoCapitalize: 'sentences', autoComplete: 'off', inputMode: 'text' }),
+        h('button', { className: 'btn sm', type: 'submit', disabled: !draft.trim() }, 'Send'))))
+}
+
+function Suggest({ follows, toggle, onProfile }) {
+  const ids = ['tess', 'kai', 'zed', 'gran']
+  return h('section', { className: 'card panel', 'aria-label': 'Who to follow' },
+    h('h2', null, 'Who to follow'),
+    ids.map((id) => { const p = P[id], on = follows.has(id)
+      return h('div', { className: 'person', key: id },
+        h('button', { className: 'linkface', onClick: () => onProfile(id), 'aria-label': `View ${p.name}'s profile` }, h(Face, { p, size: 40 })),
+        h('div', { className: 'meta' }, h('b', null, p.name), h('small', null, '@' + p.handle)),
+        h('button', { className: 'btn sm ghost' + (on ? ' on' : ''), 'aria-pressed': on, onClick: () => toggle(id) }, on ? 'Following' : 'Follow')) }))
+}
+
+function Online() {
+  const [typing, setTyping] = useState('jonas')
+  useEffect(() => { const ids = ['jonas', 'maya', 'priya', null]; let n = 0; const t = setInterval(() => setTyping(ids[++n % ids.length]), 2600); return () => clearInterval(t) }, [])
+  const users = ['maya', 'jonas', 'priya', 'omar', 'luna', 'ravi', 'pip'].map((id, i) => ({ id, name: P[id].name, status: i === 3 ? 'away' : i === 5 ? 'busy' : 'online', typing: id === typing }))
+  const avatar = { variant: undefined }
+  return h('section', { className: 'card panel', 'aria-label': 'Online friends' },
+    h('h2', null, 'Online now', h('span', { className: 'live' }, 'live')),
+    h(C.LivatarPresence, { users, max: 5, size: 38, avatar: { colors: PAL, variant: clay } }),
+    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+      h(C.LivatarStack, { users: users.map((u) => ({ id: u.id, name: u.name })), max: 4, size: 28, avatar: { colors: PAL, variant: toon } }),
+      h('small', { className: 'muted' }, users.length + ' friends hanging out')))
+}
+
+function Meet({ toast, follow }) {
+  const people = ['tess', 'kai', 'zed', 'gran', 'pip', 'luna'].map((id) => ({ id, name: P[id].name, bio: P[id].bio }))
+  return h('section', { className: 'card panel swipe', 'aria-label': 'Meet people' },
+    h('h2', { style: { justifySelf: 'stretch' } }, 'Meet people'),
+    h('small', { className: 'muted', style: { justifySelf: 'start', marginTop: -8 } }, 'Drag the card or use the buttons.'),
+    h(C.LivatarSwipeCards, { people, avatar: { colors: PAL, variant: memoji }, onSwipe: (id, dir) => { if (dir === 'right') { follow(id); toast({ type: 'success', title: `Following ${P[id].name}`, description: 'Say hi in the feed!' }) } } }))
+}
+
+/* ---------- app ---------- */
+function App() {
+  const [posts, setPosts] = useState(() => [0, 1, 2, 3].map((i) => mkPost(i, { open: i === 0 })))
+  const [mood, setMood] = useState('happy')
+  const [follows, setFollows] = useState(new Set(['maya', 'jonas']))
+  const [seen, setSeen] = useState(new Set())
+  const [story, setStory] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [toasts, setToasts] = useState([])
+  const [view, setView] = useState('home')
+  const [loading, setLoading] = useState(false)
+  const next = useRef(4)
+  const sentinel = useRef(null)
+
+  const toast = (t) => { const id = Math.random(); setToasts((x) => [...x.slice(-1), { ...t, id }]) }
+  const update = (id, fn) => setPosts((ps) => ps.map((p) => (p.id === id ? fn(p) : p)))
+  const toggleFollow = (id) => setFollows((s) => { const n = new Set(s); if (n.has(id)) { n.delete(id) } else { n.add(id); toast({ type: 'success', title: `Following ${P[id].name}` }) } return n })
+  const follow = (id) => setFollows((s) => new Set(s).add(id))
+  const post = (text, m) => { setPosts((ps) => [mkPost(0, { who: 'you', text, mood: m, poll: undefined, time: 'now', likes: 0, reacts: { '🔥': 0, '😂': 0 }, comments: [] }), ...ps]); toast({ type: 'success', title: 'Posted!', description: 'Your friends can see it now.' }); setView('home') }
+  const loadMore = () => {
+    if (loading) return
+    setLoading(true)
+    setTimeout(() => { setPosts((ps) => [...ps, ...[0, 1, 2].map(() => mkPost(next.current++))]); setLoading(false) }, 900)
+  }
+  useEffect(() => {
+    const el = sentinel.current; if (!el || !('IntersectionObserver' in window)) return
+    const io = new IntersectionObserver((e) => { if (e[0].isIntersecting && posts.length < 24) loadMore() }, { rootMargin: '200px' })
+    io.observe(el); return () => io.disconnect()
+  }, [posts.length, loading])
+  useEffect(() => { document.body.style.overflow = story !== null || profile ? 'hidden' : ''; document.body.style.overscrollBehavior = story !== null || profile ? 'none' : '' }, [story, profile])
+
+  const go = (v) => { setView(v); scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' }) }
+  const tabs = [['home', '🏠', 'Home'], ['discover', '✨', 'Discover'], ['post', '➕', 'Post'], ['me', '🙂', 'Me']]
+  const tabClick = (k) => {
+    if (k === 'post') { go('home'); setTimeout(() => document.querySelector('.composer textarea')?.focus(), 60) }
+    else if (k === 'me') setProfile('you')
+    else if (k === 'discover') { setView('discover'); const r = document.querySelector('.right'); (MOBILE ? r : document.querySelector('.right'))?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' }) }
+    else go(k)
+  }
+  const navItems = [['home', '🏠', 'Home'], ['discover', '🔭', 'Explore'], ['post', '✍️', 'New post'], ['me', '🙂', 'Profile']]
+  const prof = profile && P[profile]
+  const followBtn = (id) => h('button', { className: 'btn sm' + (follows.has(id) ? ' ghost on' : ''), 'aria-pressed': follows.has(id), onClick: () => toggleFollow(id) }, follows.has(id) ? 'Following' : 'Follow')
+  const meCount = posts.filter((p) => p.who === 'you').length
+
+  return h(Fragment, null,
+    h('div', { className: 'app', 'data-view': view },
+      h('aside', { className: 'side', 'aria-label': 'Primary' },
+        h('div', { className: 'brand' }, h('i', { 'aria-hidden': true }, '☺'), h('span', null, 'Huddle')),
+        h('nav', { className: 'card nav', 'aria-label': 'Main' },
+          navItems.map(([k, ic, l]) => h('button', { key: k, 'aria-current': (k === 'home' && view === 'home') || (k === 'discover' && view === 'discover') ? 'page' : undefined, onClick: () => tabClick(k), 'aria-label': l }, h('span', { className: 'ic', 'aria-hidden': true }, ic), h('span', { className: 'label' }, l)))),
+        h('div', { className: 'card me' },
+          h('div', { className: 'row' }, h(Face, { p: P.you, size: 56 }), h('div', null, h('b', null, P.you.name), h('span', { className: 'muted' }, '@alex'))),
+          h('div', { className: 'stats' }, h('span', null, h('b', null, 128 + follows.size), ' following'), h('span', null, h('b', null, 2310), ' followers'), h('span', null, h('b', null, 14 + meCount), ' posts')))),
+      h('main', { className: 'feed', id: 'main' },
+        h('div', { className: 'mobhead' }, h('div', { className: 'brand' }, h('i', { 'aria-hidden': true }, '☺'), 'Huddle')),
+        h('h1', { className: 'sr' }, 'Huddle home feed'),
+        h(Stories, { seen, onOpen: setStory }),
+        h(Composer, { onPost: post, mood, setMood }),
+        posts.map((p) => h(Post, { key: p.id, post: p, update, onProfile: setProfile, toast })),
+        h('div', { className: 'more', ref: sentinel }, loading ? h('div', { style: { width: '100%' }, role: 'status', 'aria-label': 'Loading more posts' }, h(C.LivatarSkeleton, { kind: 'feed', count: 1, avatar: { colors: PAL, variant: critter, seed: 'load' } }))
+          : posts.length < 24 ? h('button', { className: 'btn ghost', onClick: loadMore }, 'Load more') : h('p', { className: 'muted' }, 'You are all caught up. Go touch some grass. 🌱'))),
+      h('aside', { className: 'right', 'aria-label': 'Discover' },
+        h(Suggest, { follows, toggle: toggleFollow, onProfile: setProfile }),
+        h('section', { className: 'card panel', 'aria-label': 'Trending' }, h('h2', null, 'Trending'),
+          TRENDS.map(([t, n]) => h('button', { key: t, className: 'trend', onClick: () => toast({ type: 'info', title: t, description: 'Topic pages are coming soon.' }) }, h('b', null, t), h('small', null, n)))),
+        h(Online),
+        h(Meet, { toast, follow }))),
+    h('nav', { className: 'tabbar', 'aria-label': 'Tabs' }, tabs.map(([k, ic, l]) => h('button', { key: k, 'aria-current': k === view ? 'page' : undefined, onClick: () => tabClick(k) }, h('span', { className: 'ic', 'aria-hidden': true }, ic), l))),
+    story !== null && h(StoryViewer, { start: story, onClose: () => setStory(null), onSeen: (i) => setSeen((s) => new Set(s).add(i)), toast }),
+    h(C.LivatarDialog, { open: !!prof, onClose: () => setProfile(null), title: prof ? prof.name : '', tone: 'success', colors: PAL, variant: critter, seed: 'wave', options: { kind: 'otter' },
+      actions: h('button', { className: 'btn ghost sm', onClick: () => setProfile(null), autoFocus: true }, 'Close') },
+      prof && h('div', { className: 'pcwrap', style: { display: 'grid', gap: 10 } },
+        h(C.LivatarProfileCard, { ...avFor(prof), name: prof.name, role: `@${prof.handle}`, status: 'online', style: { minWidth: 0, background: 'transparent', border: 0 }, action: prof.id === 'you' ? null : followBtn(prof.id) }),
+        h('span', null, prof.bio))),
+    h('div', { className: 'toasts', 'aria-live': 'polite' }, toasts.map((t) => h(C.LivatarToast, { key: t.id, type: t.type, title: t.title, description: t.description, duration: 3200, colors: PAL, variant: P.pip.v, options: { kind: 'otter' }, onClose: () => setToasts((x) => x.filter((y) => y.id !== t.id)) }))))
+}
+createRoot(document.getElementById('root')).render(h(App))
+</script>
+</body>
+</html>

@@ -28,6 +28,7 @@
       <a href="./" aria-current="page">Docs</a>
       <a href="../characters/">Characters</a>
       <a href="../components/">Components</a>
+      <a href="../examples/">Examples</a>
       <a href="../icons/">Icons</a>
       <a href="../life/">Life</a>
       <a href="../readme/">README</a>
@@ -1403,26 +1404,49 @@ h.set({ behaviors: [nervous] }) // swap at any time</script>
   <h2 id="performance">Performance</h2>
   <ul>
     <li><b>One loop for everything.</b> A single <code>requestAnimationFrame</code> callback and one set of passive global listeners serve every avatar. Mounting more avatars adds work to that loop, never more loops or listeners.</li>
-    <li><b>No layout thrash.</b> Each frame reads every visible avatar's bounding box first, then writes transforms. Reads and writes never interleave.</li>
+    <li><b>No layout thrash.</b> Each frame does all layout reads first, then writes transforms. Reads and writes never interleave.</li>
     <li><b>Transforms only.</b> Animation writes <code>transform</code> (and occasionally <code>opacity</code>) on tagged parts, skips writes when the value has not changed, and never touches layout properties.</li>
     <li><b>Offscreen avatars pause.</b> An <code>IntersectionObserver</code> skips avatars that are not visible. A hidden tab stops the loop.</li>
     <li><b>Rendering is a string.</b> <code>createAvatar</code> builds markup with no DOM, so server and static renders cost nothing at runtime.</li>
+  <li><b>Cached layout.</b> Bounding boxes are re-read only after scroll or resize (plus a slow 500&nbsp;ms refresh), not every frame.</li>
+  <li><b>Frame budget.</b> Past 24 visible avatars, each one updates every other frame, so 1,000 faces cost about as much as 500.</li>
   </ul>
-  <h3 id="stress-test">Stress test</h3>
-  <div class="live">
+  <h3 id="stress-test">Performance lab</h3>
+  <p>Mount many avatars, pick a scenario, and watch frame rate, dropped frames and long tasks. <b>Run suite</b> runs every scenario for 3&nbsp;s each and prints a table you can copy into an issue.</p>
+  <div class="live perf-lab">
+    <div class="perf-ctl">
+      <label>Count <select id="plN"><option>50</option><option selected>200</option><option>500</option><option>1000</option><option>2000</option></select></label>
+      <label>Styles <select id="plStyle"><option value="all">all (mixed)</option><option value="heavy">heavy (human, hero, bean, dev)</option><option value="light">light (initials, pixel, blob)</option></select></label>
+      <label>Render <select id="plMode"><option value="alive">alive (mount)</option><option value="static">static SVG</option><option value="wc">&lt;live-avatar&gt;</option></select></label>
+      <label>Size <select id="plSize"><option>32</option><option selected>48</option><option>96</option></select></label>
+    </div>
+    <div class="perf-ctl">
+      <label><input type="checkbox" id="plSweep"> pointer sweep</label>
+      <label><input type="checkbox" id="plMood"> mood storm (all, 2×/s)</label>
+      <label><input type="checkbox" id="plTalk"> everyone talks</label>
+      <label><input type="checkbox" id="plPoke"> poke storm</label>
+      <label><input type="checkbox" id="plScroll"> auto-scroll</label>
+      <label><input type="checkbox" id="plChurn"> churn (remount 10%/s)</label>
+      <label><input type="checkbox" id="plBlock"> main-thread load (8 ms/frame)</label>
+    </div>
     <div class="row">
       <div class="btns">
-        <button type="button" class="sm" data-n="100">Mount 100</button>
-        <button type="button" class="sm" data-n="300">Mount 300</button>
-        <button type="button" class="sm" data-n="600">Mount 600</button>
+        <button type="button" class="sm" id="plGo">Mount</button>
+        <button type="button" class="sm" id="plSuite">Run suite</button>
         <button type="button" class="ghost sm" id="stClear">Clear</button>
+        <button type="button" class="ghost sm" id="plCopy">Copy results</button>
       </div>
-      <div class="fps" id="fps" role="status">– fps · 0 avatars</div>
     </div>
+    <div class="perf-stats" id="fps" role="status">
+      <span><b id="psFps">–</b>fps</span><span><b id="psMin">–</b>min fps</span><span><b id="psP95">–</b>p95 ms</span>
+      <span><b id="psDrop">0</b>dropped</span><span><b id="psLong">0</b>long tasks</span><span><b id="psN">0</b>avatars</span>
+      <span><b id="psMount">–</b>mount ms</span><span><b id="psDom">–</b>DOM nodes</span><span><b id="psHeap">–</b>heap MB</span>
+    </div>
+    <canvas id="plGraph" class="perf-graph" height="60" aria-label="frame time graph"></canvas>
+    <table class="perf-table" id="plTable" hidden><thead><tr><th>scenario</th><th>avg fps</th><th>min fps</th><th>p95 ms</th><th>dropped</th><th>long tasks</th></tr></thead><tbody></tbody></table>
     <div class="stress" id="stress"></div>
   </div>
-  <p class="muted">Scroll the grid partly out of view: avatars outside the viewport stop costing anything.</p>
-</section>
+  <p class="muted">Scroll the grid partly out of view: avatars outside the viewport stop costing anything. A frame over 20&nbsp;ms counts as dropped; long tasks need Chromium. Heap shows only in Chromium.</p></section>
 
 <!-- ============================================================ -->
 <section id="a11y-section">

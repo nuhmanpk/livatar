@@ -146,6 +146,8 @@ interface Instance {
     gestureAt: number
   }
   flip: number
+  /** Time of this avatar's last update (the frame budget may skip frames). */
+  at?: number
   moodTimer?: ReturnType<typeof setTimeout>
   scan(): void
   setMood(m: Mood): void
@@ -208,6 +210,12 @@ let last = 0
 let bound = false
 let reduced = false
 let io: IntersectionObserver | null = null
+let rectsDirty = true
+let rectsAt = 0
+let cursor = 0
+/** Milliseconds of animation work per frame; adapts to how long frames actually take. */
+let budget = 6
+const dirty = () => { rectsDirty = true }
 const now = () => performance.now()
 const anyVisible = () => { for (const i of instances) if (i.visible) return true; return false }
 
@@ -265,6 +273,10 @@ function bind() {
     }
   })
 
+  // rects are cached; only scroll / resize (or a slow refresh) re-read layout
+  addEventListener('scroll', dirty, { capture: true, passive: true })
+  addEventListener('resize', dirty, { passive: true })
+
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) schedule()
   })
@@ -287,12 +299,8 @@ const byTarget = new WeakMap<Element, Instance>()
 function setVisible(i: Instance, v: boolean) {
   if (i.visible === v) return
   i.visible = v
-  for (const p of i.parts) {
-    if (!v) {
-      p.el.style.willChange = 'auto'
-      if (p.last) p.el.style.transform = p.last = ''
-    } else p.el.style.willChange = 'transform'
-  }
+  if (v) rectsDirty = true
+  else for (const p of i.parts) if (p.last) p.el.style.transform = p.last = ''
   if (!v) {
     const s = i.s
     s.x = s.y = s.closed = s.mouth = 0
@@ -321,7 +329,9 @@ function caretPoint(): { x: number; y: number } | null {
   return { x, y: r.top + Math.min(r.height / 2, 24) }
 }
 
-const f = (v: number) => Math.round(v * 100) / 100
+// coarse rounding: sub-pixel / sub-percent changes are invisible and would only cause style writes
+const f = (v: number) => Math.round(v * 10) / 10
+const fs = (v: number) => Math.round(v * 250) / 250
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
 function frame(t: number) {
@@ -332,10 +342,32 @@ function frame(t: number) {
   // READ phase (batch layout reads before any writes)
   const caret = caretPoint()
   const pw = !!focusEl && (focusEl as HTMLInputElement).type === 'password'
-  for (const i of instances) if (i.visible) i.rect = i.target.getBoundingClientRect()
+  // getBoundingClientRect forces layout; with many avatars do it only after scroll/resize,
+  // plus a slow refresh to catch layout shifts
+  if (rectsDirty || t - rectsAt > 500) {
+    for (const i of instances) if (i.visible) i.rect = i.target.getBoundingClientRect()
+    rectsDirty = false
+    rectsAt = t
+  }
 
-  // WRITE phase
-  for (const i of instances) if (i.visible && i.rect) step(i, i.rect, t, dt, caret, pw)
+  // WRITE phase, time-sliced: update avatars round-robin until this frame's budget is spent,
+  // then continue from there next frame. Hundreds of faces then degrade to a lower per-avatar
+  // update rate instead of freezing the page.
+  budget = dt > 0.024 ? Math.max(2, budget * 0.8) : Math.min(8, budget + 0.25)
+  const list: Instance[] = []
+  for (const i of instances) if (i.visible && i.rect) list.push(i)
+  const len = list.length
+  const t0 = now()
+  let done = 0
+  while (done < len) {
+    const i = list[(cursor + done) % len]
+    const d = Math.min(0.1, Math.max(0.001, (t - (i.at ?? t - dt * 1000)) / 1000))
+    i.at = t
+    step(i, i.rect!, t, d, caret, pw)
+    done++
+    if ((done & 7) === 0 && now() - t0 > budget) break
+  }
+  cursor = len ? (cursor + done) % len : 0
 
   schedule()
 }
@@ -467,7 +499,7 @@ function step(
       sy *= 1 + breathe - squash
       sx *= 1 - breathe * 0.4 + squash * 0.7
     }
-    const tr = `translate(${f(x)}px,${f(y)}px) rotate(${f(rot)}deg) scale(${f(sx)},${f(sy)})`
+    const tr = `translate(${f(x)}px,${f(y)}px) rotate(${f(rot)}deg) scale(${fs(sx)},${fs(sy)})`
     if (tr !== p.last) p.el.style.transform = p.last = tr
   }
 }
@@ -503,7 +535,6 @@ export function alive(target: Element | null | undefined, options: AliveOptions 
     }
     el.style.transformBox = 'fill-box'
     el.style.transformOrigin = p.body ? '50% 100%' : p.mouth ? '50% 0%' : '50% 50%'
-    el.style.willChange = 'transform'
     parts.push(p)
   })
   }
@@ -626,6 +657,7 @@ export function alive(target: Element | null | undefined, options: AliveOptions 
 
   target.addEventListener('pointerdown', inst.onDown)
   instances.add(inst)
+  rectsDirty = true
   byTarget.set(target, inst)
   io?.observe(target)
   schedule()
